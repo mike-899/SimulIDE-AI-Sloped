@@ -27,6 +27,7 @@ class ComponentSelector;
 class CircuitWidget;
 class EditorWindow;
 class FileWidget;
+class SerialMonitor;
 
 class MAINMODULE_EXPORT MainWindow : public QMainWindow
 {
@@ -68,9 +69,37 @@ class MAINMODULE_EXPORT MainWindow : public QMainWindow
     QString *circHelp();
     void loadCircHelp();
 
+    // Bring the Properties tab of the right side panel to front
+    void showProperties();
+
+    // Top bar theme toggle (placeholder, see toggleTheme())
+    QAction *themeToggleAction()
+    {
+        return m_themeToggleAct;
+    }
+
     QTabWidget *m_sidepanel;
     QWidget *m_ramTabWidget;
     QGridLayout *m_ramTabWidgetLayout;
+
+  public slots:
+    void setCodePanelVisible(bool visible);
+    void setComponentPanelVisible(bool visible);
+    void setSerialMonitorExpanded(bool expanded);
+
+    // PLACEHOLDER for the theme toggle button in the top bar.
+    // The Material theme (QSS in resources/themes) hooks in here.
+    void toggleTheme();
+
+  signals:
+    // Emitted by the top bar theme toggle button.
+    void themeToggleRequested();
+
+  private slots:
+    void updateSimButton();
+    void updateProjectLabel(const QString &windowTitle);
+    void showRamTable();
+    void showFileExplorer();
 
   protected:
     void closeEvent(QCloseEvent *event);
@@ -83,8 +112,10 @@ class MAINMODULE_EXPORT MainWindow : public QMainWindow
     bool m_blocked;
 
     void createWidgets();
+    void createTopBar();
+    void createEditToolBar();
+    void createCodePanel();
     void createMenus();
-    void createToolBars();
     void writeSettings();
     void applyStyle();
 
@@ -104,8 +135,31 @@ class MAINMODULE_EXPORT MainWindow : public QMainWindow
     PropertiesWidget *m_itemprop;
     EditorWindow *m_editor;
 
-    QSplitter *m_Centralsplitter;
+    QSplitter *m_Centralsplitter; // Main splitter: canvas | code | side panel
     FileWidget *m_fileSystemTree;
+
+    // Tinkercad-like chrome
+    QWidget *m_topBar;
+    QLabel *m_projectLabel;
+    QToolButton *m_menuButton;
+    QToolButton *m_themeButton;
+    QPushButton *m_componentsButton;
+    QPushButton *m_codeButton;
+    QPushButton *m_simButton;
+    QToolBar *m_editToolBar;
+    QMenu *m_mainMenu;
+
+    QAction *m_themeToggleAct;
+    QAction *m_codePanelAct;
+    QAction *m_componentPanelAct;
+
+    QWidget *m_codePanel;
+    QSplitter *m_codeSplitter;
+    QWidget *m_serialPanel;
+    QToolButton *m_serialToggle;
+    SerialMonitor *m_serialMonitor;
+
+    bool m_sideWasVisible; // Side panel state before the code panel opened
 };
 
 #endif

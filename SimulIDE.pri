@@ -257,6 +257,7 @@ HEADERS += \
     ./src/gui/ramtable.h \
     ./src/gui/terminalwidget/outpaneltext.h \
     ./src/gui/terminalwidget/terminalwidget.h \
+    ./src/gui/terminalwidget/serialmonitor.h \
     ./src/gui/topwidget.h \
     ./src/gui/voltwidget.h \
     ./src/mainwindow.h \
@@ -598,6 +599,7 @@ SOURCES += \
     ./src/gui/ramtable.cpp \
     ./src/gui/terminalwidget/outpaneltext.cpp \
     ./src/gui/terminalwidget/terminalwidget.cpp \
+    ./src/gui/terminalwidget/serialmonitor.cpp \
     ./src/gui/topwidget.cpp \
     ./src/gui/voltwidget.cpp \
     ./src/main.cpp \
