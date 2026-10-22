@@ -26,6 +26,7 @@ License along with this library; if not, see
 typedef unsigned int uint;
 
 #include <string>
+#include <cstdint>
 using namespace std;
 
 class BreakType;
