@@ -138,6 +138,13 @@ void SerialMonitor::sendText()
     m_input->clear();
 }
 
+void SerialMonitor::setUart( int uart )
+{
+    if( uart < 1 ) uart = 1;
+    else if( uart > 6 ) uart = 6;
+    m_uartBox->setValue( uart );
+}
+
 void SerialMonitor::clear()
 {
     m_output->clear();

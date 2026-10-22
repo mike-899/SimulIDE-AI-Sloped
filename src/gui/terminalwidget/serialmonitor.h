@@ -36,6 +36,7 @@ class MAINMODULE_EXPORT SerialMonitor : public QWidget
 
     public slots:
         void clear();
+        void setUart( int uart );
 
     private slots:
         void poll();
