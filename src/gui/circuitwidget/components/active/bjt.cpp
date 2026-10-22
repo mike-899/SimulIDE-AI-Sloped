@@ -18,6 +18,7 @@
  ***************************************************************************/
 
 #include "bjt.h"
+#include "partart.h"
 #include "itemlibrary.h"
 #include "connector.h"
 #include "circuit.h"
@@ -110,6 +111,22 @@ void BJT::setBCd( bool bcd )
 void BJT::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget )
 {
     Component::paint( p, option, widget );
+
+    if( artActive() )                                     // Realistic part art
+    {
+        if( !m_PNP ) { paintArt( p ); return; }
+        p->save();
+        p->setRenderHint( QPainter::Antialiasing );
+        QRectF r = PartArt::paint( p, m_type, ":/parts/fritzing/bjt_pnp.svg" );
+        if( isSelected() )
+        {
+            p->setPen( QPen( QColor( 60, 130, 230 ), 1, Qt::DashLine ) );
+            p->setBrush( QColor( 60, 130, 230, 50 ) );
+            p->drawRoundedRect( r, 2, 2 );
+        }
+        p->restore();
+        return;
+    }
     
     if( Circuit::self()->animate() && m_baseCurr > 1e-4 )  p->setBrush( Qt::yellow );
     else                                                   p->setBrush( Qt::white );

@@ -18,6 +18,7 @@
  ***************************************************************************/
 
 #include "ws2812.h"
+#include "partart.h"
 #include "mcucomponent.h"
 #include "simulator.h"
 #include "circuit.h"
@@ -219,6 +220,42 @@ void WS2812::updateLeds()
 void WS2812::paint( QPainter* p, const QStyleOptionGraphicsItem* option, QWidget* widget )
 {
     Component::paint( p, option, widget );
+
+    if( artActive() )                                     // Realistic part art
+    {
+        p->save();
+        p->setRenderHint( QPainter::Antialiasing );
+        for( int row=0; row<m_rows; row++ )
+        {
+            for( int col=0; col<m_cols; col++ )
+            {
+                QRectF cell( -6+col*12, -6+row*12, 12, 12 );
+                PartArt::paintRes( p, ":/parts/mit/ws2812.svg", cell );
+                QColor c = m_led[row*m_cols+col];
+                int lum = qMax( c.red(), qMax( c.green(), c.blue() ) );
+                if( lum > 10 )
+                {
+                    QRadialGradient g( cell.center(), 7 );
+                    QColor c0 = c; c0.setAlpha( 255 );
+                    QColor c1 = c; c1.setAlpha( 0 );
+                    g.setColorAt( 0.0, QColor( 255, 255, 255, lum ) );
+                    g.setColorAt( 0.3, c0 );
+                    g.setColorAt( 1.0, c1 );
+                    p->setPen( Qt::NoPen );
+                    p->setBrush( g );
+                    p->drawEllipse( cell.center(), 7, 7 );
+                }
+            }
+        }
+        p->restore();
+        if( isSelected() )
+        {
+            p->setPen( QPen( QColor( 60, 130, 230 ), 1, Qt::DashLine ) );
+            p->setBrush( QColor( 60, 130, 230, 50 ) );
+            p->drawRect( m_area );
+        }
+        return;
+    }
 
     p->setBrush( QColor(Qt::black) );
 

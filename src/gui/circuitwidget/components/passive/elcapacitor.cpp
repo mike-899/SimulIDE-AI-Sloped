@@ -85,6 +85,8 @@ void elCapacitor::paint( QPainter* p, const QStyleOptionGraphicsItem* option, QW
 {
     Component::paint( p, option, widget );
 
+    if( paintArt( p ) ) return;                          // Realistic part art
+
     QPen pen = p->pen();
     pen.setWidth(3);
     p->setPen(pen);

@@ -30,6 +30,7 @@ class MAINMODULE_EXPORT MechContact : public Component, public eElement
     Q_PROPERTY( int  Poles      READ poles    WRITE setPoles DESIGNABLE true USER true )
 
     public:
+        virtual bool artActive() const override { return (m_numPoles == 1) && Component::artActive(); }
 
         MechContact( QObject* parent, QString type, QString id );
         ~MechContact();

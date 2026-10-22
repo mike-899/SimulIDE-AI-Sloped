@@ -21,6 +21,7 @@
 
 #include "componentselector.h"
 #include "thememanager.h"
+#include "partart.h"
 #include "mainwindow.h"
 #include "simuapi_apppath.h"
 
@@ -421,7 +422,8 @@ void ComponentSelector::addItem( const QString &caption, const QString &_categor
 
     QTreeWidgetItem* item =  new QTreeWidgetItem(0);
     item->setFlags( QFlag(32) );
-    item->setIcon( 0, QIcon(icon) );
+    if( PartArt::hasIcon( type ) ) item->setIcon( 0, PartArt::icon( type ) ); // Realistic art
+    else                           item->setIcon( 0, QIcon(icon) );
     item->setText( 0, name+info );
     item->setData( 0, TypeRole, type );
     item->setData( 0, NameRole, name );

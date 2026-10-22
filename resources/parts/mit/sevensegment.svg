@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="12.54mm" height="20.53mm" viewBox="-0.01 0 12.54 20.53">
+<defs />
+<rect x="0" y="0" width="12.55" height="20.5" fill="black" />
+<g transform="skewX(-8) translate(3.5 2.4) scale(0.81)">
+<polygon points="2 0 8 0 9 1 8 2 2 2 1 1" fill="#444" transform="translate(5 9) scale(0.9) translate(-5 -9)" />
+<polygon points="10 2 10 8 9 9 8 8 8 2 9 1" fill="#444" transform="translate(5 9) scale(0.9) translate(-5 -9)" />
+<polygon points="10 10 10 16 9 17 8 16 8 10 9 9" fill="#444" transform="translate(5 9) scale(0.9) translate(-5 -9)" />
+<polygon points="8 18 2 18 1 17 2 16 8 16 9 17" fill="#444" transform="translate(5 9) scale(0.9) translate(-5 -9)" />
+<polygon points="0 16 0 10 1 9 2 10 2 16 1 17" fill="#444" transform="translate(5 9) scale(0.9) translate(-5 -9)" />
+<polygon points="0 8 0 2 1 1 2 2 2 8 1 9" fill="#444" transform="translate(5 9) scale(0.9) translate(-5 -9)" />
+<polygon points="2 8 8 8 9 9 8 10 2 10 1 9" fill="#444" transform="translate(5 9) scale(0.9) translate(-5 -9)" />
+<circle cx="11.8" cy="18" r="0.9" fill="#444" />
+</g>
+<g transform="translate(-0.07499999999999929 0)"><g><g transform="translate(0 0)"><circle cx="1.27" cy="1" r="0.5" fill="#aaa" /></g><g transform="translate(2.54 0)"><circle cx="1.27" cy="1" r="0.5" fill="#aaa" /></g><g transform="translate(5.08 0)"><circle cx="1.27" cy="1" r="0.5" fill="#aaa" /></g><g transform="translate(7.62 0)"><circle cx="1.27" cy="1" r="0.5" fill="#aaa" /></g><g transform="translate(10.16 0)"><circle cx="1.27" cy="1" r="0.5" fill="#aaa" /></g></g><g transform="translate(0 18)"><g><g transform="translate(0 0)"><circle cx="1.27" cy="1" r="0.5" fill="#aaa" /></g><g transform="translate(2.54 0)"><circle cx="1.27" cy="1" r="0.5" fill="#aaa" /></g><g transform="translate(5.08 0)"><circle cx="1.27" cy="1" r="0.5" fill="#aaa" /></g><g transform="translate(7.62 0)"><circle cx="1.27" cy="1" r="0.5" fill="#aaa" /></g><g transform="translate(10.16 0)"><circle cx="1.27" cy="1" r="0.5" fill="#aaa" /></g></g></g></g>
+</svg>

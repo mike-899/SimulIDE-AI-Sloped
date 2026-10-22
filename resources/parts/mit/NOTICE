@@ -1,0 +1,16 @@
+Realistic part artwork - MIT licensed
+
+Files derived from wokwi-elements (https://github.com/wokwi/wokwi-elements, commit a1fac76),
+Copyright (c) 2020 Uri Shaked, MIT License (see LICENSE-WOKWI-MIT.txt). Extracted from the
+lit templates, filters removed, <pattern> fills expanded for QtSvg:
+  resistor.svg, led.svg, rgb_led.svg, push_button.svg, switch.svg (slide switch),
+  potentiometer.svg, buzzer.svg, servo.svg, sevensegment.svg, hd44780.svg (lcd1602),
+  ws2812.svg (neopixel), switchdip.svg
+
+Original files, Copyright (c) SimulIDE-AI-Sloped contributors, MIT License:
+  ground.svg, rail.svg, currsource.svg, frequencimeter.svg, keypad.svg, memory.svg,
+  pcd8544.svg
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this
+software and associated documentation files, to deal in the Software without restriction,
+subject to the conditions of the MIT License text in LICENSE-WOKWI-MIT.txt.

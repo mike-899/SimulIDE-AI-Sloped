@@ -18,6 +18,7 @@
  ***************************************************************************/
 
 #include "component.h"
+#include "partart.h"
 #include "mainwindow.h"
 #include "connector.h"
 #include "connectorline.h"
@@ -526,6 +527,44 @@ QString Component::print()
     str += m_mult+m_unit+"\n";
     
     return str;
+}
+
+QRectF Component::boundingRect() const
+{
+    QRectF br( m_area.x()-2, m_area.y()-2, m_area.width()+4 ,m_area.height()+4 );
+    if( artActive() )
+    {
+        QRectF ar = PartArt::artRect( m_type );
+        if( !ar.isNull() ) br = br.united( ar.adjusted(-2,-2, 2, 2 ) );
+    }
+    return br;
+}
+
+bool Component::artActive() const
+{
+    return PartArt::enabled() && PartArt::has( m_type );
+}
+
+bool Component::paintArt( QPainter* p )
+{
+    if( !artActive() ) return false;
+
+    p->save();
+    p->setRenderHint( QPainter::Antialiasing );
+    p->setRenderHint( QPainter::SmoothPixmapTransform );
+    QRectF r;
+    const PartArtInfo* inf = PartArt::info( m_type );
+    if( inf->rect.isNull() ) r = PartArt::paintRes( p, inf->res, m_area, inf->rot );
+    else                     r = PartArt::paint( p, m_type );
+
+    if( isSelected() )
+    {
+        p->setPen( QPen( QColor( 60, 130, 230 ), 1, Qt::DashLine ) );
+        p->setBrush( QColor( 60, 130, 230, 50 ) );
+        p->drawRoundedRect( r.adjusted(-1,-1, 1, 1 ), 2, 2 );
+    }
+    p->restore();
+    return true;
 }
 
 void Component::paint( QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget )

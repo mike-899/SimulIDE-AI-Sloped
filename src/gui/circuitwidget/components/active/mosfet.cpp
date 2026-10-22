@@ -110,6 +110,8 @@ void Mosfet::remove()
 void Mosfet::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget )
 {
     Component::paint( p, option, widget );
+
+    if( paintArt( p ) ) return;                          // Realistic part art
     
     if( Circuit::self()->animate() && m_gateV > 0 )  p->setBrush( Qt::yellow );
     else                                             p->setBrush( Qt::white );

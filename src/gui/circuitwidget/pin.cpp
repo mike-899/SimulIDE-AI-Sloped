@@ -350,6 +350,11 @@ void Pin::paint( QPainter* painter, const QStyleOptionGraphicsItem* option, QWid
     //painter->setBrush( Qt::red );
     //painter->drawRect( boundingRect() );
     
+    if( m_component && m_component->artActive() )   // Realistic part: metal lead
+    {
+        pen.setColor( QColor( 150, 150, 150 ) );
+        pen.setWidthF( 1.6 );
+    }
     if( m_unused )     pen.setColor( QColor( 75, 120, 170 ));
     if( isSelected() ) pen.setColor( Qt::darkGray);
 
