@@ -20,6 +20,7 @@
 #include <QDomDocument>
 
 #include "componentselector.h"
+#include "thememanager.h"
 #include "mainwindow.h"
 #include "simuapi_apppath.h"
 
@@ -190,7 +191,7 @@ void ComponentSelector::createWidgets()
 
     m_manageButton = new QToolButton( header );
     m_manageButton->setObjectName( "manageComponentsButton" );
-    m_manageButton->setIcon( QIcon(":/material/tune.svg") );
+    m_manageButton->setIcon( ThemeManager::icon("tune") );
     m_manageButton->setToolTip( tr("Manage Components (show/hide)") );
     m_manageButton->setAutoRaise( true );
     connect( m_manageButton, SIGNAL(clicked()), this, SLOT(slotManageComponents()) );
@@ -208,7 +209,7 @@ void ComponentSelector::createWidgets()
     m_searchEdit->setObjectName( "componentSearch" );
     m_searchEdit->setPlaceholderText( tr("Search components") );
     m_searchEdit->setClearButtonEnabled( true );
-    m_searchEdit->addAction( QIcon(":/material/search.svg"), QLineEdit::LeadingPosition );
+    m_searchEdit->addAction( ThemeManager::icon("search"), QLineEdit::LeadingPosition );
     layout->addWidget( m_searchEdit );
 
     // Card grid
@@ -481,8 +482,8 @@ void ComponentSelector::updateCategoryBox()
 
     m_categoryBox->blockSignals( true );
     m_categoryBox->clear();
-    m_categoryBox->addItem( QIcon(":/material/widgets.svg"), tr("Basic"), BasicCat );
-    m_categoryBox->addItem( QIcon(":/material/widgets.svg"), tr("All Components"), AllCat );
+    m_categoryBox->addItem( ThemeManager::icon("widgets"), tr("Basic"), BasicCat );
+    m_categoryBox->addItem( ThemeManager::icon("widgets"), tr("All Components"), AllCat );
     for( QString cat : cats ) m_categoryBox->addItem( cat, cat );
 
     int index = m_categoryBox->findData( selected );
@@ -670,7 +671,7 @@ void ComponentSelector::slotContextMenu( const QPoint& point )
 {
     QMenu menu;
 
-    QAction* managePluginAction = menu.addAction( QIcon(":/material/tune.svg"),tr("Manage Components") );
+    QAction* managePluginAction = menu.addAction( ThemeManager::icon("tune"),tr("Manage Components") );
     connect( managePluginAction, SIGNAL(triggered()), this, SLOT(slotManageComponents()) );
 
     menu.exec( mapToGlobal(point) );

@@ -11,6 +11,11 @@
 #include <QPalette>
 #include <QSettings>
 #include <QStyleFactory>
+#include <QIconEngine>
+#include <QPainter>
+#include <QPixmap>
+#include <QSvgRenderer>
+#include <QHash>
 
 ThemeManager* ThemeManager::self()
 {
@@ -114,3 +119,69 @@ QColor ThemeManager::wireSelected()     const { return isDark() ? QColor("#A8C7F
 QColor ThemeManager::textColor()        const { return isDark() ? QColor("#E3E3E8") : QColor("#1B1B1F"); }
 QColor ThemeManager::selectionColor()   const { return isDark() ? QColor("#A8C7FA") : QColor("#1A73E8"); }
 QColor ThemeManager::accentColor()      const { return isDark() ? QColor("#A8C7FA") : QColor("#1A73E8"); }
+
+QColor ThemeManager::iconColor()         const { return isDark() ? QColor("#E3E3E3") : QColor("#1F1F1F"); }
+QColor ThemeManager::iconDisabledColor() const { QColor c = iconColor(); c.setAlpha( 97 ); return c; }
+
+// ---- Theme aware SVG icon engine ---------------------------------------
+class MaterialIconEngine : public QIconEngine
+{
+    public:
+        MaterialIconEngine( const QString& name, const QColor& fixed )
+            : m_name( name ), m_fixed( fixed ) {}
+
+        QIconEngine* clone() const override { return new MaterialIconEngine( m_name, m_fixed ); }
+
+        QPixmap pixmap( const QSize& size, QIcon::Mode mode, QIcon::State ) override
+        {
+            return render( size, 2.0, mode );
+        }
+
+        void paint( QPainter* painter, const QRect& rect, QIcon::Mode mode, QIcon::State ) override
+        {
+            qreal dpr = painter->device() ? painter->device()->devicePixelRatioF() : 1.0;
+            painter->drawPixmap( rect, render( rect.size(), dpr >= 1.5 ? 2.0 : 1.0, mode ) );
+        }
+
+        QSize actualSize( const QSize& size, QIcon::Mode, QIcon::State ) override { return size; }
+
+    private:
+        QPixmap render( const QSize& size, qreal scale, QIcon::Mode mode )
+        {
+            if( size.isEmpty() ) return QPixmap();
+            ThemeManager* tm = ThemeManager::self();
+            QColor c = m_fixed.isValid() ? m_fixed : tm->iconColor();
+            if( mode == QIcon::Disabled )
+                c = m_fixed.isValid() ? QColor( c.red(), c.green(), c.blue(), 97 ) : tm->iconDisabledColor();
+
+            QString key = m_name+"|"+c.name( QColor::HexArgb )+"|"+QString::number( size.width() )
+                         +"x"+QString::number( size.height() )+"@"+QString::number( scale );
+            static QHash<QString, QPixmap> cache;
+            auto it = cache.constFind( key );
+            if( it != cache.constEnd() ) return *it;
+
+            QSvgRenderer svg( QString(":/material/%1.svg").arg( m_name ) );
+            QSize px = size*scale;
+            QImage img( px, QImage::Format_ARGB32_Premultiplied );
+            img.fill( Qt::transparent );
+            if( svg.isValid() )
+            {
+                QPainter p( &img );
+                svg.render( &p, QRectF( QPointF(0,0), QSizeF( px ) ) );
+                p.setCompositionMode( QPainter::CompositionMode_SourceIn );
+                p.fillRect( img.rect(), c );
+            }
+            QPixmap pm = QPixmap::fromImage( img );
+            pm.setDevicePixelRatio( scale );
+            cache.insert( key, pm );
+            return pm;
+        }
+
+        QString m_name;
+        QColor  m_fixed;
+};
+
+QIcon ThemeManager::icon( const QString& name, const QColor& fixed )
+{
+    return QIcon( new MaterialIconEngine( name, fixed ) );
+}

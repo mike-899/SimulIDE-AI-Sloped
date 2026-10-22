@@ -184,7 +184,7 @@ void MainWindow::updateProjectLabel(const QString &windowTitle)
 
 static QIcon materialIcon(const QString &name)
 {
-    return QIcon(":/material/" + name + ".svg");
+    return ThemeManager::icon(name);
 }
 
 void MainWindow::createWidgets()
@@ -211,9 +211,9 @@ void MainWindow::createWidgets()
     m_sidepanel->setDocumentMode(true);
     m_sidepanel->setUsesScrollButtons(false);
     m_sidepanel->setMinimumWidth(250);
-    QString fontSize = QString::number(int(11 * m_fontScale));
-    m_sidepanel->tabBar()->setStyleSheet("QTabBar { font-size:" + fontSize +
-                                         "px; }");
+    m_sidepanel->tabBar()->setDrawBase(false);
+    m_sidepanel->tabBar()->setExpanding(false);
+    m_sidepanel->tabBar()->setFocusPolicy(Qt::NoFocus);
 
     m_components = new ComponentSelector(m_sidepanel);
     m_sidepanel->addTab(m_components, tr("Components"));
@@ -436,6 +436,7 @@ void MainWindow::createCodePanel()
 
     QWidget *header = new QWidget(m_codePanel);
     header->setObjectName("codePanelHeader");
+    header->setAttribute(Qt::WA_StyledBackground, true);
     QHBoxLayout *headerLayout = new QHBoxLayout(header);
     headerLayout->setContentsMargins(8, 4, 4, 4);
     QLabel *title = new QLabel(tr("Code"), header);
@@ -465,6 +466,7 @@ void MainWindow::createCodePanel()
     // Collapsible serial monitor at the bottom
     m_serialPanel = new QWidget(m_codeSplitter);
     m_serialPanel->setObjectName("serialMonitorPanel");
+    m_serialPanel->setAttribute(Qt::WA_StyledBackground, true);
     QVBoxLayout *serialLayout = new QVBoxLayout(m_serialPanel);
     serialLayout->setContentsMargins(0, 0, 0, 0);
     serialLayout->setSpacing(0);
@@ -495,8 +497,14 @@ void MainWindow::createCodePanel()
 
 void MainWindow::createMenus()
 {
-    m_themeToggleAct = new QAction(materialIcon("dark_mode"),
-                                   tr("Toggle Theme"), this);
+    m_themeToggleAct = new QAction(
+        materialIcon(ThemeManager::self()->isDark() ? "light_mode" : "dark_mode"),
+        tr("Toggle Theme"), this);
+    connect(ThemeManager::self(), &ThemeManager::themeChanged, this,
+            [this](bool dark) {
+                m_themeToggleAct->setIcon(
+                    materialIcon(dark ? "light_mode" : "dark_mode"));
+            });
     m_themeToggleAct->setObjectName("themeToggleAction");
     m_themeToggleAct->setToolTip(tr("Switch light / dark theme"));
     connect(m_themeToggleAct, SIGNAL(triggered()), this, SLOT(toggleTheme()));
@@ -600,7 +608,7 @@ void MainWindow::updateSimButton()
         icon = "bug_report";
     }
     m_simButton->setText(text);
-    m_simButton->setIcon(materialIcon(icon));
+    m_simButton->setIcon(ThemeManager::icon(icon, Qt::white));
     m_simButton->setToolTip(power->statusTip());
     m_simButton->setEnabled(power->isEnabled() && state != "Debug");
 
@@ -695,11 +703,12 @@ void MainWindow::createInspector()
     m_inspector   = new QFrame(view);
     m_inspector->setObjectName("propertyInspector");
     m_inspector->setFrameShape(QFrame::StyledPanel);
-    m_inspector->setAutoFillBackground(true);
+    m_inspector->setAttribute(Qt::WA_StyledBackground, true);
+    m_inspector->setAutoFillBackground(false);
 
     QVBoxLayout *layout = new QVBoxLayout(m_inspector);
-    layout->setContentsMargins(6, 4, 6, 6);
-    layout->setSpacing(4);
+    layout->setContentsMargins(12, 8, 12, 12);
+    layout->setSpacing(6);
 
     QHBoxLayout *header = new QHBoxLayout();
     header->setSpacing(4);
@@ -708,11 +717,12 @@ void MainWindow::createInspector()
     QFont tf = m_inspectorTitle->font();
     tf.setBold(true);
     m_inspectorTitle->setFont(tf);
+    m_inspectorTitle->setAttribute(Qt::WA_StyledBackground, true);
     header->addWidget(m_inspectorTitle, 1);
 
     m_inspectorCollapse = new QToolButton(m_inspector);
     m_inspectorCollapse->setObjectName("propertyInspectorCollapse");
-    m_inspectorCollapse->setArrowType(Qt::UpArrow);
+    m_inspectorCollapse->setIcon(materialIcon("expand_less"));
     m_inspectorCollapse->setAutoRaise(true);
     m_inspectorCollapse->setCheckable(true);
     m_inspectorCollapse->setToolTip(tr("Collapse"));
@@ -725,7 +735,7 @@ void MainWindow::createInspector()
 
     connect(m_inspectorCollapse, &QToolButton::toggled, [this](bool c) {
         m_itemprop->setVisible(!c);
-        m_inspectorCollapse->setArrowType(c ? Qt::DownArrow : Qt::UpArrow);
+        m_inspectorCollapse->setIcon(materialIcon(c ? "expand_more" : "expand_less"));
         m_inspectorCollapse->setToolTip(c ? tr("Expand") : tr("Collapse"));
         placeInspector();
     });
