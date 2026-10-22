@@ -28,6 +28,9 @@
 #include "propertieswidget.h"
 #include "simuapi_apppath.h"
 #include "utils.h"
+#include "thememanager.h"
+
+#include <QMenuBar>
 
 MainWindow *MainWindow::m_pSelf = 0l;
 
@@ -63,8 +66,10 @@ MainWindow::MainWindow() :
         m_fontScale = dpiX / 96.0;
     }
     // qDebug()<<dpiX;
+    ThemeManager::self()->init(&m_settings);
     loadCircHelp();
     createWidgets();
+    createThemeMenu();
     readSettings();
 
     loadPlugins();
@@ -208,6 +213,23 @@ void MainWindow::createWidgets()
     m_Centralsplitter->setSizes(sizes);
 
     this->showMaximized();
+}
+
+void MainWindow::createThemeMenu()
+{
+    // Temporary: View > Dark mode (a top-bar "themeToggle" button will follow)
+    QMenu *viewMenu = menuBar()->addMenu(tr("&View"));
+    viewMenu->setObjectName("viewMenu");
+    QAction *darkAct = viewMenu->addAction(tr("Dark mode"));
+    darkAct->setObjectName("darkModeAction");
+    darkAct->setCheckable(true);
+    darkAct->setChecked(ThemeManager::self()->isDark());
+    connect(darkAct, &QAction::toggled, ThemeManager::self(),
+            &ThemeManager::setDark);
+    connect(ThemeManager::self(), &ThemeManager::themeChanged, darkAct,
+            [darkAct](bool dark) {
+                if (darkAct->isChecked() != dark) darkAct->setChecked(dark);
+            });
 }
 
 void MainWindow::loadCircHelp()

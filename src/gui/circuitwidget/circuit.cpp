@@ -18,8 +18,10 @@
  ***************************************************************************/
 
 #include "circuit.h"
+#include <cmath>
 #include "itemlibrary.h"
 #include "mainwindow.h"
+#include "thememanager.h"
 #include "circuitwidget.h"
 #include "propertieswidget.h"
 #include "subpackage.h"
@@ -50,6 +52,7 @@ Circuit::Circuit( qreal x, qreal y, qreal width, qreal height, QGraphicsView*  p
     Q_UNUSED( Circuit_properties );
     
     setObjectName( "Circuit" );
+    connect( ThemeManager::self(), &ThemeManager::themeChanged, this, [this](bool){ update(); } );
     setParent( parent );
     m_graphicView = parent;
     m_scenerect.setRect( x, y, width, height );
@@ -1560,32 +1563,25 @@ void Circuit::dropEvent( QGraphicsSceneDragDropEvent* event )
 
 void Circuit::drawBackground ( QPainter*  painter, const QRectF & rect )
 {
-    Q_UNUSED( rect );
-    /*painter->setBrush(QColor( 255, 255, 255 ) );
-    painter->drawRect( m_scenerect );
-    return;*/
-
-    painter->setBrush( QColor( 240, 240, 210 ) );
-    painter->drawRect( m_scenerect );
-    painter->setPen( QColor( 210, 210, 210 ) );
+    ThemeManager* tm = ThemeManager::self();
+    painter->fillRect( rect, tm->canvasBackground() );
 
     if( m_hideGrid ) return;
+    if( painter->transform().m11() < 0.4 ) return; // too dense when zoomed out
 
-    int startx = int(m_scenerect.x());///2;
-    int endx   = int(m_scenerect.width())/2;
-    int starty = int(m_scenerect.y());///2;
-    int endy   = int(m_scenerect.height())/2;
-
-    for( int i = 4; i<endx; i+=8 )
-    {
-        painter->drawLine( i, starty, i, endy );
-        painter->drawLine(-i, starty,-i, endy );
-    }
-    for( int i = 4; i<endy; i+=8 )
-    {
-        painter->drawLine( startx, i, endx, i);
-        painter->drawLine( startx,-i, endx,-i);
-    }
+    // Subtle dot grid (8px pitch, aligned to the original 4+8n grid lines)
+    QRectF r = rect.intersected( m_scenerect );
+    int x0 = int( std::floor( (r.left()-4)/8 ) )*8+4;
+    int y0 = int( std::floor( (r.top() -4)/8 ) )*8+4;
+    QPen pen( tm->gridDot() );
+    pen.setWidthF( 1.5 );
+    pen.setCapStyle( Qt::RoundCap );
+    pen.setCosmetic( true );
+    painter->setPen( pen );
+    QVector<QPointF> pts;
+    for( int x = x0; x <= r.right(); x += 8 )
+        for( int y = y0; y <= r.bottom(); y += 8 ) pts.append( QPointF( x, y ) );
+    painter->drawPoints( pts.constData(), pts.size() );
 }
 
 void Circuit::updatePin(ePin* epin, std::string newId )

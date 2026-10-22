@@ -103,6 +103,9 @@ QMAKE_EXTRA_TARGETS += runLrelease
 POST_TARGETDEPS     += runLrelease
 
 RESOURCES = ./src/application.qrc
+RESOURCES += ./resources/themes/themes.qrc
+HEADERS += ./src/gui/thememanager.h
+SOURCES += ./src/gui/thememanager.cpp
 
 win32 | linux {
     DESTDIR = $$TARGET_PREFIX/bin
