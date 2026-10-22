@@ -19,6 +19,7 @@
 
 #include "mcpserver.h"
 #include "mainwindow.h"
+#include "partart.h"
 
 #include "appiface.h"
 #include "circuit.h"
@@ -561,6 +562,15 @@ void MainWindow::createMenus()
     viewMenu->addAction(m_circuit->zoomResetAct);
     viewMenu->addSeparator();
     viewMenu->addAction(m_themeToggleAct);
+    QAction *realAct = viewMenu->addAction(materialIcon("widgets"),
+                                           tr("Realistic Parts"));
+    realAct->setObjectName("realisticPartsAction");
+    realAct->setToolTip(tr("Draw components as realistic parts instead of "
+                           "schematic symbols"));
+    realAct->setCheckable(true);
+    realAct->setChecked(PartArt::enabled());
+    connect(realAct, &QAction::toggled,
+            [](bool on) { PartArt::setEnabled(on); });
 
     QMenu *simMenu = m_mainMenu->addMenu(tr("&Simulation"));
     simMenu->addAction(m_circuit->powerCircAct);

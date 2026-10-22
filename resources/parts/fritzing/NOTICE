@@ -1,0 +1,24 @@
+Realistic part artwork - Fritzing parts, CC-BY-SA 3.0
+
+These SVGs are adapted from the Fritzing parts library
+(https://github.com/fritzing/fritzing-parts, commit 27535f2, svg/core/breadboard/),
+licensed under Creative Commons Attribution-ShareAlike 3.0 Unported
+(see LICENSE-CC-BY-SA-3.0.txt, https://creativecommons.org/licenses/by-sa/3.0/).
+Modifications: Inkscape filters removed, file renamed. These adaptations are
+distributed under the same CC-BY-SA 3.0 licence (they are artwork only; the
+SimulIDE source code keeps its own licence).
+
+File            Fritzing source                              Author (from .fzp)
+capacitor.svg   ceramic_capacitor_blue_leg.svg               Fritzing Team
+elcapacitor.svg electrolytic_capacitor_small_leg.svg         Mr.T / Fritzing
+diode.svg       diode.svg                                    Mr.T / Fritzing
+inductor.svg    inductor_leg.svg                             Mr.T / Fritzing
+bjt.svg         transistor_npn.svg                           Mr.T / Fritzing
+bjt_pnp.svg     transistor_pnp.svg                           Mr.T / Fritzing
+mosfet.svg      mosfet_n_channel.svg                         Mr.T / Fritzing
+voltreg.svg     voltage_regulator_vreg.svg                   Mr.T / Fritzing
+battery.svg     Battery_block_9V85_leg.svg                   Fritzing Team (www.fritzing.org)
+relay.svg       basic-relay-6p_1c569ac_002.svg               Fritzing Team (www.fritzing.org)
+lm555.svg       555timerbreadboard.svg                       Dirk van Oosterbosch
+audio_out.svg   loudspeaker.svg                              Lionel Michel
+ledbar.svg      sparkfun-led_led_bargaph_10_breadboard.svg   SparkFun / www.fritzing.org

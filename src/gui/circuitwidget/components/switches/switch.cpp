@@ -18,6 +18,7 @@
  ***************************************************************************/
 
 #include "switch.h"
+#include "partart.h"
 #include "itemlibrary.h"
 #include "simulator.h"
 #include "e-node.h"
@@ -72,6 +73,26 @@ void Switch::keyEvent( QString key, bool pressed )
 void Switch::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget )
 {
     Component::paint( p, option, widget );
+
+    if( artActive() )                                     // Realistic part art
+    {
+        if( m_closed )
+        {
+            p->save();
+            p->scale( -1, 1 );                            // Lever on the other side
+            paintArt( p );
+            p->restore();
+        }
+        else paintArt( p );
+        QRectF ar = PartArt::artRect( m_type );
+        p->save();
+        p->setRenderHint( QPainter::Antialiasing );
+        p->setPen( Qt::NoPen );
+        p->setBrush( m_closed ? QColor( 60, 220, 90 ) : QColor( 90, 90, 90 ) );
+        p->drawEllipse( QPointF( ar.right()+3, ar.top()+3 ), 1.4, 1.4 );
+        p->restore();
+        return;
+    }
     MechContact::paint( p, option, widget );
 }
 

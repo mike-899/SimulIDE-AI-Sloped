@@ -109,7 +109,10 @@ POST_TARGETDEPS     += runLrelease
 
 RESOURCES = ./src/application.qrc
 RESOURCES += ./resources/themes/themes.qrc
+RESOURCES += ./resources/parts/parts.qrc
 HEADERS += ./src/gui/thememanager.h
+HEADERS += ./src/gui/circuitwidget/partart.h
+SOURCES += ./src/gui/circuitwidget/partart.cpp
 SOURCES += ./src/gui/thememanager.cpp
 
 win32 | linux {

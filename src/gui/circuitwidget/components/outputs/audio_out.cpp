@@ -78,6 +78,7 @@ AudioOut::AudioOut( QObject* parent, QString type, QString id )
     int refreshPeriod = 10; // mS
     int sampleRate    = 40000; // samples/S
     
+    m_dataBuffer = 0l;                // Fix: deleted in destructor even without audio device
     m_deviceinfo = QAudioDeviceInfo::defaultOutputDevice(); 
     if( m_deviceinfo.isNull() ) 
     {
@@ -117,7 +118,7 @@ AudioOut::AudioOut( QObject* parent, QString type, QString id )
 
 AudioOut::~AudioOut()
 {
-    delete m_dataBuffer;
+    delete[] m_dataBuffer;
     //qDebug() << "AudioOut::~AudioOut deleting" << QString::fromStdString( m_elmId );
 }
 
@@ -217,6 +218,8 @@ QPainterPath AudioOut::shape() const
 void AudioOut::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget )
 {
     Component::paint( p, option, widget );
+
+    if( paintArt( p ) ) return;                          // Realistic part art
 
     //p->drawRect( -10.5, -12, 12, 24 );
     static const QPointF points[7] = {
