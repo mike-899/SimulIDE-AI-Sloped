@@ -17,6 +17,7 @@
  *                                                                         *
  ***************************************************************************/
 
+#include "mcpserver.h"
 #include "mainwindow.h"
 
 #include "appiface.h"
@@ -68,6 +69,7 @@ MainWindow::MainWindow() :
     readSettings();
 
     loadPlugins();
+    McpServer::startDefault(this); // MCP server (see docs/MCP.md)
 
     QString backPath = m_settings.value("backupPath").toString();
     if (!backPath.isEmpty()) {
