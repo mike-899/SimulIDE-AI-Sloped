@@ -23,6 +23,8 @@
 #include "appiface.h"
 #include "circuit.h"
 #include "circuitwidget.h"
+#include "component.h"
+#include "QPropertyEditorWidget.h"
 #include "componentselector.h"
 #include "editorwindow.h"
 #include "filewidget.h"
@@ -212,9 +214,6 @@ void MainWindow::createWidgets()
     m_components = new ComponentSelector(m_sidepanel);
     m_sidepanel->addTab(m_components, tr("Components"));
 
-    m_itemprop = new PropertiesWidget(this);
-    m_itemprop->setObjectName("propertiesPanel");
-    m_sidepanel->addTab(m_itemprop, tr("Properties"));
 
     m_ramTabWidget = new QWidget(this);
     m_ramTabWidget->setObjectName("ramTabWidget");
@@ -223,16 +222,18 @@ void MainWindow::createWidgets()
     m_ramTabWidgetLayout->setContentsMargins(0, 0, 0, 0);
     m_ramTabWidgetLayout->setObjectName("ramTabWidgetLayout");
     m_sidepanel->addTab(m_ramTabWidget, materialIcon("memory"), "");
-    m_sidepanel->setTabToolTip(2, tr("RamTable"));
+    m_sidepanel->setTabToolTip(1, tr("RamTable"));
 
     m_fileSystemTree = new FileWidget(this);
     m_fileSystemTree->setObjectName("fileExplorer");
     m_sidepanel->addTab(m_fileSystemTree, materialIcon("folder"), "");
-    m_sidepanel->setTabToolTip(3, tr("File explorer"));
+    m_sidepanel->setTabToolTip(2, tr("File explorer"));
 
     m_circuit = new CircuitWidget(this);
     m_circuit->setObjectName("circuit");
     m_Centralsplitter->addWidget(m_circuit);
+
+    createInspector();
 
     createCodePanel();
     m_Centralsplitter->addWidget(m_codePanel);
@@ -685,10 +686,128 @@ void MainWindow::toggleTheme()
     emit themeToggleRequested();
 }
 
+void MainWindow::createInspector()
+{
+    // Floating, Tinkercad-like property inspector over the circuit canvas
+    QWidget *view = m_circuit->view();
+    m_inspector   = new QFrame(view);
+    m_inspector->setObjectName("propertyInspector");
+    m_inspector->setFrameShape(QFrame::StyledPanel);
+    m_inspector->setAutoFillBackground(true);
+
+    QVBoxLayout *layout = new QVBoxLayout(m_inspector);
+    layout->setContentsMargins(6, 4, 6, 6);
+    layout->setSpacing(4);
+
+    QHBoxLayout *header = new QHBoxLayout();
+    header->setSpacing(4);
+    m_inspectorTitle = new QLabel(m_inspector);
+    m_inspectorTitle->setObjectName("propertyInspectorTitle");
+    QFont tf = m_inspectorTitle->font();
+    tf.setBold(true);
+    m_inspectorTitle->setFont(tf);
+    header->addWidget(m_inspectorTitle, 1);
+
+    m_inspectorCollapse = new QToolButton(m_inspector);
+    m_inspectorCollapse->setObjectName("propertyInspectorCollapse");
+    m_inspectorCollapse->setArrowType(Qt::UpArrow);
+    m_inspectorCollapse->setAutoRaise(true);
+    m_inspectorCollapse->setCheckable(true);
+    m_inspectorCollapse->setToolTip(tr("Collapse"));
+    header->addWidget(m_inspectorCollapse);
+    layout->addLayout(header);
+
+    m_itemprop = new PropertiesWidget(m_inspector);
+    m_itemprop->setObjectName("propertiesPanel");
+    layout->addWidget(m_itemprop, 1);
+
+    connect(m_inspectorCollapse, &QToolButton::toggled, [this](bool c) {
+        m_itemprop->setVisible(!c);
+        m_inspectorCollapse->setArrowType(c ? Qt::DownArrow : Qt::UpArrow);
+        m_inspectorCollapse->setToolTip(c ? tr("Expand") : tr("Collapse"));
+        placeInspector();
+    });
+
+    view->installEventFilter(this);
+    m_inspector->hide();
+
+    m_inspectorTimer = new QTimer(this);
+    connect(m_inspectorTimer, &QTimer::timeout, this,
+            &MainWindow::updateInspector);
+    m_inspectorTimer->start(150);
+}
+
+void MainWindow::placeInspector()
+{
+    QWidget *view = m_circuit->view();
+    int margin    = 12;
+    int w         = qMin(300, view->width() - 2 * margin);
+    int h         = m_itemprop->isVisible()
+                        ? qMin(420, view->height() - 2 * margin)
+                        : m_inspector->layout()->sizeHint().height();
+    if (w < 50 || h < 20)
+        return;
+    m_inspector->setGeometry(view->width() - w - margin, margin, w, h);
+    m_inspector->raise();
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    if (m_circuit && obj == m_circuit->view() &&
+        event->type() == QEvent::Resize)
+        placeInspector();
+    return QMainWindow::eventFilter(obj, event);
+}
+
+void MainWindow::updateInspector()
+{
+    Circuit *circ  = Circuit::self();
+    Component *sel = 0l;
+    if (circ) {
+        int count = 0;
+        for (QGraphicsItem *item : circ->selectedItems()) {
+            Component *comp = dynamic_cast<Component *>(item);
+            if (!comp)
+                continue;
+            sel = comp;
+            if (++count > 1)
+                break;
+        }
+        if (count != 1)
+            sel = 0l;
+    }
+    if (!sel) {
+        if (m_inspector->isVisible())
+            m_inspector->hide();
+        m_inspectedComp = 0l;
+        return;
+    }
+    if (m_inspectedComp.data() != sel) {
+        m_inspectedComp = sel;
+        QPropertyEditorWidget::self()->setObject(sel);
+        m_inspectorTitle->setText(sel->itemType() + "  " + sel->itemID());
+    }
+    if (!m_inspector->isVisible()) {
+        placeInspector();
+        m_inspector->show();
+        m_inspector->raise();
+    }
+}
+
 void MainWindow::showProperties()
 {
-    setComponentPanelVisible(true);
-    m_sidepanel->setCurrentWidget(m_itemprop);
+    // Properties now live in the floating inspector over the canvas
+    m_inspectorCollapse->setChecked(false);
+    updateInspector();
+    placeInspector();
+}
+
+void MainWindow::openSerialMonitor(int uart)
+{
+    setCodePanelVisible(true);
+    if (uart > 0)
+        m_serialMonitor->setUart(uart);
+    setSerialMonitorExpanded(true);
 }
 
 void MainWindow::showRamTable()

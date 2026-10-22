@@ -24,6 +24,7 @@
 #include "mcucomponent.h"
 #include "baseprocessor.h"
 #include "utils.h"
+#include "mainwindow.h"
 
 static const char* SerialTerm_properties[] = {
     QT_TRANSLATE_NOOP("App::Property","Mcu Uart")
@@ -47,40 +48,38 @@ LibraryItem* SerialTerm::libraryItem()
 SerialTerm::SerialTerm( QObject* parent, QString type, QString id )
           : Component( parent, type, id )
           , eElement( (id+"-eElement").toStdString() )
-          , m_serialWidget( CircuitWidget::self(), this )
+          , m_uart( 1 )
+          , m_posX( 0 ), m_posY( 0 ), m_sizeX( 0 ), m_sizeY( 0 )
 {
     Q_UNUSED( SerialTerm_properties );
 
     m_area = QRect( 0, 0, 0, 0 );
 
-    m_serialWidget.show();
+    // No floating window anymore: use the integrated Serial Monitor
+    // docked under the code editor.
+    QTimer::singleShot( 0, [](){ MainWindow::self()->openSerialMonitor(); } );
 
+    if( McuComponent::self() )
     connect( McuComponent::self(), SIGNAL( closeSerials()),
                              this, SLOT(   slotClose()) );
 
-    Simulator::self()->addToUpdateList( this );
 }
 
 SerialTerm::~SerialTerm()
 {
-    Simulator::self()->remFromUpdateList( this );
 }
 
 void SerialTerm::updateStep()
 {
-    m_serialWidget.step();
-    m_serialWidget.update();
+
 }
 
 void SerialTerm::setUart( int uart )
 {
-    if( uart == m_serialWidget.uart() ) return;
-
     if      ( uart<1 ) uart = 1;
     else if ( uart>6 ) uart = 6;
-
-    m_serialWidget.uartChanged( uart );
-    m_serialWidget.update();
+    m_uart = uart;
+    MainWindow::self()->openSerialMonitor( uart );
 }
 
 void SerialTerm::slotClose()

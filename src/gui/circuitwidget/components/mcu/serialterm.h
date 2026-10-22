@@ -22,7 +22,6 @@
 
 #include "component.h"
 #include "e-element.h"
-#include "terminalwidget.h"
 
 class LibraryItem;
 
@@ -45,19 +44,17 @@ class MAINMODULE_EXPORT SerialTerm : public Component, public eElement
 
         void updateStep();
 
-        int uart() { return m_serialWidget.uart(); }
+        int uart() { return m_uart; }
 
-        int posX() { return m_serialWidget.x(); }
-        void setPosX( int x ) { m_serialWidget.move( x, m_serialWidget.y() );}
-
-        int posY() { return m_serialWidget.y(); }
-        void setPosY( int y ) { m_serialWidget.move( m_serialWidget.x(), y );}
-
-        int sizeX() { return m_serialWidget.size().width(); }
-        void resizeX( int x ) {m_serialWidget.resize( QSize( x, m_serialWidget.size().height()) ); }
-
-        int sizeY() { return m_serialWidget.size().height(); }
-        void resizeY( int y ) {m_serialWidget.resize( QSize( m_serialWidget.size().width(), y) ); }
+        // Legacy window geometry properties (kept for file compatibility)
+        int posX() { return m_posX; }
+        void setPosX( int x ) { m_posX = x; }
+        int posY() { return m_posY; }
+        void setPosY( int y ) { m_posY = y; }
+        int sizeX() { return m_sizeX; }
+        void resizeX( int x ) { m_sizeX = x; }
+        int sizeY() { return m_sizeY; }
+        void resizeY( int y ) { m_sizeY = y; }
 
         virtual void paint( QPainter* p, const QStyleOptionGraphicsItem* option, QWidget* widget );
 
@@ -66,7 +63,8 @@ class MAINMODULE_EXPORT SerialTerm : public Component, public eElement
         void setUart( int uart );
 
     private:
-        TerminalWidget m_serialWidget;
+        int m_uart;
+        int m_posX, m_posY, m_sizeX, m_sizeY;
 };
 
 #endif

@@ -326,9 +326,8 @@ void McuComponent::slotOpenSerial()
 
 void McuComponent::slotOpenTerm()
 {
-    Component* ser = Circuit::self()->createItem( "SerialTerm", "SerialTerm-"+Circuit::self()->newSceneId());
-    ser->setPos( pos());
-    Circuit::self()->addItem( ser );
+    // Use the integrated Serial Monitor docked under the code editor
+    MainWindow::self()->openSerialMonitor();
 }
 
 void McuComponent::slotLoad()

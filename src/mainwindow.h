@@ -72,6 +72,9 @@ class MAINMODULE_EXPORT MainWindow : public QMainWindow
     // Bring the Properties tab of the right side panel to front
     void showProperties();
 
+    // Open the code panel with the integrated serial monitor expanded
+    void openSerialMonitor(int uart = 0);
+
     // Top bar theme toggle (placeholder, see toggleTheme())
     QAction *themeToggleAction()
     {
@@ -103,6 +106,7 @@ class MAINMODULE_EXPORT MainWindow : public QMainWindow
 
   protected:
     void closeEvent(QCloseEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event);
 
   private:
     static MainWindow *m_pSelf;
@@ -116,6 +120,9 @@ class MAINMODULE_EXPORT MainWindow : public QMainWindow
     void createEditToolBar();
     void createCodePanel();
     void createMenus();
+    void createInspector();
+    void placeInspector();
+    void updateInspector();
     void writeSettings();
     void applyStyle();
 
@@ -158,6 +165,12 @@ class MAINMODULE_EXPORT MainWindow : public QMainWindow
     QWidget *m_serialPanel;
     QToolButton *m_serialToggle;
     SerialMonitor *m_serialMonitor;
+
+    QFrame *m_inspector;
+    QLabel *m_inspectorTitle;
+    QToolButton *m_inspectorCollapse;
+    QTimer *m_inspectorTimer;
+    QPointer<QObject> m_inspectedComp;
 
     bool m_sideWasVisible; // Side panel state before the code panel opened
 };
