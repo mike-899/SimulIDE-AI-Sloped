@@ -18,9 +18,10 @@
  ***************************************************************************/
 
 #include "servo.h"
+
+#include "circuit.h"
 #include "partart.h"
 #include "simulator.h"
-#include "circuit.h"
 
 static const char* Servo_properties[] = {
     QT_TRANSLATE_NOOP("App::Property","Speed")
@@ -193,24 +194,24 @@ void Servo::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget 
 {
     Component::paint( p, option, widget );
 
-    if( artActive() )                                     // Realistic part art
+    if (artActive()) // Realistic part art
     {
-        QRectF body( -(m_width/2)*8-8, -(m_height/2)*8, m_width*8+8, m_height*8 );
+        QRectF body(-(m_width / 2) * 8 - 8, -(m_height / 2) * 8,
+                    m_width * 8 + 8, m_height * 8);
         p->save();
-        p->setRenderHint( QPainter::Antialiasing );
-        QRectF fr = PartArt::paintRes( p, ":/parts/mit/servo.svg", body );
-        double s = fr.width()/170.08;                     // svg viewBox width
-        QPointF hub( fr.x()+91.467*s, fr.y()+59.773*s );
-        p->translate( hub );
-        p->rotate( m_pos );
-        p->translate( -hub );
-        PartArt::paintRes( p, ":/parts/mit/servo_horn.svg", body );
+        p->setRenderHint(QPainter::Antialiasing);
+        QRectF fr = PartArt::paintRes(p, ":/parts/mit/servo.svg", body);
+        double s  = fr.width() / 170.08; // svg viewBox width
+        QPointF hub(fr.x() + 91.467 * s, fr.y() + 59.773 * s);
+        p->translate(hub);
+        p->rotate(m_pos);
+        p->translate(-hub);
+        PartArt::paintRes(p, ":/parts/mit/servo_horn.svg", body);
         p->restore();
-        if( isSelected() )
-        {
-            p->setPen( QPen( QColor( 60, 130, 230 ), 1, Qt::DashLine ) );
-            p->setBrush( QColor( 60, 130, 230, 50 ) );
-            p->drawRoundedRect( fr, 2, 2 );
+        if (isSelected()) {
+            p->setPen(QPen(QColor(60, 130, 230), 1, Qt::DashLine));
+            p->setBrush(QColor(60, 130, 230, 50));
+            p->drawRoundedRect(fr, 2, 2);
         }
         return;
     }

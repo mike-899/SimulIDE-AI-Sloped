@@ -17,23 +17,23 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "mcpserver.h"
 #include "mainwindow.h"
-#include "partart.h"
 
+#include "QPropertyEditorWidget.h"
 #include "appiface.h"
 #include "circuit.h"
 #include "circuitwidget.h"
 #include "component.h"
-#include "QPropertyEditorWidget.h"
 #include "componentselector.h"
 #include "editorwindow.h"
 #include "filewidget.h"
+#include "mcpserver.h"
+#include "partart.h"
 #include "propertieswidget.h"
 #include "serialmonitor.h"
 #include "simuapi_apppath.h"
-#include "utils.h"
 #include "thememanager.h"
+#include "utils.h"
 
 #include <QMenuBar>
 
@@ -138,8 +138,8 @@ void MainWindow::writeSettings()
     m_settings.setValue("windowState", saveState());
     m_settings.setValue("mainSplitter/state", m_Centralsplitter->saveState());
     m_settings.setValue("codeSplitter/state", m_codeSplitter->saveState());
-    bool sideVisible = m_codePanel->isHidden() ? !m_sidepanel->isHidden()
-                                               : m_sideWasVisible;
+    bool sideVisible =
+        m_codePanel->isHidden() ? !m_sidepanel->isHidden() : m_sideWasVisible;
     m_settings.setValue("componentPanel/visible", sideVisible);
     m_settings.setValue("codePanel/visible", !m_codePanel->isHidden());
     m_settings.setValue("serialMonitor/expanded", m_serialToggle->isChecked());
@@ -219,7 +219,6 @@ void MainWindow::createWidgets()
 
     m_components = new ComponentSelector(m_sidepanel);
     m_sidepanel->addTab(m_components, tr("Components"));
-
 
     m_ramTabWidget = new QWidget(this);
     m_ramTabWidget->setObjectName("ramTabWidget");
@@ -325,8 +324,7 @@ void MainWindow::createTopBar()
     projFont.setPixelSize(int(14 * m_fontScale));
     m_projectLabel->setFont(projFont);
     m_projectLabel->setMinimumWidth(80);
-    m_projectLabel->setSizePolicy(QSizePolicy::Ignored,
-                                  QSizePolicy::Preferred);
+    m_projectLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
     layout->addWidget(m_projectLabel, 1);
 
     // Theme toggle (placeholder)
@@ -499,9 +497,10 @@ void MainWindow::createCodePanel()
 
 void MainWindow::createMenus()
 {
-    m_themeToggleAct = new QAction(
-        materialIcon(ThemeManager::self()->isDark() ? "light_mode" : "dark_mode"),
-        tr("Toggle Theme"), this);
+    m_themeToggleAct =
+        new QAction(materialIcon(ThemeManager::self()->isDark() ? "light_mode"
+                                                                : "dark_mode"),
+                    tr("Toggle Theme"), this);
     connect(ThemeManager::self(), &ThemeManager::themeChanged, this,
             [this](bool dark) {
                 m_themeToggleAct->setIcon(
@@ -511,8 +510,8 @@ void MainWindow::createMenus()
     m_themeToggleAct->setToolTip(tr("Switch light / dark theme"));
     connect(m_themeToggleAct, SIGNAL(triggered()), this, SLOT(toggleTheme()));
 
-    m_componentPanelAct = new QAction(materialIcon("widgets"),
-                                      tr("Components Panel"), this);
+    m_componentPanelAct =
+        new QAction(materialIcon("widgets"), tr("Components Panel"), this);
     m_componentPanelAct->setCheckable(true);
     m_componentPanelAct->setChecked(true);
     connect(m_componentPanelAct, SIGNAL(toggled(bool)), this,
@@ -571,8 +570,8 @@ void MainWindow::createMenus()
     viewMenu->addAction(m_circuit->zoomResetAct);
     viewMenu->addSeparator();
     viewMenu->addAction(m_themeToggleAct);
-    QAction *realAct = viewMenu->addAction(materialIcon("widgets"),
-                                           tr("Realistic Parts"));
+    QAction *realAct =
+        viewMenu->addAction(materialIcon("widgets"), tr("Realistic Parts"));
     realAct->setObjectName("realisticPartsAction");
     realAct->setToolTip(tr("Draw components as realistic parts instead of "
                            "schematic symbols"));
@@ -746,7 +745,8 @@ void MainWindow::createInspector()
 
     connect(m_inspectorCollapse, &QToolButton::toggled, [this](bool c) {
         m_itemprop->setVisible(!c);
-        m_inspectorCollapse->setIcon(materialIcon(c ? "expand_more" : "expand_less"));
+        m_inspectorCollapse->setIcon(
+            materialIcon(c ? "expand_more" : "expand_less"));
         m_inspectorCollapse->setToolTip(c ? tr("Expand") : tr("Collapse"));
         placeInspector();
     });

@@ -20,10 +20,10 @@
 //#include <QtGui>
 
 #include "editorwindow.h"
-#include "thememanager.h"
 
 #include "filebrowser.h"
 #include "mainwindow.h"
+#include "thememanager.h"
 #include "utils.h"
 
 EditorWindow *EditorWindow::m_pSelf = 0l;
@@ -336,15 +336,18 @@ void EditorWindow::createWidgets()
 
 void EditorWindow::createActions()
 {
-    newAct = new QAction(ThemeManager::icon("note_add"), tr("&New\tCtrl+N"), this);
+    newAct =
+        new QAction(ThemeManager::icon("note_add"), tr("&New\tCtrl+N"), this);
     newAct->setStatusTip(tr("Create a new file"));
     connect(newAct, SIGNAL(triggered()), this, SLOT(newFile()));
 
-    openAct = new QAction(ThemeManager::icon("folder_open"), tr("&Open...\tCtrl+O"), this);
+    openAct = new QAction(ThemeManager::icon("folder_open"),
+                          tr("&Open...\tCtrl+O"), this);
     openAct->setStatusTip(tr("Open an existing file"));
     connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
 
-    saveAct = new QAction(ThemeManager::icon("save"), tr("&Save\tCtrl+S"), this);
+    saveAct =
+        new QAction(ThemeManager::icon("save"), tr("&Save\tCtrl+S"), this);
     saveAct->setStatusTip(tr("Save the document to disk"));
     saveAct->setEnabled(false);
     connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
@@ -359,19 +362,22 @@ void EditorWindow::createActions()
     exitAct->setStatusTip(tr("Exit the application"));
     connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
 
-    cutAct = new QAction(ThemeManager::icon("content_cut"), tr("Cu&t\tCtrl+X"), this);
+    cutAct = new QAction(ThemeManager::icon("content_cut"), tr("Cu&t\tCtrl+X"),
+                         this);
     cutAct->setStatusTip(
         tr("Cut the current selection's contents to the clipboard"));
     cutAct->setEnabled(false);
     connect(cutAct, SIGNAL(triggered()), this, SLOT(cut()));
 
-    copyAct = new QAction(ThemeManager::icon("content_copy"), tr("&Copy\tCtrl+C"), this);
+    copyAct = new QAction(ThemeManager::icon("content_copy"),
+                          tr("&Copy\tCtrl+C"), this);
     copyAct->setStatusTip(
         tr("Copy the current selection's contents to the clipboard"));
     copyAct->setEnabled(false);
     connect(copyAct, SIGNAL(triggered()), this, SLOT(copy()));
 
-    pasteAct = new QAction(ThemeManager::icon("content_paste"), tr("&Paste\tCtrl+V"), this);
+    pasteAct = new QAction(ThemeManager::icon("content_paste"),
+                           tr("&Paste\tCtrl+V"), this);
     pasteAct->setStatusTip(
         tr("Paste the clipboard's contents into the current selection"));
     pasteAct->setEnabled(false);
@@ -382,12 +388,14 @@ void EditorWindow::createActions()
     undoAct->setEnabled(false);
     connect(undoAct, SIGNAL(triggered()), this, SLOT(undo()));
 
-    redoAct = new QAction(ThemeManager::icon("redo"), tr("Redo\tCtrl+Shift+Z"), this);
+    redoAct =
+        new QAction(ThemeManager::icon("redo"), tr("Redo\tCtrl+Shift+Z"), this);
     redoAct->setStatusTip(tr("Redo the last action"));
     redoAct->setEnabled(false);
     connect(redoAct, SIGNAL(triggered()), this, SLOT(redo()));
 
-    runAct = new QAction(ThemeManager::icon("skip_next"), tr("Run To Breakpoint"), this);
+    runAct = new QAction(ThemeManager::icon("skip_next"),
+                         tr("Run To Breakpoint"), this);
     runAct->setStatusTip(tr("Run to next breakpoint"));
     runAct->setEnabled(false);
     connect(runAct, SIGNAL(triggered()), this, SLOT(run()));
@@ -397,7 +405,8 @@ void EditorWindow::createActions()
     stepAct->setEnabled(false);
     connect(stepAct, SIGNAL(triggered()), this, SLOT(step()));
 
-    stepOverAct = new QAction(ThemeManager::icon("step_over"), tr("StepOver"), this);
+    stepOverAct =
+        new QAction(ThemeManager::icon("step_over"), tr("StepOver"), this);
     stepOverAct->setStatusTip(tr("Step Over"));
     stepOverAct->setEnabled(false);
     stepOverAct->setVisible(false);
@@ -408,12 +417,14 @@ void EditorWindow::createActions()
     pauseAct->setEnabled(false);
     connect(pauseAct, SIGNAL(triggered()), this, SLOT(pause()));
 
-    resetAct = new QAction(ThemeManager::icon("restart_alt"), tr("Reset"), this);
+    resetAct =
+        new QAction(ThemeManager::icon("restart_alt"), tr("Reset"), this);
     resetAct->setStatusTip(tr("Reset debugger"));
     resetAct->setEnabled(false);
     connect(resetAct, SIGNAL(triggered()), this, SLOT(reset()));
 
-    stopAct = new QAction(ThemeManager::icon("stop"), tr("Stop Debugger"), this);
+    stopAct =
+        new QAction(ThemeManager::icon("stop"), tr("Stop Debugger"), this);
     stopAct->setStatusTip(tr("Stop debugger"));
     stopAct->setEnabled(false);
     connect(stopAct, SIGNAL(triggered()), this, SLOT(stop()));
@@ -428,7 +439,8 @@ void EditorWindow::createActions()
     loadAct->setEnabled(false);
     connect(loadAct, SIGNAL(triggered()), this, SLOT(upload()));
 
-    findQtAct = new QAction(ThemeManager::icon("find_replace"), tr("Find Replace"), this);
+    findQtAct = new QAction(ThemeManager::icon("find_replace"),
+                            tr("Find Replace"), this);
     findQtAct->setStatusTip(tr("Find Replace"));
     findQtAct->setEnabled(false);
     connect(findQtAct, SIGNAL(triggered()), this, SLOT(findReplaceDialog()));

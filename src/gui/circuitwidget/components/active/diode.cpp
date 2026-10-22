@@ -66,7 +66,8 @@ void Diode::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget 
 {
     Component::paint( p, option, widget );
 
-    if( paintArt( p ) ) return;                          // Realistic part art
+    if (paintArt(p))
+        return; // Realistic part art
 
     p->setBrush( Qt::black );
 

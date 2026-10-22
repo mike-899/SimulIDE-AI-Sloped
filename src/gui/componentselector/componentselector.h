@@ -32,26 +32,26 @@ class MAINMODULE_EXPORT ComponentCard : public QFrame
 {
     Q_OBJECT
 
-    public:
-        ComponentCard( QWidget* parent,
-                       const QString &name,
-                       const QString &info,
-                       const QIcon   &icon,
-                       const QString &type,
-                       const QString &dragId );
+  public:
+    ComponentCard(QWidget *parent, const QString &name, const QString &info,
+                  const QIcon &icon, const QString &type,
+                  const QString &dragId);
 
-        QString name() const { return m_name; }
+    QString name() const
+    {
+        return m_name;
+    }
 
-    protected:
-        void mousePressEvent( QMouseEvent* event );
-        void mouseMoveEvent( QMouseEvent* event );
-        void mouseReleaseEvent( QMouseEvent* event );
+  protected:
+    void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
 
-    private:
-        QString m_name;
-        QString m_type;
-        QString m_dragId;
-        QPoint  m_pressPos;
+  private:
+    QString m_name;
+    QString m_type;
+    QString m_dragId;
+    QPoint m_pressPos;
 };
 
 // Right-side component panel (Tinkercad style):
@@ -66,75 +66,82 @@ class MAINMODULE_EXPORT ComponentSelector : public QWidget
 {
     Q_OBJECT
 
-    public:
-        ComponentSelector( QWidget* parent );
-        ~ComponentSelector();
+  public:
+    ComponentSelector(QWidget *parent);
+    ~ComponentSelector();
 
- static ComponentSelector* self() { return m_pSelf; }
+    static ComponentSelector *self()
+    {
+        return m_pSelf;
+    }
 
-        void addLibraryItem( LibraryItem* libItem );
+    void addLibraryItem(LibraryItem *libItem);
 
-        void LoadCompSetAt( QDir compSetDir );
-        void loadXml( const QString &setFile );
+    void LoadCompSetAt(QDir compSetDir);
+    void loadXml(const QString &setFile);
 
-        QString getXmlFile( QString compName );
+    QString getXmlFile(QString compName);
 
-        // Access to the underlying item model (used by CompPluginDialog)
-        QList<QTreeWidgetItem*> findItems( const QString &text, Qt::MatchFlags flags ) const;
-        QTreeWidget* model() { return m_tree; }
+    // Access to the underlying item model (used by CompPluginDialog)
+    QList<QTreeWidgetItem *> findItems(const QString &text,
+                                       Qt::MatchFlags flags) const;
+    QTreeWidget *model()
+    {
+        return m_tree;
+    }
 
-        void writeSettings();
+    void writeSettings();
 
-    public slots:
-        void refresh();
-        void slotManageComponents();
+  public slots:
+    void refresh();
+    void slotManageComponents();
 
-    private slots:
-        void slotCategoryChanged( int index );
-        void slotSearchChanged( const QString &text );
-        void slotContextMenu( const QPoint& );
-        void doRefresh();
+  private slots:
+    void slotCategoryChanged(int index);
+    void slotSearchChanged(const QString &text);
+    void slotContextMenu(const QPoint &);
+    void doRefresh();
 
-    private:
- static ComponentSelector* m_pSelf;
+  private:
+    static ComponentSelector *m_pSelf;
 
-        void createWidgets();
-        void addItem( LibraryItem* libItem );
-        void addItem( const QString &caption,
-                      const QString &category,
-                      const QString &icon,
-                      const QString &type );
+    void createWidgets();
+    void addItem(LibraryItem *libItem);
+    void addItem(const QString &caption, const QString &category,
+                 const QString &icon, const QString &type);
 
-        void LoadLibraryItems();
+    void LoadLibraryItems();
 
-        void updateCategoryBox();
-        void clearGrid();
-        void addSection( const QString &title );
-        void addCard( QTreeWidgetItem* item );
-        void addCategoryContent( QTreeWidgetItem* cat, const QString &title, bool showTitle );
-        void addSearchResults( QTreeWidgetItem* parent, const QString &text, const QString &title );
-        bool isEffectivelyHidden( QTreeWidgetItem* item ) const;
+    void updateCategoryBox();
+    void clearGrid();
+    void addSection(const QString &title);
+    void addCard(QTreeWidgetItem *item);
+    void addCategoryContent(QTreeWidgetItem *cat, const QString &title,
+                            bool showTitle);
+    void addSearchResults(QTreeWidgetItem *parent, const QString &text,
+                          const QString &title);
+    bool isEffectivelyHidden(QTreeWidgetItem *item) const;
 
-        QStringList m_compSetUnique;
-        QStringList m_categories;
-        QHash<QString, QString> m_xmlFileList;
+    QStringList m_compSetUnique;
+    QStringList m_categories;
+    QHash<QString, QString> m_xmlFileList;
 
-        QTreeWidget*  m_tree;          // Hidden data model
-        QComboBox*    m_categoryBox;
-        QLineEdit*    m_searchEdit;
-        QToolButton*  m_manageButton;
-        QScrollArea*  m_scrollArea;
-        QWidget*      m_gridHost;
-        QGridLayout*  m_gridLayout;
+    QTreeWidget *m_tree; // Hidden data model
+    QComboBox *m_categoryBox;
+    QLineEdit *m_searchEdit;
+    QToolButton *m_manageButton;
+    QScrollArea *m_scrollArea;
+    QWidget *m_gridHost;
+    QGridLayout *m_gridLayout;
 
-        int  m_columns;
-        int  m_row;
-        int  m_col;
-        bool m_refreshPending;
+    int m_columns;
+    int m_row;
+    int m_col;
+    bool m_refreshPending;
 
-        CompPluginDialog m_pluginsdDialog;
+    CompPluginDialog m_pluginsdDialog;
 
-        ItemLibrary m_itemLibrary;
+    ItemLibrary m_itemLibrary;
 };
 
 #endif

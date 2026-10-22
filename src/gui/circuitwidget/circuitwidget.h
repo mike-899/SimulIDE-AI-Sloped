@@ -39,50 +39,56 @@ class MAINMODULE_EXPORT CircuitWidget : public QWidget
  static CircuitWidget* self() { return m_pSelf; }
 
         void clear();
-        
+
         void createActions();
-        
+
         void setRate( int rate );
         void powerCircOn();
         void powerCircOff();
         void powerCircDebug( bool run );
 
-        QLabel* rateLabel() { return m_rateLabel; }
-        CircuitView* view() { return &m_circView; }
+        QLabel *rateLabel()
+        {
+            return m_rateLabel;
+        }
+        CircuitView *view()
+        {
+            return &m_circView;
+        }
 
         // Simulation state as shown in the UI: "Off", "On", "Debug", "Paused"
         QString simState();
 
         // Actions, placed in the main window top bar / toolbar / menu
-        QAction* newCircAct;
-        QAction* openCircAct;
-        QAction* saveCircAct;
-        QAction* saveCircAsAct;
-        QAction* powerCircAct;
-        QAction* pauseSimAct;
-        QAction* infoAct;
-        QAction* aboutAct;
-        QAction* aboutQtAct;
+        QAction *newCircAct;
+        QAction *openCircAct;
+        QAction *saveCircAct;
+        QAction *saveCircAsAct;
+        QAction *powerCircAct;
+        QAction *pauseSimAct;
+        QAction *infoAct;
+        QAction *aboutAct;
+        QAction *aboutQtAct;
 
-        QAction* copyAct;
-        QAction* pasteAct;
-        QAction* deleteAct;
-        QAction* undoAct;
-        QAction* redoAct;
-        QAction* rotateCWAct;
-        QAction* rotateCCWAct;
-        QAction* hFlipAct;
-        QAction* vFlipAct;
-        QAction* zoomInAct;
-        QAction* zoomOutAct;
-        QAction* zoomFitAct;
-        QAction* zoomResetAct;
-        QAction* importCircAct;
-        QAction* saveImageAct;
-        QAction* createSubcircAct;
-        QAction* bomAct;
-        
-    public slots:
+        QAction *copyAct;
+        QAction *pasteAct;
+        QAction *deleteAct;
+        QAction *undoAct;
+        QAction *redoAct;
+        QAction *rotateCWAct;
+        QAction *rotateCCWAct;
+        QAction *hFlipAct;
+        QAction *vFlipAct;
+        QAction *zoomInAct;
+        QAction *zoomOutAct;
+        QAction *zoomFitAct;
+        QAction *zoomResetAct;
+        QAction *importCircAct;
+        QAction *saveImageAct;
+        QAction *createSubcircAct;
+        QAction *bomAct;
+
+      public slots:
         bool newCircuit();
         void openCirc();
         void loadCirc( QString path );
@@ -107,24 +113,23 @@ class MAINMODULE_EXPORT CircuitWidget : public QWidget
         void createSubcircuit();
         void bom();
 
-    signals:
+      signals:
         void dataAvailable( int uart, const QByteArray &data );
-        void simStateChanged( const QString &state );
-        
-    private:
+        void simStateChanged(const QString &state);
 
- static CircuitWidget*  m_pSelf;
+      private:
+        static CircuitWidget *m_pSelf;
 
-        QList<Component*> selectedComponents();
+        QList<Component *> selectedComponents();
 
         QVBoxLayout    m_verticalLayout;
         QHBoxLayout    m_horizontLayout;
         CircuitView    m_circView;
-        
+
         PlotterWidget     m_plotter;
-        
+
         QLabel*  m_rateLabel;
-        
+
         QString m_curCirc;
         QString m_lastCircDir;
 };

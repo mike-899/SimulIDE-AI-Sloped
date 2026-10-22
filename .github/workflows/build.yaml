@@ -125,14 +125,18 @@ jobs:
 
       - name: Build
         run: |
+          export PATH="/mingw64/qt5/bin:$PATH"
+          QMAKE=$(command -v qmake-qt5 || command -v qmake)
+          echo "Using $QMAKE"
           mkdir build
           cd build
-          qmake ..
+          "$QMAKE" ..
           make -j"$(nproc)"
 
       - name: Assemble distribution
         run: |
           set -e
+          export PATH="/mingw64/qt5/bin:$PATH"
           OUT=$(ls -d build/release/SimulIDE_*/ | head -n1)
           OUT=${OUT%/}
           rm -rf dist-root && mkdir -p dist-root/SimulIDE dist

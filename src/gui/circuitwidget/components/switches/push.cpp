@@ -18,10 +18,10 @@
  ***************************************************************************/
 
 #include "push.h"
+
+#include "itemlibrary.h"
 #include "partart.h"
 #include "pin.h"
-#include "itemlibrary.h"
-
 
 Component* Push::construct( QObject* parent, QString type, QString id )
 { return new Push( parent, type, id ); }
@@ -53,29 +53,29 @@ void Push::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *
 {
     Component::paint( p, option, widget );
 
-    if( paintArt( p ) )                                   // Realistic part art
+    if (paintArt(p)) // Realistic part art
     {
-        QRectF ar = PartArt::artRect( m_type );
+        QRectF ar = PartArt::artRect(m_type);
         QPointF c = ar.center();
-        double  r = ar.height()*0.30;
+        double r  = ar.height() * 0.30;
         p->save();
-        p->setRenderHint( QPainter::Antialiasing );
-        p->setPen( Qt::NoPen );
-        if( m_closed )                                    // Pressed: darker, sunk cap
+        p->setRenderHint(QPainter::Antialiasing);
+        p->setPen(Qt::NoPen);
+        if (m_closed) // Pressed: darker, sunk cap
         {
-            QRadialGradient g( c, r );
-            g.setColorAt( 0.0, QColor( 0, 0, 0, 40 ) );
-            g.setColorAt( 0.8, QColor( 0, 0, 0, 90 ) );
-            g.setColorAt( 1.0, QColor( 0, 0, 0, 150 ) );
-            p->setBrush( g );
-            p->drawEllipse( c, r, r );
+            QRadialGradient g(c, r);
+            g.setColorAt(0.0, QColor(0, 0, 0, 40));
+            g.setColorAt(0.8, QColor(0, 0, 0, 90));
+            g.setColorAt(1.0, QColor(0, 0, 0, 150));
+            p->setBrush(g);
+            p->drawEllipse(c, r, r);
         }
-        p->setBrush( m_closed ? QColor( 60, 220, 90 ) : QColor( 90, 90, 90 ) );
-        p->drawEllipse( QPointF( ar.right()-3.5, ar.top()+3.5 ), 1.4, 1.4 );
+        p->setBrush(m_closed ? QColor(60, 220, 90) : QColor(90, 90, 90));
+        p->drawEllipse(QPointF(ar.right() - 3.5, ar.top() + 3.5), 1.4, 1.4);
         p->restore();
         return;
     }
-    
+
     QPen pen = p->pen();
     pen.setWidth(3);
     p->setPen(pen);

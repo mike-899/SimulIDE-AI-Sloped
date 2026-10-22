@@ -44,17 +44,44 @@ class MAINMODULE_EXPORT SerialTerm : public Component, public eElement
 
         void updateStep();
 
-        int uart() { return m_uart; }
+        int uart()
+        {
+            return m_uart;
+        }
 
         // Legacy window geometry properties (kept for file compatibility)
-        int posX() { return m_posX; }
-        void setPosX( int x ) { m_posX = x; }
-        int posY() { return m_posY; }
-        void setPosY( int y ) { m_posY = y; }
-        int sizeX() { return m_sizeX; }
-        void resizeX( int x ) { m_sizeX = x; }
-        int sizeY() { return m_sizeY; }
-        void resizeY( int y ) { m_sizeY = y; }
+        int posX()
+        {
+            return m_posX;
+        }
+        void setPosX(int x)
+        {
+            m_posX = x;
+        }
+        int posY()
+        {
+            return m_posY;
+        }
+        void setPosY(int y)
+        {
+            m_posY = y;
+        }
+        int sizeX()
+        {
+            return m_sizeX;
+        }
+        void resizeX(int x)
+        {
+            m_sizeX = x;
+        }
+        int sizeY()
+        {
+            return m_sizeY;
+        }
+        void resizeY(int y)
+        {
+            m_sizeY = y;
+        }
 
         virtual void paint( QPainter* p, const QStyleOptionGraphicsItem* option, QWidget* widget );
 
@@ -63,8 +90,8 @@ class MAINMODULE_EXPORT SerialTerm : public Component, public eElement
         void setUart( int uart );
 
     private:
-        int m_uart;
-        int m_posX, m_posY, m_sizeX, m_sizeY;
+      int m_uart;
+      int m_posX, m_posY, m_sizeX, m_sizeY;
 };
 
 #endif

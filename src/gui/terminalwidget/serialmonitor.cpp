@@ -15,135 +15,145 @@
  ***************************************************************************/
 
 #include "serialmonitor.h"
-#include "thememanager.h"
+
 #include "baseprocessor.h"
 #include "outpaneltext.h"
+#include "thememanager.h"
 
-SerialMonitor::SerialMonitor( QWidget* parent )
-             : QWidget( parent )
-             , m_timer( this )
+SerialMonitor::SerialMonitor(QWidget *parent) : QWidget(parent), m_timer(this)
 {
-    setObjectName( "serialMonitor" );
+    setObjectName("serialMonitor");
 
-    QVBoxLayout* layout = new QVBoxLayout( this );
-    layout->setContentsMargins( 4, 4, 4, 4 );
-    layout->setSpacing( 4 );
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    layout->setContentsMargins(4, 4, 4, 4);
+    layout->setSpacing(4);
 
-    m_output = new OutPanelText( this );
-    m_output->setObjectName( "serialMonitorOutput" );
-    m_output->setReadOnly( true );
-    m_output->setMaximumBlockCount( 2000 );
-    layout->addWidget( m_output, 1 );
+    m_output = new OutPanelText(this);
+    m_output->setObjectName("serialMonitorOutput");
+    m_output->setReadOnly(true);
+    m_output->setMaximumBlockCount(2000);
+    layout->addWidget(m_output, 1);
 
-    QHBoxLayout* inLayout = new QHBoxLayout();
-    inLayout->setSpacing( 4 );
+    QHBoxLayout *inLayout = new QHBoxLayout();
+    inLayout->setSpacing(4);
 
-    m_input = new QLineEdit( this );
-    m_input->setObjectName( "serialMonitorInput" );
-    m_input->setPlaceholderText( tr("Send to MCU...") );
-    inLayout->addWidget( m_input, 1 );
+    m_input = new QLineEdit(this);
+    m_input->setObjectName("serialMonitorInput");
+    m_input->setPlaceholderText(tr("Send to MCU..."));
+    inLayout->addWidget(m_input, 1);
 
-    m_sendButton = new QPushButton( tr("Send"), this );
-    m_sendButton->setObjectName( "serialMonitorSend" );
-    inLayout->addWidget( m_sendButton );
-    layout->addLayout( inLayout );
+    m_sendButton = new QPushButton(tr("Send"), this);
+    m_sendButton->setObjectName("serialMonitorSend");
+    inLayout->addWidget(m_sendButton);
+    layout->addLayout(inLayout);
 
-    QHBoxLayout* optLayout = new QHBoxLayout();
-    optLayout->setSpacing( 8 );
+    QHBoxLayout *optLayout = new QHBoxLayout();
+    optLayout->setSpacing(8);
 
-    m_uartBox = new QSpinBox( this );
-    m_uartBox->setObjectName( "serialMonitorUart" );
-    m_uartBox->setPrefix( "Uart " );
-    m_uartBox->setRange( 1, 6 );
-    optLayout->addWidget( m_uartBox );
+    m_uartBox = new QSpinBox(this);
+    m_uartBox->setObjectName("serialMonitorUart");
+    m_uartBox->setPrefix("Uart ");
+    m_uartBox->setRange(1, 6);
+    optLayout->addWidget(m_uartBox);
 
-    m_addCrBox = new QCheckBox( tr("Add CR"), this );
-    m_addCrBox->setObjectName( "serialMonitorAddCr" );
-    optLayout->addWidget( m_addCrBox );
+    m_addCrBox = new QCheckBox(tr("Add CR"), this);
+    m_addCrBox->setObjectName("serialMonitorAddCr");
+    optLayout->addWidget(m_addCrBox);
 
-    m_asciiBox = new QCheckBox( tr("ASCII"), this );
-    m_asciiBox->setObjectName( "serialMonitorAscii" );
-    m_asciiBox->setChecked( true );
-    m_asciiBox->setToolTip( tr("Print received bytes as ASCII (unchecked: numeric values)") );
-    optLayout->addWidget( m_asciiBox );
+    m_asciiBox = new QCheckBox(tr("ASCII"), this);
+    m_asciiBox->setObjectName("serialMonitorAscii");
+    m_asciiBox->setChecked(true);
+    m_asciiBox->setToolTip(
+        tr("Print received bytes as ASCII (unchecked: numeric values)"));
+    optLayout->addWidget(m_asciiBox);
 
     optLayout->addStretch();
 
-    m_status = new QLabel( this );
-    m_status->setObjectName( "serialMonitorStatus" );
-    optLayout->addWidget( m_status );
+    m_status = new QLabel(this);
+    m_status->setObjectName("serialMonitorStatus");
+    optLayout->addWidget(m_status);
 
-    QToolButton* clearButton = new QToolButton( this );
-    clearButton->setObjectName( "serialMonitorClear" );
-    clearButton->setIcon( ThemeManager::icon("delete") );
-    clearButton->setToolTip( tr("Clear") );
-    clearButton->setAutoRaise( true );
-    optLayout->addWidget( clearButton );
-    layout->addLayout( optLayout );
+    QToolButton *clearButton = new QToolButton(this);
+    clearButton->setObjectName("serialMonitorClear");
+    clearButton->setIcon(ThemeManager::icon("delete"));
+    clearButton->setToolTip(tr("Clear"));
+    clearButton->setAutoRaise(true);
+    optLayout->addWidget(clearButton);
+    layout->addLayout(optLayout);
 
-    connect( m_input,      SIGNAL(returnPressed()), this, SLOT(sendText()) );
-    connect( m_sendButton, SIGNAL(clicked()),       this, SLOT(sendText()) );
-    connect( clearButton,  SIGNAL(clicked()),       this, SLOT(clear()) );
+    connect(m_input, SIGNAL(returnPressed()), this, SLOT(sendText()));
+    connect(m_sendButton, SIGNAL(clicked()), this, SLOT(sendText()));
+    connect(clearButton, SIGNAL(clicked()), this, SLOT(clear()));
 
     // Follow the active processor; also flushes buffered output.
-    connect( &m_timer, SIGNAL(timeout()), this, SLOT(poll()) );
-    m_timer.start( 100 );
+    connect(&m_timer, SIGNAL(timeout()), this, SLOT(poll()));
+    m_timer.start(100);
     poll();
 }
-SerialMonitor::~SerialMonitor(){}
+SerialMonitor::~SerialMonitor() {}
 
-void SerialMonitor::attach( BaseProcessor* proc )
+void SerialMonitor::attach(BaseProcessor *proc)
 {
-    if( m_proc ) disconnect( m_proc, 0, this, 0 );
+    if (m_proc)
+        disconnect(m_proc, 0, this, 0);
     m_proc = proc;
 
-    if( proc )
-    {
-        connect( proc, SIGNAL( uartDataOut( int, int )),
-                 this, SLOT(   uartOut( int, int )) );
-        m_status->setText( tr("MCU connected") );
-    }
-    else m_status->setText( tr("No MCU") );
+    if (proc) {
+        connect(proc, SIGNAL(uartDataOut(int, int)), this,
+                SLOT(uartOut(int, int)));
+        m_status->setText(tr("MCU connected"));
+    } else
+        m_status->setText(tr("No MCU"));
 
-    m_input->setEnabled( proc != 0l );
-    m_sendButton->setEnabled( proc != 0l );
+    m_input->setEnabled(proc != 0l);
+    m_sendButton->setEnabled(proc != 0l);
 }
 
 void SerialMonitor::poll()
 {
-    BaseProcessor* proc = BaseProcessor::self();
-    if( (QObject*)proc != m_proc.data() || (!proc && m_input->isEnabled()) ) attach( proc );
+    BaseProcessor *proc = BaseProcessor::self();
+    if ((QObject *)proc != m_proc.data() || (!proc && m_input->isEnabled()))
+        attach(proc);
 
-    if( isVisible() ) m_output->step();
+    if (isVisible())
+        m_output->step();
 }
 
-void SerialMonitor::uartOut( int uart, int value )
+void SerialMonitor::uartOut(int uart, int value)
 {
-    if( uart != m_uartBox->value()-1 ) return;
+    if (uart != m_uartBox->value() - 1)
+        return;
 
-    if( m_asciiBox->isChecked() ) m_output->appendText( QString( QChar( value ) ) );
-    else                          m_output->appendText( QString::number( value )+" " );
+    if (m_asciiBox->isChecked())
+        m_output->appendText(QString(QChar(value)));
+    else
+        m_output->appendText(QString::number(value) + " ");
 }
 
 void SerialMonitor::sendText()
 {
-    BaseProcessor* proc = BaseProcessor::self();
-    if( !proc ) return;
+    BaseProcessor *proc = BaseProcessor::self();
+    if (!proc)
+        return;
 
-    int uart = m_uartBox->value()-1;
+    int uart         = m_uartBox->value() - 1;
     QByteArray array = m_input->text().toLocal8Bit();
 
-    for( int i=0; i<array.size(); i++ ) proc->uartIn( uart, array.at(i) );
-    if( m_addCrBox->isChecked() ) proc->uartIn( uart, 13 );
+    for (int i = 0; i < array.size(); i++)
+        proc->uartIn(uart, array.at(i));
+    if (m_addCrBox->isChecked())
+        proc->uartIn(uart, 13);
 
     m_input->clear();
 }
 
-void SerialMonitor::setUart( int uart )
+void SerialMonitor::setUart(int uart)
 {
-    if( uart < 1 ) uart = 1;
-    else if( uart > 6 ) uart = 6;
-    m_uartBox->setValue( uart );
+    if (uart < 1)
+        uart = 1;
+    else if (uart > 6)
+        uart = 6;
+    m_uartBox->setValue(uart);
 }
 
 void SerialMonitor::clear()

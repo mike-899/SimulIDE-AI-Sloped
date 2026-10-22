@@ -52,12 +52,15 @@ class MAINMODULE_EXPORT Component : public QObject, public QGraphicsItem
     Q_PROPERTY( int      vflip     READ vflip     WRITE setVflip )
 
     public:
-        QRectF boundingRect() const;
+      QRectF boundingRect() const;
 
-        // Realistic part art (see PartArt)
-        virtual bool artActive() const;         // Art exists for this type and is enabled
-        bool paintArt( QPainter* p );           // Paint art + selection; false if not active
-        void artGeometryAboutToChange() { prepareGeometryChange(); }
+      // Realistic part art (see PartArt)
+      virtual bool artActive() const; // Art exists for this type and is enabled
+      bool paintArt(QPainter *p); // Paint art + selection; false if not active
+      void artGeometryAboutToChange()
+      {
+          prepareGeometryChange();
+      }
 
         Component( QObject* parent, QString type, QString id );
         ~Component();

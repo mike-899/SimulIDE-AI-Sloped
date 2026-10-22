@@ -11,11 +11,11 @@
 #ifndef MCPSERVER_H
 #define MCPSERVER_H
 
-#include <QObject>
-#include <QHash>
 #include <QByteArray>
+#include <QHash>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QObject>
 
 class QTcpServer;
 class QTcpSocket;
@@ -24,34 +24,34 @@ class McpTools;
 class McpServer : public QObject
 {
     Q_OBJECT
-    public:
-        explicit McpServer( QObject* parent = 0l );
-        ~McpServer();
+  public:
+    explicit McpServer(QObject *parent = 0l);
+    ~McpServer();
 
-        // Reads settings ("mcp/enabled", "mcp/port") and CLI args
-        // (--mcp-port N, --no-mcp) and starts listening if enabled.
-        static McpServer* startDefault( QObject* parent );
+    // Reads settings ("mcp/enabled", "mcp/port") and CLI args
+    // (--mcp-port N, --no-mcp) and starts listening if enabled.
+    static McpServer *startDefault(QObject *parent);
 
-        bool listen( quint16 port );
-        quint16 port() const;
+    bool listen(quint16 port);
+    quint16 port() const;
 
-    private slots:
-        void onNewConnection();
-        void onReadyRead();
-        void onDisconnected();
+  private slots:
+    void onNewConnection();
+    void onReadyRead();
+    void onDisconnected();
 
-    private:
-        void processBuffer( QTcpSocket* sock );
-        void sendResponse( QTcpSocket* sock, int status, const QByteArray& body,
-                           const QByteArray& contentType = "application/json",
-                           bool keepAlive = true );
-        QJsonValue handleMessage( const QJsonObject& msg );   // Null if notification
-        QJsonObject makeError( const QJsonValue& id, int code, const QString& msg );
-        static bool originAllowed( const QByteArray& origin );
+  private:
+    void processBuffer(QTcpSocket *sock);
+    void sendResponse(QTcpSocket *sock, int status, const QByteArray &body,
+                      const QByteArray &contentType = "application/json",
+                      bool keepAlive                = true);
+    QJsonValue handleMessage(const QJsonObject &msg); // Null if notification
+    QJsonObject makeError(const QJsonValue &id, int code, const QString &msg);
+    static bool originAllowed(const QByteArray &origin);
 
-        QTcpServer* m_server;
-        McpTools*   m_tools;
-        QHash<QTcpSocket*, QByteArray> m_buffers;
+    QTcpServer *m_server;
+    McpTools *m_tools;
+    QHash<QTcpSocket *, QByteArray> m_buffers;
 };
 
 #endif

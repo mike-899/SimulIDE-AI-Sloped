@@ -141,46 +141,55 @@ void CircuitView::wheelEvent( QWheelEvent *event )
 QPointF CircuitView::visibleCenter()
 {
     // The viewport is bigger than the widget, so use the widget rect
-    return mapToScene( rect().center() );
+    return mapToScene(rect().center());
 }
 
-void CircuitView::centerVisibleOn( QPointF scenePoint )
+void CircuitView::centerVisibleOn(QPointF scenePoint)
 {
     QPointF delta = visibleCenter() - scenePoint;
-    centerOn( mapToScene( viewport()->rect().center() ) - delta );
+    centerOn(mapToScene(viewport()->rect().center()) - delta);
 }
 
-void CircuitView::zoomBy( qreal factor )
+void CircuitView::zoomBy(qreal factor)
 {
-    QPointF center = visibleCenter();
+    QPointF center        = visibleCenter();
     ViewportAnchor anchor = transformationAnchor();
-    setTransformationAnchor( NoAnchor );
-    scale( factor, factor );
-    setTransformationAnchor( anchor );
-    centerVisibleOn( center );
+    setTransformationAnchor(NoAnchor);
+    scale(factor, factor);
+    setTransformationAnchor(anchor);
+    centerVisibleOn(center);
 }
 
-void CircuitView::zoomIn()  { zoomBy( 1.25 ); }
-void CircuitView::zoomOut() { zoomBy( 0.8 ); }
+void CircuitView::zoomIn()
+{
+    zoomBy(1.25);
+}
+void CircuitView::zoomOut()
+{
+    zoomBy(0.8);
+}
 
 void CircuitView::zoomReset()
 {
     QPointF center = visibleCenter();
     resetTransform();
-    centerVisibleOn( center );
+    centerVisibleOn(center);
 }
 
 void CircuitView::zoomToFit()
 {
     QRectF items = m_circuit->itemsBoundingRect();
-    if( items.isEmpty() || width() < 10 || height() < 10 ) return;
+    if (items.isEmpty() || width() < 10 || height() < 10)
+        return;
 
-    qreal factor = qMin( width()/items.width(), height()/items.height() )*0.9;
-    if( factor > 4 ) factor = 4;
+    qreal factor =
+        qMin(width() / items.width(), height() / items.height()) * 0.9;
+    if (factor > 4)
+        factor = 4;
 
     resetTransform();
-    scale( factor, factor );
-    centerVisibleOn( items.center() );
+    scale(factor, factor);
+    centerVisibleOn(items.center());
 }
 
 void CircuitView::dragEnterEvent(QDragEnterEvent *event)

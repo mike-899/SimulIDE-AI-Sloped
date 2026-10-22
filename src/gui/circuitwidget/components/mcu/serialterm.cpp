@@ -18,13 +18,14 @@
  ***************************************************************************/
 
 #include "serialterm.h"
-#include "circuit.h"
-#include "itemlibrary.h"
-#include "circuitwidget.h"
-#include "mcucomponent.h"
+
 #include "baseprocessor.h"
-#include "utils.h"
+#include "circuit.h"
+#include "circuitwidget.h"
+#include "itemlibrary.h"
 #include "mainwindow.h"
+#include "mcucomponent.h"
+#include "utils.h"
 
 static const char* SerialTerm_properties[] = {
     QT_TRANSLATE_NOOP("App::Property","Mcu Uart")
@@ -45,11 +46,9 @@ LibraryItem* SerialTerm::libraryItem()
         SerialTerm::construct );
 }
 
-SerialTerm::SerialTerm( QObject* parent, QString type, QString id )
-          : Component( parent, type, id )
-          , eElement( (id+"-eElement").toStdString() )
-          , m_uart( 1 )
-          , m_posX( 0 ), m_posY( 0 ), m_sizeX( 0 ), m_sizeY( 0 )
+SerialTerm::SerialTerm(QObject *parent, QString type, QString id) :
+    Component(parent, type, id), eElement((id + "-eElement").toStdString()),
+    m_uart(1), m_posX(0), m_posY(0), m_sizeX(0), m_sizeY(0)
 {
     Q_UNUSED( SerialTerm_properties );
 
@@ -57,17 +56,14 @@ SerialTerm::SerialTerm( QObject* parent, QString type, QString id )
 
     // No floating window anymore: use the integrated Serial Monitor
     // docked under the code editor.
-    QTimer::singleShot( 0, [](){ MainWindow::self()->openSerialMonitor(); } );
+    QTimer::singleShot(0, []() { MainWindow::self()->openSerialMonitor(); });
 
-    if( McuComponent::self() )
-    connect( McuComponent::self(), SIGNAL( closeSerials()),
-                             this, SLOT(   slotClose()) );
-
+    if (McuComponent::self())
+        connect(McuComponent::self(), SIGNAL(closeSerials()), this,
+                SLOT(slotClose()));
 }
 
-SerialTerm::~SerialTerm()
-{
-}
+SerialTerm::~SerialTerm() {}
 
 void SerialTerm::updateStep()
 {
@@ -79,7 +75,7 @@ void SerialTerm::setUart( int uart )
     if      ( uart<1 ) uart = 1;
     else if ( uart>6 ) uart = 6;
     m_uart = uart;
-    MainWindow::self()->openSerialMonitor( uart );
+    MainWindow::self()->openSerialMonitor(uart);
 }
 
 void SerialTerm::slotClose()

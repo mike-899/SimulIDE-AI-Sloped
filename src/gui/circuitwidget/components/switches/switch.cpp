@@ -18,11 +18,12 @@
  ***************************************************************************/
 
 #include "switch.h"
-#include "partart.h"
-#include "itemlibrary.h"
-#include "simulator.h"
+
 #include "e-node.h"
+#include "itemlibrary.h"
+#include "partart.h"
 #include "pin.h"
+#include "simulator.h"
 
 Component* Switch::construct( QObject* parent, QString type, QString id )
 { return new Switch( parent, type, id ); }
@@ -74,22 +75,21 @@ void Switch::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget
 {
     Component::paint( p, option, widget );
 
-    if( artActive() )                                     // Realistic part art
+    if (artActive()) // Realistic part art
     {
-        if( m_closed )
-        {
+        if (m_closed) {
             p->save();
-            p->scale( -1, 1 );                            // Lever on the other side
-            paintArt( p );
+            p->scale(-1, 1); // Lever on the other side
+            paintArt(p);
             p->restore();
-        }
-        else paintArt( p );
-        QRectF ar = PartArt::artRect( m_type );
+        } else
+            paintArt(p);
+        QRectF ar = PartArt::artRect(m_type);
         p->save();
-        p->setRenderHint( QPainter::Antialiasing );
-        p->setPen( Qt::NoPen );
-        p->setBrush( m_closed ? QColor( 60, 220, 90 ) : QColor( 90, 90, 90 ) );
-        p->drawEllipse( QPointF( ar.right()+3, ar.top()+3 ), 1.4, 1.4 );
+        p->setRenderHint(QPainter::Antialiasing);
+        p->setPen(Qt::NoPen);
+        p->setBrush(m_closed ? QColor(60, 220, 90) : QColor(90, 90, 90));
+        p->drawEllipse(QPointF(ar.right() + 3, ar.top() + 3), 1.4, 1.4);
         p->restore();
         return;
     }

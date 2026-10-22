@@ -30,33 +30,33 @@ class MAINMODULE_EXPORT SerialMonitor : public QWidget
 {
     Q_OBJECT
 
-    public:
-        SerialMonitor( QWidget* parent );
-        ~SerialMonitor();
+  public:
+    SerialMonitor(QWidget *parent);
+    ~SerialMonitor();
 
-    public slots:
-        void clear();
-        void setUart( int uart );
+  public slots:
+    void clear();
+    void setUart(int uart);
 
-    private slots:
-        void poll();
-        void uartOut( int uart, int value );
-        void sendText();
+  private slots:
+    void poll();
+    void uartOut(int uart, int value);
+    void sendText();
 
-    private:
-        void attach( BaseProcessor* proc );
+  private:
+    void attach(BaseProcessor *proc);
 
-        QPointer<QObject> m_proc;
+    QPointer<QObject> m_proc;
 
-        OutPanelText* m_output;
-        QLineEdit*    m_input;
-        QPushButton*  m_sendButton;
-        QSpinBox*     m_uartBox;
-        QCheckBox*    m_addCrBox;
-        QCheckBox*    m_asciiBox;
-        QLabel*       m_status;
+    OutPanelText *m_output;
+    QLineEdit *m_input;
+    QPushButton *m_sendButton;
+    QSpinBox *m_uartBox;
+    QCheckBox *m_addCrBox;
+    QCheckBox *m_asciiBox;
+    QLabel *m_status;
 
-        QTimer m_timer;
+    QTimer m_timer;
 };
 
 #endif

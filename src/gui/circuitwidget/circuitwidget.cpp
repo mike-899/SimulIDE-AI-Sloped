@@ -16,25 +16,23 @@
  *   along with this program; if not, see <http://www.gnu.org/licenses/>.  *
  *                                                                         *
  ***************************************************************************/
- 
+
 #include "circuitwidget.h"
-#include "thememanager.h"
-#include "mainwindow.h"
+
 #include "circuit.h"
 #include "filebrowser.h"
+#include "mainwindow.h"
+#include "thememanager.h"
 
 CircuitWidget*  CircuitWidget::m_pSelf = 0l;
 
-CircuitWidget::CircuitWidget( QWidget *parent  )
-             : QWidget( parent )
-             , m_verticalLayout(this)
-             , m_horizontLayout()
-             , m_circView(this)
-             , m_plotter(this)
+CircuitWidget::CircuitWidget(QWidget *parent) :
+    QWidget(parent), m_verticalLayout(this), m_horizontLayout(),
+    m_circView(this), m_plotter(this)
 {
     m_pSelf = this;
 
-    m_circView.setObjectName( "circuitCanvas" );
+    m_circView.setObjectName("circuitCanvas");
 
     m_verticalLayout.setObjectName( "verticalLayout" );
     m_verticalLayout.setContentsMargins(0, 0, 0, 0);
@@ -46,7 +44,7 @@ CircuitWidget::CircuitWidget( QWidget *parent  )
     m_horizontLayout.addWidget( &m_plotter );
 
     m_rateLabel = new QLabel( this );
-    m_rateLabel->setObjectName( "simSpeedLabel" );
+    m_rateLabel->setObjectName("simSpeedLabel");
     QFont font( "Arial", 10, QFont::Normal );
     double fontScale = MainWindow::self()->fontScale();
     font.setPixelSize( int(10*fontScale) );
@@ -70,14 +68,16 @@ void CircuitWidget::clear()
     m_circView.setCircTime( 0 );
 }
 
-static QAction* makeAction( QObject* parent, const QString &icon, const QString &text,
-                            const QString &tip, const QKeySequence &shortcut = QKeySequence() )
+static QAction *makeAction(QObject *parent, const QString &icon,
+                           const QString &text, const QString &tip,
+                           const QKeySequence &shortcut = QKeySequence())
 {
-    QAction* act = new QAction( ThemeManager::icon( icon ), text, parent );
-    act->setStatusTip( tip );
+    QAction *act = new QAction(ThemeManager::icon(icon), text, parent);
+    act->setStatusTip(tip);
     QString toolTip = tip;
-    if( !shortcut.isEmpty() ) toolTip += "  ("+shortcut.toString( QKeySequence::NativeText )+")";
-    act->setToolTip( toolTip );
+    if (!shortcut.isEmpty())
+        toolTip += "  (" + shortcut.toString(QKeySequence::NativeText) + ")";
+    act->setToolTip(toolTip);
     return act;
 }
 
@@ -87,131 +87,161 @@ void CircuitWidget::createActions()
     // (canvas focus) and EditorWindow (code focus), so actions only show the
     // shortcut text and do not register global shortcuts.
 
-    newCircAct = makeAction( this, "note_add", tr("New C&ircuit\tCtrl+N"), tr("Create a new Circuit"), QKeySequence("Ctrl+N") );
-    newCircAct->setObjectName( "newCircuitAction" );
+    newCircAct = makeAction(this, "note_add", tr("New C&ircuit\tCtrl+N"),
+                            tr("Create a new Circuit"), QKeySequence("Ctrl+N"));
+    newCircAct->setObjectName("newCircuitAction");
     connect( newCircAct, SIGNAL( triggered()), this, SLOT( newCircuit()));
 
-    openCircAct = makeAction( this, "folder_open", tr("&Open Circuit\tCtrl+O"), tr("Open an existing Circuit"), QKeySequence("Ctrl+O") );
-    openCircAct->setObjectName( "openCircuitAction" );
+    openCircAct =
+        makeAction(this, "folder_open", tr("&Open Circuit\tCtrl+O"),
+                   tr("Open an existing Circuit"), QKeySequence("Ctrl+O"));
+    openCircAct->setObjectName("openCircuitAction");
     connect( openCircAct, SIGNAL( triggered()), this, SLOT(openCirc()));
 
-    saveCircAct = makeAction( this, "save", tr("&Save Circuit\tCtrl+S"), tr("Save the Circuit to disk"), QKeySequence("Ctrl+S") );
-    saveCircAct->setObjectName( "saveCircuitAction" );
+    saveCircAct =
+        makeAction(this, "save", tr("&Save Circuit\tCtrl+S"),
+                   tr("Save the Circuit to disk"), QKeySequence("Ctrl+S"));
+    saveCircAct->setObjectName("saveCircuitAction");
     connect( saveCircAct, SIGNAL( triggered()), this, SLOT(saveCirc()));
 
-    saveCircAsAct = makeAction( this, "save_as", tr("Save Circuit &As...\tCtrl+Shift+S"), tr("Save the Circuit under a new name"), QKeySequence("Ctrl+Shift+S") );
-    saveCircAsAct->setObjectName( "saveCircuitAsAction" );
+    saveCircAsAct = makeAction(
+        this, "save_as", tr("Save Circuit &As...\tCtrl+Shift+S"),
+        tr("Save the Circuit under a new name"), QKeySequence("Ctrl+Shift+S"));
+    saveCircAsAct->setObjectName("saveCircuitAsAction");
     connect( saveCircAsAct, SIGNAL( triggered()), this, SLOT(saveCircAs()));
 
-    powerCircAct = makeAction( this, "play_arrow", tr("Start Simulation"), tr("Power the Circuit") );
-    powerCircAct->setObjectName( "powerCircuitAction" );
+    powerCircAct = makeAction(this, "play_arrow", tr("Start Simulation"),
+                              tr("Power the Circuit"));
+    powerCircAct->setObjectName("powerCircuitAction");
     connect( powerCircAct, SIGNAL( triggered()), this, SLOT(powerCirc()));
 
-    pauseSimAct = makeAction( this, "pause", tr("Pause Simulation"), tr("Pause / Resume Simulation") );
-    pauseSimAct->setObjectName( "pauseSimAction" );
+    pauseSimAct = makeAction(this, "pause", tr("Pause Simulation"),
+                             tr("Pause / Resume Simulation"));
+    pauseSimAct->setObjectName("pauseSimAction");
     connect( pauseSimAct, SIGNAL( triggered()), this, SLOT(pauseSim()));
 
-    infoAct = makeAction( this, "help", tr("Online Help"), tr("Online Help") );
+    infoAct = makeAction(this, "help", tr("Online Help"), tr("Online Help"));
     connect( infoAct, SIGNAL( triggered()), this, SLOT(openInfo()));
 
-    aboutAct = makeAction( this, "info", tr("About SimulIDE"), tr("About SimulIDE") );
+    aboutAct =
+        makeAction(this, "info", tr("About SimulIDE"), tr("About SimulIDE"));
     connect( aboutAct, SIGNAL( triggered()), this, SLOT(about()));
 
-    aboutQtAct = makeAction( this, "info", tr("About Qt"), tr("About Qt") );
+    aboutQtAct = makeAction(this, "info", tr("About Qt"), tr("About Qt"));
     connect( aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()) );
 
     // Edit toolbar
-    copyAct = makeAction( this, "content_copy", tr("Copy"), tr("Copy selected components"), QKeySequence("Ctrl+C") );
-    copyAct->setObjectName( "copyAction" );
-    connect( copyAct, SIGNAL(triggered()), this, SLOT(copySelection()) );
+    copyAct =
+        makeAction(this, "content_copy", tr("Copy"),
+                   tr("Copy selected components"), QKeySequence("Ctrl+C"));
+    copyAct->setObjectName("copyAction");
+    connect(copyAct, SIGNAL(triggered()), this, SLOT(copySelection()));
 
-    pasteAct = makeAction( this, "content_paste", tr("Paste"), tr("Paste components"), QKeySequence("Ctrl+V") );
-    pasteAct->setObjectName( "pasteAction" );
-    connect( pasteAct, SIGNAL(triggered()), this, SLOT(pasteClipboard()) );
+    pasteAct = makeAction(this, "content_paste", tr("Paste"),
+                          tr("Paste components"), QKeySequence("Ctrl+V"));
+    pasteAct->setObjectName("pasteAction");
+    connect(pasteAct, SIGNAL(triggered()), this, SLOT(pasteClipboard()));
 
-    deleteAct = makeAction( this, "delete", tr("Delete"), tr("Delete selected components"), QKeySequence("Del") );
-    deleteAct->setObjectName( "deleteAction" );
-    connect( deleteAct, SIGNAL(triggered()), this, SLOT(deleteSelection()) );
+    deleteAct =
+        makeAction(this, "delete", tr("Delete"),
+                   tr("Delete selected components"), QKeySequence("Del"));
+    deleteAct->setObjectName("deleteAction");
+    connect(deleteAct, SIGNAL(triggered()), this, SLOT(deleteSelection()));
 
-    undoAct = makeAction( this, "undo", tr("Undo"), tr("Undo"), QKeySequence("Ctrl+Z") );
-    undoAct->setObjectName( "undoAction" );
-    connect( undoAct, SIGNAL(triggered()), this, SLOT(undo()) );
+    undoAct = makeAction(this, "undo", tr("Undo"), tr("Undo"),
+                         QKeySequence("Ctrl+Z"));
+    undoAct->setObjectName("undoAction");
+    connect(undoAct, SIGNAL(triggered()), this, SLOT(undo()));
 
-    redoAct = makeAction( this, "redo", tr("Redo"), tr("Redo"), QKeySequence("Ctrl+Y") );
-    redoAct->setObjectName( "redoAction" );
-    connect( redoAct, SIGNAL(triggered()), this, SLOT(redo()) );
+    redoAct = makeAction(this, "redo", tr("Redo"), tr("Redo"),
+                         QKeySequence("Ctrl+Y"));
+    redoAct->setObjectName("redoAction");
+    connect(redoAct, SIGNAL(triggered()), this, SLOT(redo()));
 
-    rotateCWAct = makeAction( this, "rotate_right", tr("Rotate"), tr("Rotate selected clockwise") );
-    rotateCWAct->setObjectName( "rotateCWAction" );
-    connect( rotateCWAct, SIGNAL(triggered()), this, SLOT(rotateSelectionCW()) );
+    rotateCWAct = makeAction(this, "rotate_right", tr("Rotate"),
+                             tr("Rotate selected clockwise"));
+    rotateCWAct->setObjectName("rotateCWAction");
+    connect(rotateCWAct, SIGNAL(triggered()), this, SLOT(rotateSelectionCW()));
 
-    rotateCCWAct = makeAction( this, "rotate_left", tr("Rotate CCW"), tr("Rotate selected counter-clockwise") );
-    rotateCCWAct->setObjectName( "rotateCCWAction" );
-    connect( rotateCCWAct, SIGNAL(triggered()), this, SLOT(rotateSelectionCCW()) );
+    rotateCCWAct = makeAction(this, "rotate_left", tr("Rotate CCW"),
+                              tr("Rotate selected counter-clockwise"));
+    rotateCCWAct->setObjectName("rotateCCWAction");
+    connect(rotateCCWAct, SIGNAL(triggered()), this,
+            SLOT(rotateSelectionCCW()));
 
-    hFlipAct = makeAction( this, "flip", tr("Flip Horizontal"), tr("Flip selected horizontally") );
-    hFlipAct->setObjectName( "hFlipAction" );
-    connect( hFlipAct, SIGNAL(triggered()), this, SLOT(hFlipSelection()) );
+    hFlipAct = makeAction(this, "flip", tr("Flip Horizontal"),
+                          tr("Flip selected horizontally"));
+    hFlipAct->setObjectName("hFlipAction");
+    connect(hFlipAct, SIGNAL(triggered()), this, SLOT(hFlipSelection()));
 
-    vFlipAct = makeAction( this, "flip_vertical", tr("Flip Vertical"), tr("Flip selected vertically") );
-    vFlipAct->setObjectName( "vFlipAction" );
-    connect( vFlipAct, SIGNAL(triggered()), this, SLOT(vFlipSelection()) );
+    vFlipAct = makeAction(this, "flip_vertical", tr("Flip Vertical"),
+                          tr("Flip selected vertically"));
+    vFlipAct->setObjectName("vFlipAction");
+    connect(vFlipAct, SIGNAL(triggered()), this, SLOT(vFlipSelection()));
 
-    zoomInAct = makeAction( this, "zoom_in", tr("Zoom In"), tr("Zoom In") );
-    zoomInAct->setObjectName( "zoomInAction" );
-    connect( zoomInAct, SIGNAL(triggered()), &m_circView, SLOT(zoomIn()) );
+    zoomInAct = makeAction(this, "zoom_in", tr("Zoom In"), tr("Zoom In"));
+    zoomInAct->setObjectName("zoomInAction");
+    connect(zoomInAct, SIGNAL(triggered()), &m_circView, SLOT(zoomIn()));
 
-    zoomOutAct = makeAction( this, "zoom_out", tr("Zoom Out"), tr("Zoom Out") );
-    zoomOutAct->setObjectName( "zoomOutAction" );
-    connect( zoomOutAct, SIGNAL(triggered()), &m_circView, SLOT(zoomOut()) );
+    zoomOutAct = makeAction(this, "zoom_out", tr("Zoom Out"), tr("Zoom Out"));
+    zoomOutAct->setObjectName("zoomOutAction");
+    connect(zoomOutAct, SIGNAL(triggered()), &m_circView, SLOT(zoomOut()));
 
-    zoomFitAct = makeAction( this, "fit_screen", tr("Zoom to Fit"), tr("Fit the whole circuit in view") );
-    zoomFitAct->setObjectName( "zoomFitAction" );
-    connect( zoomFitAct, SIGNAL(triggered()), &m_circView, SLOT(zoomToFit()) );
+    zoomFitAct = makeAction(this, "fit_screen", tr("Zoom to Fit"),
+                            tr("Fit the whole circuit in view"));
+    zoomFitAct->setObjectName("zoomFitAction");
+    connect(zoomFitAct, SIGNAL(triggered()), &m_circView, SLOT(zoomToFit()));
 
-    zoomResetAct = makeAction( this, "search", tr("Zoom 100%"), tr("Reset zoom to 100%") );
-    zoomResetAct->setObjectName( "zoomResetAction" );
-    connect( zoomResetAct, SIGNAL(triggered()), &m_circView, SLOT(zoomReset()) );
+    zoomResetAct =
+        makeAction(this, "search", tr("Zoom 100%"), tr("Reset zoom to 100%"));
+    zoomResetAct->setObjectName("zoomResetAction");
+    connect(zoomResetAct, SIGNAL(triggered()), &m_circView, SLOT(zoomReset()));
 
-    importCircAct = makeAction( this, "input", tr("Import Circuit"), tr("Import a circuit into the current one") );
-    importCircAct->setObjectName( "importCircuitAction" );
-    connect( importCircAct, SIGNAL(triggered()), this, SLOT(importCirc()) );
+    importCircAct = makeAction(this, "input", tr("Import Circuit"),
+                               tr("Import a circuit into the current one"));
+    importCircAct->setObjectName("importCircuitAction");
+    connect(importCircAct, SIGNAL(triggered()), this, SLOT(importCirc()));
 
-    saveImageAct = makeAction( this, "image", tr("Save Circuit as Image"), tr("Save Circuit as Image") );
-    saveImageAct->setObjectName( "saveImageAction" );
-    connect( saveImageAct, SIGNAL(triggered()), &m_circView, SLOT(saveImage()) );
+    saveImageAct = makeAction(this, "image", tr("Save Circuit as Image"),
+                              tr("Save Circuit as Image"));
+    saveImageAct->setObjectName("saveImageAction");
+    connect(saveImageAct, SIGNAL(triggered()), &m_circView, SLOT(saveImage()));
 
-    createSubcircAct = makeAction( this, "account_tree", tr("Create SubCircuit"), tr("Create SubCircuit") );
-    createSubcircAct->setObjectName( "createSubcircuitAction" );
-    connect( createSubcircAct, SIGNAL(triggered()), this, SLOT(createSubcircuit()) );
+    createSubcircAct = makeAction(this, "account_tree", tr("Create SubCircuit"),
+                                  tr("Create SubCircuit"));
+    createSubcircAct->setObjectName("createSubcircuitAction");
+    connect(createSubcircAct, SIGNAL(triggered()), this,
+            SLOT(createSubcircuit()));
 
-    bomAct = makeAction( this, "receipt_long", tr("Bill of Materials"), tr("Bill of Materials") );
-    bomAct->setObjectName( "bomAction" );
-    connect( bomAct, SIGNAL(triggered()), this, SLOT(bom()) );
+    bomAct = makeAction(this, "receipt_long", tr("Bill of Materials"),
+                        tr("Bill of Materials"));
+    bomAct->setObjectName("bomAction");
+    connect(bomAct, SIGNAL(triggered()), this, SLOT(bom()));
 }
 
-QList<Component*> CircuitWidget::selectedComponents()
+QList<Component *> CircuitWidget::selectedComponents()
 {
-    QList<Component*> list;
-    for( QGraphicsItem* item : Circuit::self()->selectedItems() )
-    {
-        Component* comp = qgraphicsitem_cast<Component*>( item );
-        if( !comp ) continue;
-        if( comp->itemType() == "Connector" ) continue;
-        list.append( comp );
+    QList<Component *> list;
+    for (QGraphicsItem *item : Circuit::self()->selectedItems()) {
+        Component *comp = qgraphicsitem_cast<Component *>(item);
+        if (!comp)
+            continue;
+        if (comp->itemType() == "Connector")
+            continue;
+        list.append(comp);
     }
     return list;
 }
 
 void CircuitWidget::copySelection()
 {
-    Circuit::self()->copy( m_circView.visibleCenter() );
+    Circuit::self()->copy(m_circView.visibleCenter());
 }
 
 void CircuitWidget::pasteClipboard()
 {
     // Paste slightly offset so pasted items do not hide the originals
-    Circuit::self()->paste( m_circView.visibleCenter()+QPointF( 16, 16 ) );
+    Circuit::self()->paste(m_circView.visibleCenter() + QPointF(16, 16));
 }
 
 void CircuitWidget::deleteSelection()
@@ -219,36 +249,52 @@ void CircuitWidget::deleteSelection()
     Circuit::self()->removeItems();
 }
 
-void CircuitWidget::undo() { Circuit::self()->undo(); }
-void CircuitWidget::redo() { Circuit::self()->redo(); }
+void CircuitWidget::undo()
+{
+    Circuit::self()->undo();
+}
+void CircuitWidget::redo()
+{
+    Circuit::self()->redo();
+}
 
 void CircuitWidget::rotateSelectionCW()
 {
-    for( Component* comp : selectedComponents() ) comp->rotateCW();
+    for (Component *comp : selectedComponents())
+        comp->rotateCW();
 }
 
 void CircuitWidget::rotateSelectionCCW()
 {
-    for( Component* comp : selectedComponents() ) comp->rotateCCW();
+    for (Component *comp : selectedComponents())
+        comp->rotateCCW();
 }
 
 void CircuitWidget::hFlipSelection()
 {
-    for( Component* comp : selectedComponents() ) comp->H_flip();
+    for (Component *comp : selectedComponents())
+        comp->H_flip();
 }
 
 void CircuitWidget::vFlipSelection()
 {
-    for( Component* comp : selectedComponents() ) comp->V_flip();
+    for (Component *comp : selectedComponents())
+        comp->V_flip();
 }
 
 void CircuitWidget::importCirc()
 {
-    Circuit::self()->importCirc( m_circView.visibleCenter() );
+    Circuit::self()->importCirc(m_circView.visibleCenter());
 }
 
-void CircuitWidget::createSubcircuit() { Circuit::self()->createSubcircuit(); }
-void CircuitWidget::bom() { Circuit::self()->bom(); }
+void CircuitWidget::createSubcircuit()
+{
+    Circuit::self()->createSubcircuit();
+}
+void CircuitWidget::bom()
+{
+    Circuit::self()->bom();
+}
 
 bool CircuitWidget::newCircuit()
 {
@@ -343,19 +389,20 @@ void CircuitWidget::powerCirc()
 
 QString CircuitWidget::simState()
 {
-    if( Simulator::self()->isPaused() ) return "Paused";
+    if (Simulator::self()->isPaused())
+        return "Paused";
     return powerCircAct->iconText();
 }
 
 void CircuitWidget::powerCircOn()
 {
     powerCircAct->setIcon(ThemeManager::icon("stop"));
-    powerCircAct->setText( tr("Stop Simulation") );
+    powerCircAct->setText(tr("Stop Simulation"));
     powerCircAct->setEnabled( true );
     powerCircAct->setIconText("On");
     pauseSimAct->setEnabled( true );
     Simulator::self()->runContinuous();
-    emit simStateChanged( simState() );
+    emit simStateChanged(simState());
 }
 
 void CircuitWidget::powerCircOff()
@@ -364,23 +411,23 @@ void CircuitWidget::powerCircOff()
     Simulator::self()->stopSim();
 
     powerCircAct->setIcon(ThemeManager::icon("play_arrow"));
-    powerCircAct->setText( tr("Start Simulation") );
+    powerCircAct->setText(tr("Start Simulation"));
     powerCircAct->setIconText("Off");
     powerCircAct->setEnabled( true );
     pauseSimAct->setEnabled( false );
-    emit simStateChanged( simState() );
+    emit simStateChanged(simState());
 }
 
 void CircuitWidget::powerCircDebug( bool run )
 {
     powerCircAct->setIcon(ThemeManager::icon("bug_report"));
-    powerCircAct->setText( tr("Debugging") );
+    powerCircAct->setText(tr("Debugging"));
     powerCircAct->setIconText("Debug");
     powerCircAct->setEnabled( true );
 
     Simulator::self()->debug( run );
-    m_rateLabel->setText( tr("Real Speed: Debugger") );
-    emit simStateChanged( simState() );
+    m_rateLabel->setText(tr("Real Speed: Debugger"));
+    emit simStateChanged(simState());
 }
 
 void CircuitWidget::pauseSim()
@@ -395,8 +442,7 @@ void CircuitWidget::pauseSim()
         Simulator::self()->resumeSim();
         powerCircAct->setEnabled( true );
     }
-    emit simStateChanged( simState() );
-
+    emit simStateChanged(simState());
 }
 
 void CircuitWidget::openInfo()
@@ -439,8 +485,8 @@ void CircuitWidget::about()
 void CircuitWidget::setRate( int rate )
 {
     if( rate < 0 ) m_rateLabel->setText( tr("Circuit ERROR!!!") );
-    else 
-        m_rateLabel->setText( tr("Real Speed: ")+QString::number(rate) +" %" );
+    else
+        m_rateLabel->setText(tr("Real Speed: ") + QString::number(rate) + " %");
 }
 
 #include "moc_circuitwidget.cpp"
