@@ -20,6 +20,7 @@
 //#include <QtGui>
 
 #include "editorwindow.h"
+#include "thememanager.h"
 
 #include "filebrowser.h"
 #include "mainwindow.h"
@@ -264,11 +265,11 @@ void EditorWindow::tabContextMenu(const QPoint &eventpoint)
 
     QMenu *menu = new QMenu();
     QAction *setCompilerAction =
-        menu->addAction(QIcon(":/material/build.svg"), tr("Set Compiler Path"));
+        menu->addAction(ThemeManager::icon("build"), tr("Set Compiler Path"));
     connect(setCompilerAction, SIGNAL(triggered()), this, SLOT(setCompiler()));
 
     QAction *reloadAction =
-        menu->addAction(QIcon(":/material/restart_alt.svg"), tr("Reload"));
+        menu->addAction(ThemeManager::icon("restart_alt"), tr("Reload"));
     connect(reloadAction, SIGNAL(triggered()), this, SLOT(reload()));
 
     menu->exec(mapToGlobal(eventpoint));
@@ -335,104 +336,104 @@ void EditorWindow::createWidgets()
 
 void EditorWindow::createActions()
 {
-    newAct = new QAction(QIcon(":/material/note_add.svg"), tr("&New\tCtrl+N"), this);
+    newAct = new QAction(ThemeManager::icon("note_add"), tr("&New\tCtrl+N"), this);
     newAct->setStatusTip(tr("Create a new file"));
     connect(newAct, SIGNAL(triggered()), this, SLOT(newFile()));
 
-    openAct = new QAction(QIcon(":/material/folder_open.svg"), tr("&Open...\tCtrl+O"), this);
+    openAct = new QAction(ThemeManager::icon("folder_open"), tr("&Open...\tCtrl+O"), this);
     openAct->setStatusTip(tr("Open an existing file"));
     connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
 
-    saveAct = new QAction(QIcon(":/material/save.svg"), tr("&Save\tCtrl+S"), this);
+    saveAct = new QAction(ThemeManager::icon("save"), tr("&Save\tCtrl+S"), this);
     saveAct->setStatusTip(tr("Save the document to disk"));
     saveAct->setEnabled(false);
     connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
 
-    saveAsAct = new QAction(QIcon(":/material/save_as.svg"),
+    saveAsAct = new QAction(ThemeManager::icon("save_as"),
                             tr("Save &As...\tCtrl+Shift+S"), this);
     saveAsAct->setStatusTip(tr("Save the document under a new name"));
     saveAsAct->setEnabled(false);
     connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
 
-    exitAct = new QAction(QIcon(":/material/close.svg"), tr("E&xit"), this);
+    exitAct = new QAction(ThemeManager::icon("close"), tr("E&xit"), this);
     exitAct->setStatusTip(tr("Exit the application"));
     connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
 
-    cutAct = new QAction(QIcon(":/material/content_cut.svg"), tr("Cu&t\tCtrl+X"), this);
+    cutAct = new QAction(ThemeManager::icon("content_cut"), tr("Cu&t\tCtrl+X"), this);
     cutAct->setStatusTip(
         tr("Cut the current selection's contents to the clipboard"));
     cutAct->setEnabled(false);
     connect(cutAct, SIGNAL(triggered()), this, SLOT(cut()));
 
-    copyAct = new QAction(QIcon(":/material/content_copy.svg"), tr("&Copy\tCtrl+C"), this);
+    copyAct = new QAction(ThemeManager::icon("content_copy"), tr("&Copy\tCtrl+C"), this);
     copyAct->setStatusTip(
         tr("Copy the current selection's contents to the clipboard"));
     copyAct->setEnabled(false);
     connect(copyAct, SIGNAL(triggered()), this, SLOT(copy()));
 
-    pasteAct = new QAction(QIcon(":/material/content_paste.svg"), tr("&Paste\tCtrl+V"), this);
+    pasteAct = new QAction(ThemeManager::icon("content_paste"), tr("&Paste\tCtrl+V"), this);
     pasteAct->setStatusTip(
         tr("Paste the clipboard's contents into the current selection"));
     pasteAct->setEnabled(false);
     connect(pasteAct, SIGNAL(triggered()), this, SLOT(paste()));
 
-    undoAct = new QAction(QIcon(":/material/undo.svg"), tr("Undo\tCtrl+Z"), this);
+    undoAct = new QAction(ThemeManager::icon("undo"), tr("Undo\tCtrl+Z"), this);
     undoAct->setStatusTip(tr("Undo the last action"));
     undoAct->setEnabled(false);
     connect(undoAct, SIGNAL(triggered()), this, SLOT(undo()));
 
-    redoAct = new QAction(QIcon(":/material/redo.svg"), tr("Redo\tCtrl+Shift+Z"), this);
+    redoAct = new QAction(ThemeManager::icon("redo"), tr("Redo\tCtrl+Shift+Z"), this);
     redoAct->setStatusTip(tr("Redo the last action"));
     redoAct->setEnabled(false);
     connect(redoAct, SIGNAL(triggered()), this, SLOT(redo()));
 
-    runAct = new QAction(QIcon(":/material/skip_next.svg"), tr("Run To Breakpoint"), this);
+    runAct = new QAction(ThemeManager::icon("skip_next"), tr("Run To Breakpoint"), this);
     runAct->setStatusTip(tr("Run to next breakpoint"));
     runAct->setEnabled(false);
     connect(runAct, SIGNAL(triggered()), this, SLOT(run()));
 
-    stepAct = new QAction(QIcon(":/material/step_into.svg"), tr("Step"), this);
+    stepAct = new QAction(ThemeManager::icon("step_into"), tr("Step"), this);
     stepAct->setStatusTip(tr("Step debugger"));
     stepAct->setEnabled(false);
     connect(stepAct, SIGNAL(triggered()), this, SLOT(step()));
 
-    stepOverAct = new QAction(QIcon(":/material/step_over.svg"), tr("StepOver"), this);
+    stepOverAct = new QAction(ThemeManager::icon("step_over"), tr("StepOver"), this);
     stepOverAct->setStatusTip(tr("Step Over"));
     stepOverAct->setEnabled(false);
     stepOverAct->setVisible(false);
     connect(stepOverAct, SIGNAL(triggered()), this, SLOT(stepOver()));
 
-    pauseAct = new QAction(QIcon(":/material/pause.svg"), tr("Pause"), this);
+    pauseAct = new QAction(ThemeManager::icon("pause"), tr("Pause"), this);
     pauseAct->setStatusTip(tr("Pause debugger"));
     pauseAct->setEnabled(false);
     connect(pauseAct, SIGNAL(triggered()), this, SLOT(pause()));
 
-    resetAct = new QAction(QIcon(":/material/restart_alt.svg"), tr("Reset"), this);
+    resetAct = new QAction(ThemeManager::icon("restart_alt"), tr("Reset"), this);
     resetAct->setStatusTip(tr("Reset debugger"));
     resetAct->setEnabled(false);
     connect(resetAct, SIGNAL(triggered()), this, SLOT(reset()));
 
-    stopAct = new QAction(QIcon(":/material/stop.svg"), tr("Stop Debugger"), this);
+    stopAct = new QAction(ThemeManager::icon("stop"), tr("Stop Debugger"), this);
     stopAct->setStatusTip(tr("Stop debugger"));
     stopAct->setEnabled(false);
     connect(stopAct, SIGNAL(triggered()), this, SLOT(stop()));
 
-    compileAct = new QAction(QIcon(":/material/build.svg"), tr("Compile"), this);
+    compileAct = new QAction(ThemeManager::icon("build"), tr("Compile"), this);
     compileAct->setStatusTip(tr("Compile Source"));
     compileAct->setEnabled(false);
     connect(compileAct, SIGNAL(triggered()), this, SLOT(compile()));
 
-    loadAct = new QAction(QIcon(":/material/upload.svg"), tr("UpLoad"), this);
+    loadAct = new QAction(ThemeManager::icon("upload"), tr("UpLoad"), this);
     loadAct->setStatusTip(tr("Load Firmware"));
     loadAct->setEnabled(false);
     connect(loadAct, SIGNAL(triggered()), this, SLOT(upload()));
 
-    findQtAct = new QAction(QIcon(":/material/find_replace.svg"), tr("Find Replace"), this);
+    findQtAct = new QAction(ThemeManager::icon("find_replace"), tr("Find Replace"), this);
     findQtAct->setStatusTip(tr("Find Replace"));
     findQtAct->setEnabled(false);
     connect(findQtAct, SIGNAL(triggered()), this, SLOT(findReplaceDialog()));
 
-    debugAct = new QAction(QIcon(":/material/bug_report.svg"), tr("Debug"), this);
+    debugAct = new QAction(ThemeManager::icon("bug_report"), tr("Debug"), this);
     debugAct->setStatusTip(tr("Start Debugger"));
     debugAct->setEnabled(false);
     connect(debugAct, SIGNAL(triggered()), this, SLOT(debug()));

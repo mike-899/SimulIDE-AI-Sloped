@@ -15,6 +15,7 @@
  ***************************************************************************/
 
 #include "serialmonitor.h"
+#include "thememanager.h"
 #include "baseprocessor.h"
 #include "outpaneltext.h"
 
@@ -74,7 +75,7 @@ SerialMonitor::SerialMonitor( QWidget* parent )
 
     QToolButton* clearButton = new QToolButton( this );
     clearButton->setObjectName( "serialMonitorClear" );
-    clearButton->setIcon( QIcon(":/material/delete.svg") );
+    clearButton->setIcon( ThemeManager::icon("delete") );
     clearButton->setToolTip( tr("Clear") );
     clearButton->setAutoRaise( true );
     optLayout->addWidget( clearButton );

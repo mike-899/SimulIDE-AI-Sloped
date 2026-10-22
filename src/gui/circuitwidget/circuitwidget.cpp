@@ -18,6 +18,7 @@
  ***************************************************************************/
  
 #include "circuitwidget.h"
+#include "thememanager.h"
 #include "mainwindow.h"
 #include "circuit.h"
 #include "filebrowser.h"
@@ -72,7 +73,7 @@ void CircuitWidget::clear()
 static QAction* makeAction( QObject* parent, const QString &icon, const QString &text,
                             const QString &tip, const QKeySequence &shortcut = QKeySequence() )
 {
-    QAction* act = new QAction( QIcon( ":/material/"+icon+".svg" ), text, parent );
+    QAction* act = new QAction( ThemeManager::icon( icon ), text, parent );
     act->setStatusTip( tip );
     QString toolTip = tip;
     if( !shortcut.isEmpty() ) toolTip += "  ("+shortcut.toString( QKeySequence::NativeText )+")";
@@ -348,7 +349,7 @@ QString CircuitWidget::simState()
 
 void CircuitWidget::powerCircOn()
 {
-    powerCircAct->setIcon(QIcon(":/material/stop.svg"));
+    powerCircAct->setIcon(ThemeManager::icon("stop"));
     powerCircAct->setText( tr("Stop Simulation") );
     powerCircAct->setEnabled( true );
     powerCircAct->setIconText("On");
@@ -362,7 +363,7 @@ void CircuitWidget::powerCircOff()
     if( Simulator::self()->isPaused() ) Simulator::self()->resumeSim();
     Simulator::self()->stopSim();
 
-    powerCircAct->setIcon(QIcon(":/material/play_arrow.svg"));
+    powerCircAct->setIcon(ThemeManager::icon("play_arrow"));
     powerCircAct->setText( tr("Start Simulation") );
     powerCircAct->setIconText("Off");
     powerCircAct->setEnabled( true );
@@ -372,7 +373,7 @@ void CircuitWidget::powerCircOff()
 
 void CircuitWidget::powerCircDebug( bool run )
 {
-    powerCircAct->setIcon(QIcon(":/material/bug_report.svg"));
+    powerCircAct->setIcon(ThemeManager::icon("bug_report"));
     powerCircAct->setText( tr("Debugging") );
     powerCircAct->setIconText("Debug");
     powerCircAct->setEnabled( true );

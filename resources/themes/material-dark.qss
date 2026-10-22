@@ -56,15 +56,15 @@ QMenu::separator { height: 1px; background: #3F4147; margin: 4px 8px; }
 
 /* Tabs */
 QTabWidget::pane { border: none; border-top: 1px solid #3F4147; background: #2B2D31; }
-QTabBar { background: transparent; }
+QTabWidget::tab-bar { left: 4px; }
+QTabBar { background: transparent; border: none; outline: 0; qproperty-drawBase: 0; }
 QTabBar::tab {
-    background: transparent; color: #9AA0A6; padding: 8px 14px; border: none;
-    border-bottom: 3px solid transparent;
+    background: transparent; color: #9AA0A6; padding: 7px 14px; margin: 4px 2px 4px 2px;
+    border: none; border-radius: 14px; outline: 0;
 }
-QTabBar::tab:west, QTabBar::tab:east { border-bottom: none; border-right: 3px solid transparent; padding: 14px 8px; }
 QTabBar::tab:hover { background: #3A3C42; color: #E3E3E8; }
-QTabBar::tab:selected { color: #A8C7FA; border-bottom-color: #A8C7FA; }
-QTabBar::tab:west:selected { border-right-color: #A8C7FA; }
+QTabBar::tab:selected { background: #2F4468; color: #D3E3FD; }
+QTabBar::tab:selected:hover { background: #385180; }
 QTabBar::close-button { subcontrol-position: right; }
 
 /* Item views */
@@ -118,12 +118,15 @@ QPushButton#simButton:checked, QToolButton#simButton:checked { background: #D930
 QPushButton#simButton:checked:hover, QToolButton#simButton:checked:hover { background: #C5221F; }
 QPushButton#simButton[simState="On"], QToolButton#simButton[simState="On"] { background: #D93025; }
 
-QPushButton#codeButton, QToolButton#codeButton {
-    background: #A8C7FA; color: #062E6F; border: none; border-radius: 18px;
+QPushButton#codeButton, QPushButton#componentsButton, QToolButton#codeButton {
+    background: transparent; color: #E3E3E8; border: 1px solid #3F4147; border-radius: 18px;
     padding: 6px 18px; font-weight: 600;
 }
-QPushButton#codeButton:hover, QToolButton#codeButton:hover { background: #C2D7FB; }
-QPushButton#codeButton:checked, QToolButton#codeButton:checked { background: #0B57D0; color: #D3E3FD; }
+QPushButton#codeButton:hover, QPushButton#componentsButton:hover, QToolButton#codeButton:hover { background: #3A3C42; }
+QPushButton#codeButton:checked, QPushButton#componentsButton:checked, QToolButton#codeButton:checked {
+    background: #2F4468; color: #D3E3FD; border: 1px solid #2F4468;
+}
+QPushButton#codeButton:checked:hover, QPushButton#componentsButton:checked:hover { background: #385180; }
 
 #componentPanel { background: #2B2D31; border-left: 1px solid #3F4147; }
 QLineEdit#componentSearch {
@@ -139,3 +142,27 @@ QPushButton#themeToggleButton, QToolButton#themeToggleButton {
     background: #313338; border: 1px solid #3F4147; border-radius: 16px; padding: 4px 10px;
 }
 QPushButton#themeToggleButton:hover, QToolButton#themeToggleButton:hover { background: #3A3C42; }
+
+/* ---- Floating property inspector ---- */
+QFrame#propertyInspector {
+    background: #2B2D31; border: 1px solid #3F4147; border-radius: 12px; padding: 0px;
+}
+QFrame#propertyInspector QWidget { background: transparent; }
+QFrame#propertyInspector QLineEdit, QFrame#propertyInspector QSpinBox,
+QFrame#propertyInspector QDoubleSpinBox, QFrame#propertyInspector QComboBox { background: #313338; }
+QLabel#propertyInspectorTitle { background: transparent; color: #E3E3E8; font-weight: 600; padding: 2px 4px; }
+QToolButton#propertyInspectorCollapse { background: transparent; border: none; border-radius: 12px; padding: 2px; }
+QToolButton#propertyInspectorCollapse:hover { background: #3A3C42; }
+
+/* ---- Code panel / serial monitor ---- */
+QWidget#codePanel { background: #2B2D31; border-right: 1px solid #3F4147; }
+QWidget#codePanelHeader { background: #313338; border-bottom: 1px solid #3F4147; }
+QLabel#codePanelTitle { background: transparent; color: #E3E3E8; font-weight: 600; padding-left: 4px; }
+QToolButton#codePanelClose { border-radius: 12px; }
+QWidget#serialMonitorPanel { background: #2B2D31; border-top: 1px solid #3F4147; }
+QToolButton#serialMonitorToggle {
+    background: #313338; color: #E3E3E8; border: none; border-bottom: 1px solid #3F4147;
+    border-radius: 0; padding: 6px 12px; text-align: left; font-weight: 600;
+}
+QToolButton#serialMonitorToggle:hover { background: #3A3C42; }
+QToolButton#serialMonitorToggle:checked { background: #313338; color: #E3E3E8; }

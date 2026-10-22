@@ -8,6 +8,7 @@
 #include <QObject>
 #include <QColor>
 #include <QString>
+#include <QIcon>
 
 class QSettings;
 
@@ -34,6 +35,14 @@ class ThemeManager : public QObject
         QColor textColor() const;
         QColor selectionColor() const;
         QColor accentColor() const;
+        QColor iconColor() const;
+        QColor iconDisabledColor() const;
+
+        // Theme-aware Material icon (":/material/<name>.svg" recoloured to
+        // the on-surface colour, 1x/2x, disabled variant). Repaints with the
+        // current theme automatically. Pass a valid colour to force a fixed
+        // colour (e.g. white on a coloured button).
+        static QIcon icon( const QString& name, const QColor& fixed = QColor() );
 
     public slots:
         void setTheme( Theme theme );
