@@ -134,13 +134,13 @@ class MaterialIconEngine : public QIconEngine
 
         QPixmap pixmap( const QSize& size, QIcon::Mode mode, QIcon::State ) override
         {
-            return render( size, 2.0, mode );
+            return render( size, 1.0, mode );
         }
 
         void paint( QPainter* painter, const QRect& rect, QIcon::Mode mode, QIcon::State ) override
         {
             qreal dpr = painter->device() ? painter->device()->devicePixelRatioF() : 1.0;
-            painter->drawPixmap( rect, render( rect.size(), dpr >= 1.5 ? 2.0 : 1.0, mode ) );
+            painter->drawPixmap( rect, render( rect.size()*dpr, dpr, mode ) );
         }
 
         QSize actualSize( const QSize& size, QIcon::Mode, QIcon::State ) override { return size; }
@@ -161,13 +161,16 @@ class MaterialIconEngine : public QIconEngine
             if( it != cache.constEnd() ) return *it;
 
             QSvgRenderer svg( QString(":/material/%1.svg").arg( m_name ) );
-            QSize px = size*scale;
+            QSize px = size;
             QImage img( px, QImage::Format_ARGB32_Premultiplied );
             img.fill( Qt::transparent );
             if( svg.isValid() )
             {
                 QPainter p( &img );
-                svg.render( &p, QRectF( QPointF(0,0), QSizeF( px ) ) );
+                QSizeF ds = svg.defaultSize();
+                if( ds.isEmpty() ) ds = QSizeF( 1, 1 );
+                ds.scale( QSizeF( px ), Qt::KeepAspectRatio );
+                svg.render( &p, QRectF( (px.width()-ds.width())/2, (px.height()-ds.height())/2, ds.width(), ds.height() ) );
                 p.setCompositionMode( QPainter::CompositionMode_SourceIn );
                 p.fillRect( img.rect(), c );
             }

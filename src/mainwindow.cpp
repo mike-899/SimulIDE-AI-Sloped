@@ -213,6 +213,7 @@ void MainWindow::createWidgets()
     m_sidepanel->setMinimumWidth(250);
     m_sidepanel->tabBar()->setDrawBase(false);
     m_sidepanel->tabBar()->setExpanding(false);
+    m_sidepanel->setIconSize(QSize(22, 22));
     m_sidepanel->tabBar()->setFocusPolicy(Qt::NoFocus);
 
     m_components = new ComponentSelector(m_sidepanel);
