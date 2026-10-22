@@ -30,6 +30,9 @@
 #include "serialmonitor.h"
 #include "simuapi_apppath.h"
 #include "utils.h"
+#include "thememanager.h"
+
+#include <QMenuBar>
 
 MainWindow *MainWindow::m_pSelf = 0l;
 
@@ -67,6 +70,7 @@ MainWindow::MainWindow() :
         m_fontScale = dpiX / 96.0;
     }
     // qDebug()<<dpiX;
+    ThemeManager::self()->init(&m_settings);
     loadCircHelp();
     createWidgets();
     readSettings();
@@ -679,9 +683,7 @@ void MainWindow::setSerialMonitorExpanded(bool expanded)
 
 void MainWindow::toggleTheme()
 {
-    // PLACEHOLDER: theme switching is implemented by the Material theme
-    // (QSS files in resources/themes). Connect to themeToggleRequested()
-    // or replace this body to load/swap the stylesheet.
+    ThemeManager::self()->toggle();
     emit themeToggleRequested();
 }
 

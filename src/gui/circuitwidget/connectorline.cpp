@@ -20,6 +20,7 @@
 #include "connectorline.h"
 #include "connector.h"
 #include "circuitview.h"
+#include "thememanager.h"
 #include "circuit.h"
 #include "node.h"
 #include "utils.h"
@@ -476,7 +477,7 @@ void ConnectorLine::paint( QPainter* p, const QStyleOptionGraphicsItem* option, 
     //p->setPen( pen );
 
     QColor color;
-    if( isSelected() ) color = QColor( Qt::darkGray );
+    if( isSelected() ) color = ThemeManager::self()->wireSelected();
     else if( !m_isBus  && Circuit::self()->animate() )               //color = QColor( 40, 40, 60 /*Qt::black*/ );
     {
         if( m_pConnector->getVolt() > 2.5 ) color = QColor( 200, 50, 50 );
@@ -493,7 +494,7 @@ void ConnectorLine::paint( QPainter* p, const QStyleOptionGraphicsItem* option, 
         //color = QColor( volt, 50, 250-volt);
     }
     else if( m_isBus ) color =  Qt::darkGreen;
-    else color = QColor( 40, 40, 60 /*Qt::black*/ );
+    else color = ThemeManager::self()->wireColor();
 
     QPen pen( color, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin );
     //p->setBrush( Qt::green );
