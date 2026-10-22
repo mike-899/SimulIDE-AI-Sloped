@@ -24,7 +24,7 @@ TEMPLATE = app
 
 TARGET = simulide
 
-QT += core gui multimedia widgets serialport concurrent script xml svg
+QT += core gui multimedia widgets serialport concurrent script xml svg network
 
 win32-g++{
     OS = Windows
@@ -45,6 +45,11 @@ macx {
 }
 
 include(./SimulIDE.pri)
+
+# Embedded MCP server (Model Context Protocol)
+INCLUDEPATH += ./src/mcp
+HEADERS += ./src/mcp/mcpserver.h ./src/mcp/mcptools.h
+SOURCES += ./src/mcp/mcpserver.cpp ./src/mcp/mcptools.cpp
 
 QMAKE_CXXFLAGS += -Wno-unused-parameter
 QMAKE_CXXFLAGS += -Wno-missing-field-initializers
