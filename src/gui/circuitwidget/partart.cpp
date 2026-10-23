@@ -9,10 +9,15 @@
 #include "circuit.h"
 #include "component.h"
 #include "mainwindow.h"
+#include "thememanager.h"
 
+#include <QApplication>
+#include <QDir>
+#include <QFile>
 #include <QHash>
 #include <QPainter>
 #include <QPixmap>
+#include <QRegularExpression>
 #include <QSettings>
 #include <QSvgRenderer>
 
@@ -40,7 +45,7 @@ void PartArt::init()
     // Two terminal parts, pins at x=+-16 (inner end at +-8)
     add("Resistor", "mit/resistor.svg", QRectF(-16, -4, 32, 8));
     add("Diode", "fritzing/diode.svg", QRectF(-16, -5, 32, 10));
-    add("Led", "mit/led.svg", QRectF(-6.6, -26, 13.2, 26), 0,
+    add("Led", "mit/led_red.svg", QRectF(-6.6, -26, 13.2, 26), 0,
         { QLineF(-8, 0, -2.6, 0), QLineF(8, 0, 3.3, 0) });
 
     // Capacitors / inductor, pins at x=+-24 (inner end at +-16)
@@ -79,7 +84,7 @@ void PartArt::init()
 
     // Icon-only art (component keeps its own drawing on canvas)
     add("Seven Segment", "mit/sevensegment.svg", QRectF());
-    add("KeyPad", "mit/keypad.svg", QRectF());
+    add("KeyPad", "mit/keypad_4x3.svg", QRectF());
     add("LedBar", "fritzing/ledbar.svg", QRectF());
     add("Hd44780", "mit/hd44780.svg", QRectF());
     add("Lm555", "fritzing/lm555.svg", QRectF());
@@ -89,10 +94,12 @@ void PartArt::init()
     add("Current Source", "mit/currsource.svg", QRectF());
     add("SwitchDip", "mit/switchdip.svg", QRectF());
     add("Memory", "mit/memory.svg", QRectF());
+    add("Voltage Source", "mit/psu.svg", QRectF());
 
-    for (const QString &t : { "Seven Segment", "KeyPad", "LedBar", "Hd44780",
-                              "Lm555", "VoltReg", "Pcd8544", "Frequencimeter",
-                              "Current Source", "SwitchDip", "Memory" })
+    for (const QString &t :
+         { "Seven Segment", "KeyPad", "LedBar", "Hd44780", "Lm555", "VoltReg",
+           "Pcd8544", "Frequencimeter", "Current Source", "SwitchDip", "Memory",
+           "Voltage Source" })
         s_arts[t].canvas = false;
 }
 
@@ -257,4 +264,140 @@ QIcon PartArt::icon(const QString &type)
         ic.addPixmap(pm);
     }
     return ic;
+}
+
+int PartArt::packagePins(const QString &name)
+{
+    // name -> pin count, from the item lists in the data folder
+    static QHash<QString, int> pins;
+    static bool loaded = false;
+    if (!loaded) {
+        loaded = true;
+        QDir dataDir(QApplication::applicationDirPath());
+        dataDir.cd("../share/simulide/data");
+        QRegularExpression itemRe(
+            "<item\\s+name=\"([^\"]+)\"[^>]*?package=\"([^\"]+)\"");
+        QRegularExpression pinsRe("<package[^>]*?pins=\"(\\d+)\"");
+        QHash<QString, int> pkgPins;
+        for (const QString &xml : dataDir.entryList({ "*.xml" }, QDir::Files)) {
+            QFile f(dataDir.filePath(xml));
+            if (!f.open(QIODevice::ReadOnly))
+                continue;
+            QString txt = QString::fromUtf8(f.readAll());
+            auto it     = itemRe.globalMatch(txt);
+            while (it.hasNext()) {
+                auto m      = it.next();
+                QString pkg = m.captured(2);
+                if (!pkgPins.contains(pkg)) {
+                    QFile pf(dataDir.filePath(pkg + ".package"));
+                    int n = 0;
+                    if (pf.open(QIODevice::ReadOnly)) {
+                        auto pm =
+                            pinsRe.match(QString::fromUtf8(pf.read(4096)));
+                        if (pm.hasMatch())
+                            n = pm.captured(1).toInt();
+                    }
+                    pkgPins[pkg] = n;
+                }
+                pins[m.captured(1)] = pkgPins[pkg];
+            }
+        }
+    }
+    return pins.value(name, 0);
+}
+
+QIcon PartArt::chipIcon(int pins, const QString &text)
+{
+    // Generic DIP package: black body, silver legs, notch and label
+    int perSide = qBound(2, (pins > 0 ? pins : 16) / 2, 20);
+    QIcon ic;
+    for (int dpr = 1; dpr <= 2; dpr++) {
+        QPixmap pm(40 * dpr, 30 * dpr);
+        pm.setDevicePixelRatio(dpr);
+        pm.fill(Qt::transparent);
+        QPainter p(&pm);
+        p.setRenderHint(QPainter::Antialiasing);
+
+        double bw = qBound(14.0, perSide * 2.0 + 2, 38.0);
+        QRectF body(20 - bw / 2, 8, bw, 13);
+        double step = (bw - 2) / perSide;
+        p.setPen(Qt::NoPen);
+        p.setBrush(QColor(190, 190, 195));
+        for (int i = 0; i < perSide; i++) {
+            double x = body.left() + 1 + step * (i + 0.5) - step * 0.22;
+            p.drawRect(QRectF(x, body.top() - 3, step * 0.44, 3));
+            p.drawRect(QRectF(x, body.bottom(), step * 0.44, 3));
+        }
+        QLinearGradient g(body.topLeft(), body.bottomLeft());
+        g.setColorAt(0, QColor(70, 72, 76));
+        g.setColorAt(1, QColor(28, 29, 31));
+        p.setBrush(g);
+        p.setPen(QPen(QColor(10, 10, 10), 0.6));
+        p.drawRoundedRect(body, 1.2, 1.2);
+        p.setBrush(QColor(15, 15, 15));
+        p.setPen(Qt::NoPen);
+        p.drawPie(QRectF(body.left() - 2.2, body.center().y() - 2.2, 4.4, 4.4),
+                  -90 * 16, 180 * 16);
+
+        QFont f = p.font();
+        f.setPixelSize(6);
+        f.setBold(true);
+        p.setFont(f);
+        p.setPen(QColor(220, 220, 220));
+        for (int px = 6; px > 3; px--) { // Shrink label to fit the body
+            f.setPixelSize(px);
+            p.setFont(f);
+            if (p.fontMetrics().boundingRect(text).width() <= body.width() - 4)
+                break;
+        }
+        p.drawText(body.adjusted(2, 0, 0, 0), Qt::AlignCenter, text);
+
+        if (pins > 0) { // Pin count under the chip
+            f.setPixelSize(5);
+            f.setBold(false);
+            p.setFont(f);
+            p.setPen(ThemeManager::self()->textColor());
+            p.drawText(QRectF(0, 24, 40, 6), Qt::AlignCenter,
+                       QString("DIP-%1").arg(pins));
+        }
+        p.end();
+        ic.addPixmap(pm);
+    }
+    return ic;
+}
+
+QIcon PartArt::cardIcon(const QString &type, const QString &name,
+                        const QString &category, const QString &iconFile)
+{
+    if (hasIcon(type))
+        return icon(type); // Realistic art
+
+    if (!iconFile.isEmpty() && QFile::exists(iconFile)) {
+        QIcon ic(iconFile);
+        if (!ic.availableSizes().isEmpty())
+            return ic;
+    }
+    int pins     = packagePins(name);
+    QString cat  = category.split("/").first();
+    QString root = cat.toUpper();
+    bool chip    = pins > 0 || type == "PIC" || type == "AVR" ||
+                type == "Subcircuit" || type.isEmpty() ||
+                root.contains("LOGIC") || root.contains("IC") ||
+                root.contains("MICRO") || root.contains("MEMOR") ||
+                root.contains("PIC") || root.contains("AVR");
+    if (chip) {
+        QString text = (type == "PIC" || type == "AVR") ? type : name;
+        if (text.size() > 7)
+            text = text.left(7);
+        return chipIcon(pins, text);
+    }
+    // Category icon (Material Symbols)
+    QString mat = "widgets";
+    if (root.contains("SOURCE"))
+        mat = "input";
+    else if (root.contains("SWITCH") || root.contains("PASSIVE"))
+        mat = "tune";
+    else if (root.contains("METER") || root.contains("OUTPUT"))
+        mat = "image";
+    return ThemeManager::icon(mat);
 }

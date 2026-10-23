@@ -39,16 +39,9 @@ class MAINMODULE_EXPORT LedBase : public Component, public eLed
     public:
         LedBase( QObject* parent, QString type, QString id );
         ~LedBase();
-        
-        enum LedColor {
-            yellow = 0,
-            red,
-            green,
-            blue,
-            orange,
-            purple
-        };
-        
+
+        enum LedColor { yellow = 0, red, green, blue, orange, purple, white };
+
         void setColor( LedColor color ) { m_ledColor = color; }
         LedColor color() { return m_ledColor; } 
 
@@ -59,7 +52,9 @@ class MAINMODULE_EXPORT LedBase : public Component, public eLed
 
         virtual void paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget );
 
-    public slots:
+        QString artRes() const override;
+
+      public slots:
         virtual void remove();
 
     protected:

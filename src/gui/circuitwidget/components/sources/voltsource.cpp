@@ -59,7 +59,20 @@ VoltSource::VoltSource( QObject* parent, QString type, QString id )
     m_dial   = m_voltw.dial;
     m_dial->setMaximum( 1000 );
 
-    m_button->setText( QString("-- V") );
+    m_button->setText(QString("OFF"));
+
+    // Transparent widget over the painted case: LCD style output button
+    m_voltw.setAttribute(Qt::WA_TranslucentBackground);
+    m_voltw.setStyleSheet("VoltWidget{background:transparent;}");
+    m_button->setFixedSize(42, 17);
+    m_button->setStyleSheet(
+        "QPushButton{background:#0b1a0b;color:#a0a8a0;border:1px solid black;"
+        "border-radius:2px;padding:0;font-family:monospace;font-weight:bold;"
+        "font-size:10px;}"
+        "QPushButton:checked{color:#5cff6a;}");
+    m_button->setToolTip(tr("Output ON/OFF"));
+    m_button->setCursor(Qt::PointingHandCursor);
+    m_dial->setCursor(Qt::PointingHandCursor);
 
     QString nodid = id;
     nodid.append(QString("-outPin"));
@@ -112,8 +125,8 @@ void VoltSource::updateButton()
     if( checked )
         msg = QString("%1 V").arg(float(int(m_voltOut*100))/100);
     else
-        msg = QString("-- V");
-        
+        msg = QString("OFF");
+
     m_button->setText( msg );
 }
 
@@ -156,12 +169,31 @@ void VoltSource::remove()
 
 void VoltSource::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget )
 {
-    p->setBrush(Qt::white);
-    p->drawRoundedRect( QRect( -42, -66, 52, 76 ), 1, 1 );
-
-    p->fillRect( QRect( -39, -63, 49, 73 ), Qt::darkGray );
-
     Component::paint( p, option, widget );
+
+    // Bench power-supply module: dark case, knob (dial) and LCD (button)
+    p->save();
+    p->setRenderHint(QPainter::Antialiasing);
+    QRectF caseR(-43, -67, 54, 78);
+    QLinearGradient g(caseR.topLeft(), caseR.bottomLeft());
+    g.setColorAt(0, QColor(78, 84, 92));
+    g.setColorAt(1, QColor(38, 42, 47));
+    p->setPen(QPen(isSelected() ? QColor(60, 130, 230) : QColor(21, 24, 27),
+                   isSelected() ? 1.6 : 1));
+    p->setBrush(g);
+    p->drawRoundedRect(caseR, 4, 4);
+
+    p->setPen(Qt::NoPen); // Knob bezel
+    p->setBrush(QColor(25, 27, 30));
+    p->drawEllipse(QPointF(-16, -37), 21, 21);
+
+    QRadialGradient post(QPointF(7, -1), 4); // Red output post
+    post.setColorAt(0, QColor(255, 120, 110));
+    post.setColorAt(1, QColor(170, 20, 20));
+    p->setBrush(post);
+    p->setPen(QPen(QColor(90, 0, 0), 0.6));
+    p->drawEllipse(QPointF(8, 0), 3.2, 3.2);
+    p->restore();
 }
 
 #include "moc_voltsource.cpp"

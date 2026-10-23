@@ -80,9 +80,16 @@ void KeyPad::setupButtons()
 {
     bool pauseSim = Simulator::self()->isRunning();
     if( pauseSim ) Simulator::self()->pauseSim();
-    
-    m_area = QRectF( -12, -4, 16*m_cols+8, 16*m_rows+8 );
-    
+
+    // Membrane keypad: keys on a 24px pitch, all row/col pins on the ribbon
+    // connector below the card (R1..Rn then C1..Cn, like real keypads)
+    const int numPins  = m_rows + m_cols;
+    const double cardW = m_cols * 24 + 8;
+    int x0 = 8 * qRound(((cardW - 12) / 2 - (numPins - 1) * 4) / 8.0);
+    m_area =
+        QRectF(-6, -6, cardW, m_rows * 24 + 22)
+            .united(QRectF(x0 - 6, m_rows * 24, (numPins - 1) * 8 + 12, 16));
+
     for( PushBase* button : m_buttons ) 
     {
        m_buttons.removeOne( button );
@@ -95,40 +102,41 @@ void KeyPad::setupButtons()
         if( pin->scene() ) Circuit::self()->removeItem( pin );
         delete pin;
     }
-    m_pin.resize( m_rows + m_cols );
-    
+    m_pin.resize(numPins);
+
+    for (int i = 0; i < numPins; i++) {
+        QString pinId = m_id + "-Pin" + QString::number(i);
+        QPoint pinPos = QPoint(x0 + i * 8, m_rows * 24 + 24);
+        m_pin[i]      = new Pin(270, pinPos, pinId, 0, this);
+    }
+
     int labelMax = m_keyLabels.size()-1;
-    
-    for( int row=0; row<m_rows; row++ )
-    {
-        QString pinId = m_id;
-        pinId.append( QString("-Pin")+QString::number(row)) ;
-        QPoint pinPos = QPoint(m_cols*16, 8+row*16);
-        m_pin[row] = new Pin( 0, pinPos, pinId, 0, this);
-        
+
+    for (int row = 0; row < m_rows; row++) {
         for( int col=0; col<m_cols; col++ )
         {
-            QString butId = m_id+"button"+QString::number(row)+QString::number(col);
-            //qDebug()<<butId;
+            QString butId =
+                m_id + "button" + QString::number(row) + QString::number(col);
             PushBase* button = new PushBase( this, "PushBase", butId );
             button->SetupButton();
             button->setParentItem( this );
-            button->setPos( QPointF(col*16+12, 16+row*16 ) );
+            button->setPos(QPointF(0, 0));
             button->setFlag( QGraphicsItem::ItemIsSelectable, false );
             m_buttons.append( button );
-            
+
+            // Invisible click area: the key itself is painted by KeyPad
+            QPushButton *pb = button->button();
+            pb->setMaximumSize(20, 20);
+            pb->setGeometry(col * 24, row * 24, 20, 20);
+            pb->setAttribute(Qt::WA_TranslucentBackground);
+            pb->setStyleSheet("QPushButton{background:transparent;"
+                              "border:none;color:transparent;}");
+            pb->setCursor(Qt::PointingHandCursor);
+
             int pos = row*m_cols+col;
             QString buttonLabel = "";
             if( pos <= labelMax ) buttonLabel = m_keyLabels.mid( pos, 1 );
-            button->setKey( buttonLabel );
-
-            if( row == 0 )
-            {
-                QString pinId = m_id;
-                pinId.append( QString("-Pin")+QString::number(m_rows+col)) ;
-                QPoint pinPos = QPoint( col*16, m_rows*16+8);
-                m_pin[m_rows+col] = new Pin( 270, pinPos, pinId, 0, this);
-            }
+            button->setKey(buttonLabel);
         }
     }
     if( pauseSim ) Simulator::self()->resumeSim();
@@ -193,7 +201,72 @@ void KeyPad::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget
 {
     Component::paint( p, option, widget );
 
-    p->drawRoundedRect( m_area,2,2 );
+    p->save();
+    p->setRenderHint(QPainter::Antialiasing);
+
+    const int numPins  = m_rows + m_cols;
+    const double cardW = m_cols * 24 + 8;
+    const double cardH = m_rows * 24 + 8;
+    double px0         = m_pin[0]->pos().x();
+    double pinsW       = (numPins - 1) * 8;
+
+    // Ribbon cable + connector
+    p->setPen(QPen(QColor(90, 79, 48), 0.6));
+    p->setBrush(QColor(176, 156, 100));
+    p->drawRect(QRectF(px0 - 3, cardH - 8, pinsW + 6, 12));
+    p->setPen(QPen(QColor(120, 100, 60), 1.2));
+    for (int i = 0; i < numPins; i++)
+        p->drawLine(QPointF(px0 + i * 8, cardH - 6),
+                    QPointF(px0 + i * 8, cardH + 4));
+    p->setPen(QPen(Qt::black, 0.6));
+    p->setBrush(QColor(30, 30, 30));
+    p->drawRoundedRect(QRectF(px0 - 5, cardH + 3, pinsW + 10, 7), 1, 1);
+
+    // Membrane card
+    QPen cardPen(isSelected() ? QColor(60, 130, 230) : QColor(Qt::black),
+                 isSelected() ? 1.5 : 0.8);
+    p->setPen(cardPen);
+    p->setBrush(QColor(29, 29, 29));
+    p->drawRoundedRect(QRectF(-6, -6, cardW, cardH), 3, 3);
+
+    // Keys
+    QFont f = p->font();
+    f.setPixelSize(11);
+    f.setBold(true);
+    p->setFont(f);
+    for (int row = 0; row < m_rows; row++) {
+        for (int col = 0; col < m_cols; col++) {
+            int pos = row * m_cols + col;
+            if (pos >= m_buttons.size())
+                break;
+            QString label = m_keyLabels.mid(pos, 1);
+            bool letter   = !label.isEmpty() && label.at(0).isLetter();
+            bool pressed  = m_buttons.at(pos)->button()->isChecked();
+
+            QRectF kr(col * 24, row * 24, 20, 20);
+            if (pressed)
+                kr.translate(0.5, 0.8);
+            QColor kc = letter ? QColor(198, 40, 40) : QColor(242, 242, 242);
+            if (pressed)
+                kc = kc.darker(135);
+
+            QLinearGradient g(kr.topLeft(), kr.bottomLeft());
+            g.setColorAt(0, kc.lighter(pressed ? 100 : 110));
+            g.setColorAt(1, kc.darker(115));
+            p->setPen(QPen(QColor(90, 90, 90), 0.5));
+            p->setBrush(g);
+            p->drawRoundedRect(kr, 2, 2);
+            if (pressed) // Pressed key highlight
+            {
+                p->setPen(QPen(QColor(60, 160, 255), 1.2));
+                p->setBrush(Qt::NoBrush);
+                p->drawRoundedRect(kr.adjusted(0.6, 0.6, -0.6, -0.6), 2, 2);
+            }
+            p->setPen(letter ? Qt::white : QColor(34, 34, 34));
+            p->drawText(kr, Qt::AlignCenter, label);
+        }
+    }
+    p->restore();
 }
 
 #include "moc_keypad.cpp"

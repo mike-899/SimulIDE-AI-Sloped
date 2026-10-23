@@ -56,6 +56,11 @@ class MAINMODULE_EXPORT Component : public QObject, public QGraphicsItem
 
       // Realistic part art (see PartArt)
       virtual bool artActive() const; // Art exists for this type and is enabled
+      void applyThemeColors(); // Id/value label colours from ThemeManager
+      virtual QString artRes() const
+      {
+          return QString();
+      } // Art override
       bool paintArt(QPainter *p); // Paint art + selection; false if not active
       void artGeometryAboutToChange()
       {

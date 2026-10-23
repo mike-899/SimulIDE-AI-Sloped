@@ -50,8 +50,16 @@ class PartArt
     // Icon for component selector cards (null icon if no art)
     static QIcon icon(const QString &type);
 
+    // Selector card icon, never empty: part art, else iconFile, else a
+    // generated DIP chip (pin count from the item's package) or a
+    // category icon.
+    static QIcon cardIcon(const QString &type, const QString &name,
+                          const QString &category, const QString &iconFile);
+
   private:
     static void init();
+    static int packagePins(const QString &name);
+    static QIcon chipIcon(int pins, const QString &text);
     static QSvgRenderer *renderer(const QString &res);
     static QRectF fitRect(QSvgRenderer *r, const QRectF &target, int rot);
 };
