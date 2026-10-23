@@ -65,10 +65,7 @@ SerialTerm::SerialTerm(QObject *parent, QString type, QString id) :
 
 SerialTerm::~SerialTerm() {}
 
-void SerialTerm::updateStep()
-{
-
-}
+void SerialTerm::updateStep() {}
 
 void SerialTerm::setUart( int uart )
 {
