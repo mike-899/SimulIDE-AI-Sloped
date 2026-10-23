@@ -74,10 +74,12 @@
 #include "op_amp.h"
 #include "oscope.h"
 //#include "outbus.h"
-#include "piccomponent.h"
+#include "dcmotor.h"
+#include "hbridge.h"
 #include "pcd8544.h"
-#include "probe.h"
+#include "piccomponent.h"
 #include "potentiometer.h"
+#include "probe.h"
 #include "push.h"
 #include "rail.h"
 #include "rectangle.h"
@@ -98,8 +100,8 @@
 #include "switch.h"
 #include "switchdip.h"
 #include "textcomponent.h"
-#include "voltimeter.h"
 #include "volt_reg.h"
+#include "voltimeter.h"
 #include "voltsource.h"
 #include "wavegen.h"
 #include "ws2812.h"
@@ -169,6 +171,11 @@ void ItemLibrary::loadItems()
     addItem( Ssd1306::libraryItem() );
     addItem( Stepper::libraryItem() );
     addItem( Servo::libraryItem() );
+    addItem(
+        new LibraryItem(tr("Motors"), tr("Outputs"), "steeper.png", "", 0l));
+    addItem(DcMotor::libraryItem());
+    addItem(L298N::libraryItem());
+    addItem(L293D::libraryItem());
     addItem( AudioOut::libraryItem() );
     // Micro
     addItem( PICComponent::libraryItem() );

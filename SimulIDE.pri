@@ -184,6 +184,8 @@ HEADERS += \
     ./src/gui/circuitwidget/components/other/rectangle.h \
     ./src/gui/circuitwidget/components/other/textcomponent.h \
     ./src/gui/circuitwidget/components/outputs/audio_out.h \
+    ./src/gui/circuitwidget/components/outputs/dcmotor.h \
+    ./src/gui/circuitwidget/components/outputs/hbridge.h \
     ./src/gui/circuitwidget/components/outputs/hd44780.h \
     ./src/gui/circuitwidget/components/outputs/ks0108.h \
     ./src/gui/circuitwidget/components/outputs/led.h \
@@ -530,6 +532,8 @@ SOURCES += \
     ./src/gui/circuitwidget/components/other/rectangle.cpp \
     ./src/gui/circuitwidget/components/other/textcomponent.cpp \
     ./src/gui/circuitwidget/components/outputs/audio_out.cpp \
+    ./src/gui/circuitwidget/components/outputs/dcmotor.cpp \
+    ./src/gui/circuitwidget/components/outputs/hbridge.cpp \
     ./src/gui/circuitwidget/components/outputs/hd44780.cpp \
     ./src/gui/circuitwidget/components/outputs/ks0108.cpp \
     ./src/gui/circuitwidget/components/outputs/led.cpp \
