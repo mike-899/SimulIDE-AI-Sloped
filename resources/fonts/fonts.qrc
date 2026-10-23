@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/fonts">
+        <file>Inter-Regular.otf</file>
+        <file>Inter-Medium.otf</file>
+        <file>Inter-SemiBold.otf</file>
+    </qresource>
+</RCC>

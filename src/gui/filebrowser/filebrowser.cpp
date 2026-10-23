@@ -18,11 +18,46 @@
  ***************************************************************************/
 
 #include "filebrowser.h"
-#include "circuitwidget.h"
-#include "mainwindow.h"
+
 #include "circuit.h"
-#include "filewidget.h"
+#include "circuitwidget.h"
 #include "editorwindow.h"
+#include "filewidget.h"
+#include "mainwindow.h"
+#include "thememanager.h"
+
+#include <QFileIconProvider>
+
+// Material icons for the file tree (the platform provider often returns
+// blank icons when no desktop icon theme is installed).
+class MaterialFileIconProvider : public QFileIconProvider
+{
+  public:
+    QIcon icon(IconType type) const override
+    {
+        if (type == Drive)
+            return ThemeManager::icon("hard_drive");
+        if (type == File)
+            return ThemeManager::icon("draft");
+        return ThemeManager::icon("folder");
+    }
+    QIcon icon(const QFileInfo &info) const override
+    {
+        if (info.isRoot())
+            return ThemeManager::icon("hard_drive");
+        if (info.isDir())
+            return ThemeManager::icon("folder");
+        QString suf = info.suffix().toLower();
+        if (suf == "simu")
+            return ThemeManager::icon("account_tree");
+        if (suf == "png" || suf == "jpg" || suf == "svg" || suf == "bmp")
+            return ThemeManager::icon("image");
+        if (suf == "ino" || suf == "asm" || suf == "c" || suf == "cpp" ||
+            suf == "h" || suf == "gcb" || suf == "hex" || suf == "py")
+            return ThemeManager::icon("code");
+        return ThemeManager::icon("draft");
+    }
+};
 
 FileBrowser*  FileBrowser::m_pSelf = 0l;
 
@@ -33,6 +68,8 @@ FileBrowser::FileBrowser( QWidget *parent )
     m_showHidden = false;
     
     m_fileSystemModel = new QFileSystemModel(this);
+    static MaterialFileIconProvider iconProvider;
+    m_fileSystemModel->setIconProvider(&iconProvider);
     m_fileSystemModel->setRootPath( QDir::rootPath() );
     
     m_currentPath = QDir::rootPath();
@@ -124,7 +161,8 @@ void FileBrowser::contextMenuEvent( QContextMenuEvent* event )
         
         if( m_fileSystemModel->isDir( currentIndex()) )
         {
-            QAction* addBookMarkAction = menu.addAction(QIcon(":/setroot.png"),tr("Add Bookmark"));
+            QAction *addBookMarkAction = menu.addAction(
+                ThemeManager::icon("bookmark"), tr("Add Bookmark"));
             connect( addBookMarkAction, SIGNAL( triggered()), 
                      this,              SLOT(   addBookMark() ) );
                      
@@ -132,7 +170,8 @@ void FileBrowser::contextMenuEvent( QContextMenuEvent* event )
         }
         else
         {
-            QAction* openWithEditor = menu.addAction(QIcon(":/open.png"),tr("Open in editor"));
+            QAction *openWithEditor = menu.addAction(ThemeManager::icon("code"),
+                                                     tr("Open in editor"));
             connect( openWithEditor, SIGNAL( triggered()), 
                      this,           SLOT(   openInEditor()) );
                      

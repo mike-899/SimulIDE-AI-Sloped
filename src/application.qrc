@@ -155,6 +155,20 @@
     </qresource>
     <qresource prefix="/material">
         <file alias="account_tree.svg">../src/icons/material/account_tree.svg</file>
+        <file alias="arrow_drop_down.svg">../src/icons/material/arrow_drop_down.svg</file>
+        <file alias="arrow_drop_up.svg">../src/icons/material/arrow_drop_up.svg</file>
+        <file alias="arrow_upward.svg">../src/icons/material/arrow_upward.svg</file>
+        <file alias="bookmark.svg">../src/icons/material/bookmark.svg</file>
+        <file alias="check.svg">../src/icons/material/check.svg</file>
+        <file alias="check_small.svg">../src/icons/material/check_small.svg</file>
+        <file alias="chevron_right.svg">../src/icons/material/chevron_right.svg</file>
+        <file alias="database.svg">../src/icons/material/database.svg</file>
+        <file alias="draft.svg">../src/icons/material/draft.svg</file>
+        <file alias="hard_drive.svg">../src/icons/material/hard_drive.svg</file>
+        <file alias="home.svg">../src/icons/material/home.svg</file>
+        <file alias="menu_book.svg">../src/icons/material/menu_book.svg</file>
+        <file alias="radio_button_checked.svg">../src/icons/material/radio_button_checked.svg</file>
+        <file alias="settings.svg">../src/icons/material/settings.svg</file>
         <file alias="bug_report.svg">../src/icons/material/bug_report.svg</file>
         <file alias="build.svg">../src/icons/material/build.svg</file>
         <file alias="close.svg">../src/icons/material/close.svg</file>

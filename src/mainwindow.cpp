@@ -35,6 +35,7 @@
 #include "thememanager.h"
 #include "utils.h"
 
+#include <QGraphicsDropShadowEffect>
 #include <QMenuBar>
 
 MainWindow *MainWindow::m_pSelf = 0l;
@@ -214,7 +215,7 @@ void MainWindow::createWidgets()
     m_sidepanel->setMinimumWidth(250);
     m_sidepanel->tabBar()->setDrawBase(false);
     m_sidepanel->tabBar()->setExpanding(false);
-    m_sidepanel->setIconSize(QSize(22, 22));
+    m_sidepanel->setIconSize(QSize(24, 24));
     m_sidepanel->tabBar()->setFocusPolicy(Qt::NoFocus);
 
     m_components = new ComponentSelector(m_sidepanel);
@@ -361,7 +362,10 @@ void MainWindow::createTopBar()
     m_componentsButton->setIconSize(QSize(20, 20));
     connect(m_componentsButton, SIGNAL(toggled(bool)), this,
             SLOT(setComponentPanelVisible(bool)));
-    layout->addWidget(m_componentsButton);
+    QHBoxLayout *segment = new QHBoxLayout();
+    segment->setSpacing(0);
+    segment->addWidget(m_componentsButton);
+    layout->addLayout(segment);
 
     m_codeButton = new QPushButton(materialIcon("code"), tr("Code"), m_topBar);
     m_codeButton->setObjectName("codeButton");
@@ -370,7 +374,8 @@ void MainWindow::createTopBar()
     m_codeButton->setIconSize(QSize(20, 20));
     connect(m_codeButton, SIGNAL(toggled(bool)), this,
             SLOT(setCodePanelVisible(bool)));
-    layout->addWidget(m_codeButton);
+    segment->addWidget(m_codeButton);
+    layout->addSpacing(8);
 
     m_simButton = new QPushButton(m_topBar);
     m_simButton->setObjectName("simButton");
@@ -715,6 +720,12 @@ void MainWindow::createInspector()
     m_inspector->setFrameShape(QFrame::StyledPanel);
     m_inspector->setAttribute(Qt::WA_StyledBackground, true);
     m_inspector->setAutoFillBackground(false);
+    QGraphicsDropShadowEffect *shadow =
+        new QGraphicsDropShadowEffect(m_inspector);
+    shadow->setBlurRadius(16);
+    shadow->setOffset(0, 2);
+    shadow->setColor(QColor(0, 0, 0, 60));
+    m_inspector->setGraphicsEffect(shadow);
 
     QVBoxLayout *layout = new QVBoxLayout(m_inspector);
     layout->setContentsMargins(12, 8, 12, 12);
@@ -805,9 +816,15 @@ void MainWindow::updateInspector()
         m_inspectedComp = 0l;
         return;
     }
-    if (m_inspectedComp.data() != sel) {
+    // Circuit::mousePressEvent points the property editor at the circuit
+    // on every click; if the click then lands on a child item of the
+    // selected component (display, pin, label...) the component never
+    // re-claims the editor. Always re-sync with the selection.
+    QPropertyEditorWidget *editor = QPropertyEditorWidget::self();
+    if (m_inspectedComp.data() != sel || editor->object() != sel) {
         m_inspectedComp = sel;
-        QPropertyEditorWidget::self()->setObject(sel);
+        editor->setObject(sel);
+        PropertiesWidget::self()->setHelpText(sel->helpText());
         m_inspectorTitle->setText(sel->itemType() + "  " + sel->itemID());
     }
     if (!m_inspector->isVisible()) {
