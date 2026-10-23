@@ -1,0 +1,338 @@
+/* Material Design 3 theme for SimulIDE.
+ * This is a template: ThemeManager replaces ${token} with the colour of the
+ * active (light / dark) tonal palette and @icon(name,token) with a path to a
+ * Material Symbols SVG tinted with that colour. */
+
+* { font-family: "Inter"; }
+
+QMainWindow, QWidget#centralWidget { background: ${surface}; color: ${onSurface}; }
+QDialog, QMessageBox, QInputDialog, QFileDialog { background: ${surfaceContainerHigh}; color: ${onSurface}; }
+QWidget { color: ${onSurface}; selection-background-color: ${primaryContainer}; selection-color: ${onPrimaryContainer}; }
+QLabel { background: transparent; }
+QMessageBox QLabel { color: ${onSurfaceVariant}; }
+
+/* ---- Splitters ---- */
+QSplitter::handle { background: ${outlineVariant}; }
+QSplitter::handle:horizontal { width: 1px; }
+QSplitter::handle:vertical { height: 1px; }
+QSplitter::handle:hover { background: ${primary}; }
+
+/* ---- Buttons: default = M3 outlined button (pill, 40px) ---- */
+QPushButton {
+    background: transparent; color: ${primary};
+    border: 1px solid ${outline}; border-radius: 20px;
+    padding: 0px 24px; min-height: 38px; font-weight: 500;
+}
+QPushButton:hover { background: ${primaryHoverLayer}; }
+QPushButton:pressed { background: ${primaryPressedLayer}; }
+QPushButton:checked { background: ${secondaryContainer}; color: ${onSecondaryContainer}; border-color: ${secondaryContainer}; }
+QPushButton:disabled { color: ${disabledText}; border-color: ${disabledContainer}; background: transparent; }
+/* Dialog default button = M3 filled button */
+QPushButton:default { background: ${primary}; color: ${onPrimary}; border: 1px solid ${primary}; }
+QPushButton:default:hover { background: ${primary_hover}; border-color: ${primary_hover}; }
+QPushButton:default:pressed { background: ${primary_pressed}; border-color: ${primary_pressed}; }
+QPushButton:default:disabled { background: ${disabledContainer}; color: ${disabledText}; border-color: transparent; }
+QPushButton::menu-indicator { image: none; width: 0px; }
+
+/* ---- Icon buttons: circular 40px with state layers ---- */
+QToolButton {
+    background: transparent; border: none; border-radius: 20px;
+    padding: 8px; color: ${onSurfaceVariant};
+}
+QToolButton:hover { background: ${hoverLayer}; }
+QToolButton:pressed { background: ${pressedLayer}; }
+QToolButton:checked { background: ${secondaryContainer}; color: ${onSecondaryContainer}; }
+QToolButton:checked:hover { background: ${secondaryContainer_hover}; }
+QToolButton:disabled { color: ${disabledText}; }
+QToolButton::menu-indicator { image: none; width: 0px; }
+QToolButton::menu-button { border: none; width: 14px; border-radius: 7px; }
+
+/* ---- Toolbars ---- */
+QToolBar { background: ${surface}; border: none; spacing: 2px; padding: 4px 8px; }
+QToolBar::separator { background: ${outlineVariant}; width: 1px; margin: 10px 6px; }
+QToolBar QToolButton { padding: 8px; border-radius: 18px; }
+
+/* ---- Text inputs: M3 outlined text field ---- */
+QLineEdit, QSpinBox, QDoubleSpinBox, QAbstractSpinBox {
+    background: transparent; color: ${onSurface};
+    border: 1px solid ${outline}; border-radius: 4px;
+    padding: 0px 12px; min-height: 34px;
+    selection-background-color: ${primary}; selection-color: ${onPrimary};
+}
+QLineEdit:hover, QAbstractSpinBox:hover { border-color: ${onSurface}; }
+QLineEdit:focus, QAbstractSpinBox:focus { border: 2px solid ${primary}; padding: 0px 11px; }
+QLineEdit:disabled, QAbstractSpinBox:disabled { color: ${disabledText}; border-color: ${disabledContainer}; }
+QPlainTextEdit, QTextEdit, QTextBrowser {
+    background: ${surfaceContainerLowest}; color: ${onSurface};
+    border: 1px solid ${outlineVariant}; border-radius: 12px; padding: 4px;
+    selection-background-color: ${primaryContainer}; selection-color: ${onPrimaryContainer};
+}
+QPlainTextEdit:focus, QTextEdit:focus { border: 1px solid ${primary}; }
+
+QAbstractSpinBox { padding-right: 28px; }
+QAbstractSpinBox:focus { padding-right: 27px; }
+QAbstractSpinBox::up-button, QAbstractSpinBox::down-button {
+    subcontrol-origin: border; width: 24px; border: none; background: transparent; border-radius: 4px; margin-right: 2px;
+}
+QAbstractSpinBox::up-button { subcontrol-position: top right; margin-top: 2px; }
+QAbstractSpinBox::down-button { subcontrol-position: bottom right; margin-bottom: 2px; }
+QAbstractSpinBox::up-button:hover, QAbstractSpinBox::down-button:hover { background: ${hoverLayer}; }
+QAbstractSpinBox::up-arrow { image: @icon(arrow_drop_up,onSurfaceVariant); width: 18px; height: 18px; }
+QAbstractSpinBox::down-arrow { image: @icon(arrow_drop_down,onSurfaceVariant); width: 18px; height: 18px; }
+QAbstractSpinBox::up-arrow:disabled, QAbstractSpinBox::down-arrow:disabled { image: none; }
+
+/* ---- Dropdown: M3 outlined exposed dropdown menu ---- */
+QComboBox {
+    background: transparent; color: ${onSurface};
+    border: 1px solid ${outline}; border-radius: 4px;
+    padding: 0px 8px 0px 12px; min-height: 34px;
+}
+QComboBox:hover { border-color: ${onSurface}; }
+QComboBox:focus, QComboBox:on { border: 2px solid ${primary}; padding: 0px 7px 0px 11px; }
+QComboBox:disabled { color: ${disabledText}; border-color: ${disabledContainer}; }
+QComboBox::drop-down { subcontrol-origin: padding; subcontrol-position: center right; border: none; width: 28px; }
+QComboBox::down-arrow { image: @icon(arrow_drop_down,onSurfaceVariant); width: 24px; height: 24px; }
+QComboBox::down-arrow:on { image: @icon(arrow_drop_up,primary); }
+QComboBox QAbstractItemView {
+    background: ${surfaceContainer}; color: ${onSurface};
+    border: 1px solid ${outlineVariant}; border-radius: 4px;
+    padding: 8px 0px; outline: 0;
+    selection-background-color: ${secondaryContainer}; selection-color: ${onSecondaryContainer};
+}
+QComboBox QAbstractItemView::item { min-height: 40px; padding: 0px 12px; border: none; }
+QComboBox QAbstractItemView::item:hover { background: ${hoverLayer}; }
+QComboBox QAbstractItemView::item:selected { background: ${secondaryContainer}; color: ${onSecondaryContainer}; }
+
+/* ---- Selection controls ---- */
+QCheckBox, QRadioButton { spacing: 10px; color: ${onSurface}; background: transparent; min-height: 28px; }
+QCheckBox:disabled, QRadioButton:disabled { color: ${disabledText}; }
+QCheckBox::indicator {
+    width: 14px; height: 14px; border: 2px solid ${onSurfaceVariant}; border-radius: 3px; background: transparent;
+}
+QCheckBox::indicator:hover { border-color: ${onSurface}; background: ${hoverLayer}; }
+QCheckBox::indicator:checked, QCheckBox::indicator:indeterminate {
+    border-color: ${primary}; background: ${primary}; image: @icon(check_small,onPrimary);
+}
+QCheckBox::indicator:disabled { border-color: ${disabledText}; }
+QCheckBox::indicator:checked:disabled { background: ${disabledText}; border-color: transparent; }
+QRadioButton::indicator {
+    width: 14px; height: 14px; border: 2px solid ${onSurfaceVariant}; border-radius: 9px; background: transparent;
+}
+QRadioButton::indicator:hover { border-color: ${onSurface}; background: ${hoverLayer}; }
+QRadioButton::indicator:checked { border: 2px solid ${primary}; background: qradialgradient(cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5, stop:0 ${primary}, stop:0.55 ${primary}, stop:0.6 transparent, stop:1 transparent); }
+
+/* ---- Menus: rounded surface-container with 48px items ---- */
+QMenuBar { background: ${surface}; border: none; padding: 2px; }
+QMenuBar::item { background: transparent; padding: 6px 12px; border-radius: 16px; }
+QMenuBar::item:selected { background: ${hoverLayer}; }
+QMenu {
+    background: ${surfaceContainer}; color: ${onSurface};
+    border: 1px solid ${outlineVariant}; border-radius: 8px; padding: 8px 0px;
+}
+QMenu::item {
+    background: transparent; padding: 0px 24px 0px 12px; min-height: 48px; min-width: 112px;
+    border: none; margin: 0px;
+}
+QMenu::item:selected { background: ${hoverLayer}; color: ${onSurface}; }
+QMenu::item:pressed { background: ${pressedLayer}; }
+QMenu::item:disabled { color: ${disabledText}; background: transparent; }
+QMenu::icon { padding-left: 12px; }
+QMenu::right-arrow { image: @icon(chevron_right,onSurfaceVariant); width: 20px; height: 20px; margin-right: 8px; }
+QMenu::indicator { width: 18px; height: 18px; margin-left: 12px; }
+QMenu::indicator:non-exclusive:checked { image: @icon(check,primary); }
+QMenu::indicator:exclusive:checked { image: @icon(radio_button_checked,primary); }
+QMenu::separator { height: 1px; background: ${outlineVariant}; margin: 8px 0px; }
+
+/* ---- Tabs: M3 primary tabs ---- */
+QTabWidget::pane { border: none; border-top: 1px solid ${outlineVariant}; background: ${surface}; top: -1px; }
+QTabWidget::tab-bar { left: 0px; }
+QTabBar { background: transparent; border: none; outline: 0; qproperty-drawBase: 0; }
+QTabBar::tab {
+    background: transparent; color: ${onSurfaceVariant};
+    padding: 0px 16px; min-height: 45px; margin: 0px;
+    border: none; border-bottom: 3px solid transparent; border-top-left-radius: 3px; border-top-right-radius: 3px;
+    font-weight: 500;
+}
+QTabBar::tab:hover { background: ${hoverLayer}; color: ${onSurface}; }
+QTabBar::tab:pressed { background: ${pressedLayer}; }
+QTabBar::tab:selected { color: ${primary}; border-bottom: 3px solid ${primary}; }
+QTabBar::tab:selected:hover { background: ${primaryHoverLayer}; }
+QTabBar::close-button { image: @icon(close,onSurfaceVariant); subcontrol-position: right; border-radius: 9px; margin-left: 4px; }
+QTabBar::close-button:hover { background: ${hoverLayer}; }
+QTabBar::scroller { width: 32px; }
+QTabBar QToolButton { border-radius: 14px; padding: 2px; background: ${surface}; }
+
+/* ---- Item views ---- */
+QTreeView, QListView, QTableView, QTreeWidget, QListWidget, QTableWidget, QColumnView {
+    background: ${surface}; alternate-background-color: ${surfaceContainerLow}; border: none;
+    outline: 0; show-decoration-selected: 1; color: ${onSurface};
+}
+QTreeView::item, QListView::item { min-height: 32px; padding: 0px 8px; border: none; }
+QTreeView::item:hover, QListView::item:hover { background: ${hoverLayer}; }
+QTreeView::item:selected, QListView::item:selected { background: ${secondaryContainer}; color: ${onSecondaryContainer}; }
+QTreeView::branch { background: transparent; }
+QTreeView::branch:has-children:!has-siblings:closed, QTreeView::branch:closed:has-children:has-siblings {
+    image: @icon(chevron_right,onSurfaceVariant);
+}
+QTreeView::branch:open:has-children:!has-siblings, QTreeView::branch:open:has-children:has-siblings {
+    image: @icon(expand_more,onSurfaceVariant);
+}
+QHeaderView { background: ${surfaceContainerLow}; border: none; }
+QHeaderView::section {
+    background: ${surfaceContainerLow}; color: ${onSurfaceVariant}; border: none;
+    border-bottom: 1px solid ${outlineVariant}; border-right: 1px solid ${outlineVariant};
+    padding: 6px 8px; font-weight: 500;
+}
+QTableView { gridline-color: ${outlineVariant}; selection-background-color: ${secondaryContainer}; selection-color: ${onSecondaryContainer}; }
+QTableView QTableCornerButton::section { background: ${surfaceContainerLow}; border: none; }
+
+/* ---- Docks ---- */
+QDockWidget { color: ${onSurface}; }
+QDockWidget::title { background: ${surfaceContainer}; padding: 8px 12px; border: none; }
+
+/* ---- Scrollbars: thin, rounded ---- */
+QScrollBar:vertical { background: transparent; width: 10px; margin: 2px 2px 2px 0px; }
+QScrollBar:horizontal { background: transparent; height: 10px; margin: 0px 2px 2px 2px; }
+QScrollBar::handle { background: ${scrollHandle}; border-radius: 4px; }
+QScrollBar::handle:vertical { min-height: 32px; width: 8px; }
+QScrollBar::handle:horizontal { min-width: 32px; height: 8px; }
+QScrollBar::handle:hover { background: ${outline}; }
+QScrollBar::add-line, QScrollBar::sub-line { width: 0px; height: 0px; border: none; background: none; }
+QScrollBar::add-page, QScrollBar::sub-page { background: none; }
+QAbstractScrollArea::corner { background: transparent; }
+
+/* ---- Tooltip: M3 plain tooltip ---- */
+QToolTip {
+    background: ${inverseSurface}; color: ${inverseOnSurface};
+    border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px;
+}
+
+/* ---- Misc ---- */
+QGroupBox {
+    background: ${surfaceContainerLow}; border: none; border-radius: 12px;
+    margin-top: 24px; padding: 12px 8px 8px 8px; font-weight: 500;
+}
+QGroupBox::title { subcontrol-origin: margin; subcontrol-position: top left; left: 12px; padding: 4px 0px; color: ${onSurfaceVariant}; }
+QSlider::groove:horizontal { height: 4px; background: ${secondaryContainer}; border-radius: 2px; }
+QSlider::sub-page:horizontal { background: ${primary}; border-radius: 2px; }
+QSlider::handle:horizontal { background: ${primary}; width: 20px; height: 20px; margin: -8px 0px; border-radius: 10px; }
+QSlider::groove:vertical { width: 4px; background: ${secondaryContainer}; border-radius: 2px; }
+QSlider::handle:vertical { background: ${primary}; width: 20px; height: 20px; margin: 0px -8px; border-radius: 10px; }
+QProgressBar { border: none; background: ${secondaryContainer}; border-radius: 2px; text-align: center; max-height: 4px; }
+QProgressBar::chunk { background: ${primary}; border-radius: 2px; }
+QStatusBar { background: ${surfaceContainer}; border: none; color: ${onSurfaceVariant}; }
+QGraphicsView { border: none; background: ${surfaceContainerLow}; }
+QDialogButtonBox { button-layout: 0; }
+
+/* =====================================================================
+ *   Application specific objects
+ * ===================================================================== */
+
+/* ---- Top app bar ---- */
+#topBar { background: ${surfaceContainer}; border: none; }
+#topBar QLabel#appTitle { color: ${onSurface}; }
+#topBar QLabel#projectName { color: ${onSurfaceVariant}; }
+QFrame#topBarSeparator { background: ${outlineVariant}; border: none; max-width: 1px; min-width: 1px; margin: 10px 4px; }
+#topBar QToolButton { padding: 8px; border-radius: 20px; min-width: 24px; min-height: 24px; }
+
+/* Segmented button: Components | Code */
+QPushButton#componentsButton, QPushButton#codeButton {
+    background: transparent; color: ${onSurface}; border: 1px solid ${outline};
+    min-height: 38px; padding: 0px 16px; font-weight: 500;
+}
+QPushButton#componentsButton { border-top-left-radius: 20px; border-bottom-left-radius: 20px; border-top-right-radius: 0px; border-bottom-right-radius: 0px; }
+QPushButton#codeButton { border-top-right-radius: 20px; border-bottom-right-radius: 20px; border-top-left-radius: 0px; border-bottom-left-radius: 0px; border-left: none; }
+QPushButton#componentsButton:hover, QPushButton#codeButton:hover { background: ${hoverLayer}; }
+QPushButton#componentsButton:pressed, QPushButton#codeButton:pressed { background: ${pressedLayer}; }
+QPushButton#componentsButton:checked, QPushButton#codeButton:checked { background: ${secondaryContainer}; color: ${onSecondaryContainer}; }
+QPushButton#componentsButton:checked:hover, QPushButton#codeButton:checked:hover { background: ${secondaryContainer_hover}; }
+
+/* Extended-FAB-like Start Simulation */
+QPushButton#simButton {
+    background: ${success}; color: #FFFFFF; border: none; border-radius: 20px;
+    min-height: 40px; padding: 0px 24px 0px 18px; font-weight: 600;
+}
+QPushButton#simButton:hover { background: ${success_hover}; }
+QPushButton#simButton:pressed { background: ${success_pressed}; }
+QPushButton#simButton[simState="On"], QPushButton#simButton[simState="Paused"] { background: ${danger}; }
+QPushButton#simButton[simState="On"]:hover, QPushButton#simButton[simState="Paused"]:hover { background: ${danger_hover}; }
+QPushButton#simButton:disabled { background: ${disabledContainer}; color: ${disabledText}; }
+
+/* ---- Edit toolbar under the top bar ---- */
+QToolBar#editToolBar { background: ${surfaceContainer}; border: none; border-bottom: 1px solid ${outlineVariant}; padding: 0px 8px 4px 8px; }
+QLabel#simSpeedLabel { color: ${onSurfaceVariant}; background: ${surfaceContainerHighest}; border-radius: 8px; padding: 4px 10px; }
+
+/* ---- Side panel ---- */
+QTabWidget#sidePanel::pane { background: ${surface}; }
+QTabWidget#sidePanel > QTabBar::tab { min-width: 24px; }
+#componentPanel, #ramTabWidget, #fileExplorer { background: ${surface}; }
+QLabel#componentPanelTitle { color: ${onSurface}; font-size: 15px; font-weight: 600; padding-left: 4px; }
+
+/* Search bar: pill, 56px, surface-container-high */
+QLineEdit#componentSearch {
+    background: ${surfaceContainerHigh}; color: ${onSurface}; border: none; border-radius: 28px;
+    min-height: 56px; max-height: 56px; padding: 0px 16px 0px 8px; font-size: 14px;
+}
+QLineEdit#componentSearch:hover { background: ${surfaceContainerHigh_hover}; }
+QLineEdit#componentSearch:focus { border: none; padding: 0px 16px 0px 8px; background: ${surfaceContainerHighest}; }
+
+/* Category dropdown: M3 filled dropdown */
+QComboBox#componentCategoryBox {
+    background: ${surfaceContainerHighest}; border: none; border-bottom: 1px solid ${onSurfaceVariant};
+    border-top-left-radius: 4px; border-top-right-radius: 4px; border-bottom-left-radius: 0px; border-bottom-right-radius: 0px;
+    min-height: 40px; padding: 0px 8px 0px 12px;
+}
+QComboBox#componentCategoryBox:hover { background: ${surfaceContainerHighest_hover}; }
+QComboBox#componentCategoryBox:on, QComboBox#componentCategoryBox:focus { border: none; border-bottom: 2px solid ${primary}; padding: 0px 8px 0px 12px; }
+
+QLabel#componentSection { color: ${primary}; font-weight: 600; font-size: 12px; padding: 12px 4px 4px 4px; }
+QLabel#componentEmpty { color: ${onSurfaceVariant}; padding: 24px; }
+QScrollArea#componentScroll, QWidget#componentGrid { background: transparent; border: none; }
+
+/* Component cards: M3 filled cards, 12px radius */
+QFrame#componentCard {
+    background: ${surfaceContainerLow}; border: 1px solid ${outlineVariant}; border-radius: 12px;
+}
+QFrame#componentCard:hover { background: ${surfaceContainerLow_hover}; border-color: ${outline}; }
+QLabel#componentCardIcon { background: transparent; border: none; }
+QLabel#componentCardLabel { background: transparent; color: ${onSurfaceVariant}; border: none; }
+
+/* File explorer */
+#fileExplorer QListWidget { background: ${surface}; }
+#fileExplorer QListWidget::item { min-height: 36px; border-radius: 18px; margin: 1px 8px; padding: 0px 8px; }
+#fileExplorer QPushButton { min-width: 38px; max-width: 38px; padding: 0px; border-radius: 20px; }
+
+/* ---- Floating property inspector: M3 elevated card ---- */
+QFrame#propertyInspector {
+    background: ${surfaceContainerLow}; border: 1px solid ${outlineVariant}; border-radius: 12px;
+}
+QFrame#propertyInspector QWidget { background: transparent; }
+QFrame#propertyInspector QLineEdit, QFrame#propertyInspector QAbstractSpinBox,
+QFrame#propertyInspector QComboBox { background: ${surfaceContainerLowest}; min-height: 30px; }
+QFrame#propertyInspector QAbstractItemView { background: ${surfaceContainer}; }
+QLabel#propertyInspectorTitle { color: ${onSurface}; font-size: 15px; font-weight: 600; padding: 2px 4px; }
+QToolButton#propertyInspectorCollapse { padding: 6px; border-radius: 16px; }
+
+/* ---- Code panel / serial monitor ---- */
+QWidget#codePanel { background: ${surface}; }
+QWidget#codePanelHeader { background: ${surfaceContainer}; border-bottom: 1px solid ${outlineVariant}; }
+QLabel#codePanelTitle { color: ${onSurface}; font-size: 15px; font-weight: 600; padding-left: 8px; }
+QToolButton#codePanelClose { padding: 8px; border-radius: 20px; }
+QToolBar#editorToolBar, QToolBar#debuggerToolBar { background: ${surfaceContainerLow}; border: none; border-bottom: 1px solid ${outlineVariant}; padding: 2px 4px; }
+QWidget#serialMonitorPanel { background: ${surfaceContainerLow}; border-top: 1px solid ${outlineVariant}; }
+QToolButton#serialMonitorToggle {
+    background: ${surfaceContainer}; color: ${onSurface}; border: none; border-radius: 0px;
+    min-height: 32px; padding: 4px 16px; text-align: left; font-weight: 600;
+}
+QToolButton#serialMonitorToggle:hover { background: ${surfaceContainer_hover}; }
+QToolButton#serialMonitorToggle:checked { background: ${surfaceContainer}; color: ${primary}; }
+QPlainTextEdit#serialMonitorOutput, QTextEdit#serialMonitorOutput {
+    background: ${surfaceContainerLowest}; border-radius: 12px; font-family: "JetBrains Mono", "Consolas", monospace;
+}
+QLabel#serialMonitorStatus { color: ${onSurfaceVariant}; }
+QPushButton#serialMonitorSend { background: ${primary}; color: ${onPrimary}; border: none; }
+QPushButton#serialMonitorSend:hover { background: ${primary_hover}; }
+QPushButton#serialMonitorSend:pressed { background: ${primary_pressed}; }
+QToolButton#propertiesHelpToggle { padding: 4px 12px 4px 8px; border-radius: 16px; color: ${primary}; font-weight: 500; }
+QPlainTextEdit#propertiesHelp { background: ${surfaceContainerHighest}; border: none; border-radius: 8px; color: ${onSurfaceVariant}; }
+QFrame#propertyInspector QTreeView { background: transparent; }

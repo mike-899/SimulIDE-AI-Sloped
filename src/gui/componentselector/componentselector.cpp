@@ -25,6 +25,8 @@
 #include "thememanager.h"
 
 #include <QDomDocument>
+#include <QGraphicsView>
+#include <QTimer>
 
 // Item data roles used in the (hidden) model tree
 static const int TypeRole = Qt::UserRole; // component type ("" for categories)
@@ -126,11 +128,53 @@ void ComponentCard::mouseMoveEvent(QMouseEvent *event)
 
     QDrag *drag = new QDrag(this);
     drag->setMimeData(mimeData);
-    QLabel *icon = findChild<QLabel *>("componentCardIcon");
-    if (icon && icon->pixmap())
-        drag->setPixmap(*icon->pixmap());
+
+    // The drag pixmap itself is transparent: over the canvas the circuit
+    // shows the real component preview, so a second "ghost" would look
+    // duplicated. Outside the canvas a small floating card follows the
+    // cursor instead.
+    QPixmap empty(1, 1);
+    empty.fill(Qt::transparent);
+    drag->setPixmap(empty);
+    drag->setHotSpot(QPoint(0, 0));
+
+    QLabel *ghost   = 0l;
+    QTimer *tracker = 0l;
+    QLabel *icon    = findChild<QLabel *>("componentCardIcon");
+    if (icon && icon->pixmap()) {
+        ghost = new QLabel(0l, Qt::ToolTip | Qt::FramelessWindowHint |
+                                   Qt::WindowStaysOnTopHint);
+        ghost->setAttribute(Qt::WA_TransparentForMouseEvents);
+        ghost->setAttribute(Qt::WA_ShowWithoutActivating);
+        ghost->setAttribute(Qt::WA_TranslucentBackground);
+        ghost->setPixmap(*icon->pixmap());
+        ghost->setStyleSheet("background: transparent;");
+        ghost->adjustSize();
+
+        tracker     = new QTimer(this);
+        auto follow = [ghost]() {
+            QPoint pos  = QCursor::pos();
+            QWidget *w  = QApplication::widgetAt(pos);
+            bool canvas = false;
+            for (QWidget *p = w; p; p = p->parentWidget())
+                if (qobject_cast<QGraphicsView *>(p)) {
+                    canvas = true;
+                    break;
+                }
+            ghost->move(pos + QPoint(14, 14));
+            ghost->setVisible(!canvas);
+        };
+        connect(tracker, &QTimer::timeout, ghost, follow);
+        follow();
+        tracker->start(16);
+    }
 
     drag->exec(Qt::CopyAction | Qt::MoveAction, Qt::CopyAction);
+
+    if (tracker)
+        tracker->deleteLater();
+    if (ghost)
+        ghost->deleteLater();
     setCursor(Qt::OpenHandCursor);
 }
 

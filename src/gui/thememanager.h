@@ -36,6 +36,10 @@ class ThemeManager : public QObject
         return m_theme == Dark;
     }
 
+    // Material 3 colour role of the active palette (e.g. "primary",
+    // "surfaceContainerHigh", "onSurfaceVariant").
+    QColor token(const QString &name) const;
+
     // Theme-aware colours for manually painted items
     QColor canvasBackground() const;
     QColor gridDot() const;

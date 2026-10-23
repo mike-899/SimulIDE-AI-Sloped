@@ -72,6 +72,10 @@ class MAINMODULE_EXPORT Component : public QObject, public QGraphicsItem
         void setIdLabel( QString id );
 
         QString itemID();
+        QString *helpText()
+        {
+            return m_help;
+        }
         void setId( QString id );
         
         bool showId();
