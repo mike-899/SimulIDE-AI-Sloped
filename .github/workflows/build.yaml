@@ -144,8 +144,12 @@ jobs:
           cp -a "$OUT/share" dist-root/SimulIDE/share
           cp LICENSE dist-root/SimulIDE/
           cd dist-root/SimulIDE
-          WDQ=$(command -v windeployqt || command -v windeployqt-qt5)
-          "$WDQ" --release --no-translations --no-opengl-sw bin/simulide.exe
+          WDQ=$(command -v windeployqt-qt5 || command -v windeployqt)
+          # MSYS2's Qt5 is built without ANGLE, so windeployqt exits 1 on the
+          # missing libGLESv2.dll after deploying everything else; the ldd
+          # loop below copies any DLL it still misses.
+          "$WDQ" --release --no-translations --no-opengl-sw --no-angle \
+            bin/simulide.exe || echo "windeployqt exited $?, continuing"
           # Copy remaining MinGW runtime DLLs (a DLL can pull in more DLLs)
           for pass in 1 2 3; do
             find bin \( -name '*.dll' -o -name '*.exe' \) | while read -r f; do
