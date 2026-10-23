@@ -164,6 +164,17 @@ void RelayBase::paint( QPainter* p, const QStyleOptionGraphicsItem* option, QWid
 {
     Component::paint( p, option, widget );
 
+    if (paintArt(p)) // Realistic part art
+    {
+        p->save();
+        p->setRenderHint(QPainter::Antialiasing);
+        p->setPen(Qt::NoPen);
+        p->setBrush(m_closed ? QColor(60, 220, 90) : QColor(90, 90, 90));
+        p->drawEllipse(QPointF(m_area.right() - 4, m_area.top() + 4), 2, 2);
+        p->restore();
+        return;
+    }
+
     p->setBrush(Qt::white);
     p->drawRect( m_area );
 

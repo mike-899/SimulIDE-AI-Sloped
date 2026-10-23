@@ -95,6 +95,9 @@ void Resistor::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidg
 {
     Component::paint( p, option, widget );
 
+    if (paintArt(p))
+        return; // Realistic part art
+
     p->drawRect( -10.5, -4, 21, 8 );
 }
 

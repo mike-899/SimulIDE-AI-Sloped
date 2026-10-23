@@ -93,6 +93,9 @@ void Rail::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *
 {
     Component::paint( p, option, widget );
 
+    if (paintArt(p))
+        return; // Realistic part art
+
     p->setBrush( QColor( 255, 166, 0 ) );
 
     p->drawRoundedRect( QRectF( -8, -8, 16, 16 ), 2, 2);

@@ -25,55 +25,123 @@
 #include "compplugindialog.h"
 #include "itemlibrary.h"
 
-class MAINMODULE_EXPORT ComponentSelector : public QTreeWidget
+// One tile in the component grid: icon on top, name below.
+// Dragging it into the circuit creates the component (same mime
+// format the old tree list used: text = name/id, html = type).
+class MAINMODULE_EXPORT ComponentCard : public QFrame
 {
     Q_OBJECT
-    
-    public:
-        ComponentSelector( QWidget* parent );
-        ~ComponentSelector();
 
- static ComponentSelector* self() { return m_pSelf; }
+  public:
+    ComponentCard(QWidget *parent, const QString &name, const QString &info,
+                  const QIcon &icon, const QString &type,
+                  const QString &dragId);
 
-        void addLibraryItem( LibraryItem* libItem );
-        //void removeLibItem( LibraryItem* libItem );
+    QString name() const
+    {
+        return m_name;
+    }
 
-        void LoadCompSetAt( QDir compSetDir );
-        void loadXml( const QString &setFile );
+  protected:
+    void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
 
-        QString getXmlFile( QString compName );
+  private:
+    QString m_name;
+    QString m_type;
+    QString m_dragId;
+    QPoint m_pressPos;
+};
 
-        void mouseReleaseEvent(QMouseEvent*);
+// Right-side component panel (Tinkercad style):
+//   [ category combo  ][manage]
+//   [ search field             ]
+//   [ grid of ComponentCards   ]
+//
+// The category/item hierarchy is still kept in a (hidden) QTreeWidget,
+// which acts as the data model: CompPluginDialog and settings code keep
+// working on QTreeWidgetItems exactly as before.
+class MAINMODULE_EXPORT ComponentSelector : public QWidget
+{
+    Q_OBJECT
 
-    private slots:
-        void slotItemClicked( QTreeWidgetItem* item, int column );
-        void slotContextMenu(const QPoint&);
-        void slotManageComponents();
+  public:
+    ComponentSelector(QWidget *parent);
+    ~ComponentSelector();
 
-    private:
- static ComponentSelector* m_pSelf;
+    static ComponentSelector *self()
+    {
+        return m_pSelf;
+    }
 
-        void addItem( LibraryItem* libItem );
-        void addItem( const QString &caption,
-                      const QString &category,
-                      const QString &icon,
-                      const QString &type );
+    void addLibraryItem(LibraryItem *libItem);
 
-        void LoadLibraryItems();
-        //void LoadCompSet();
-        //void istallPlugin( QString item );
-        //void unistallPlugin( QString item );
+    void LoadCompSetAt(QDir compSetDir);
+    void loadXml(const QString &setFile);
 
-        //void reLoadItems();
+    QString getXmlFile(QString compName);
 
-        QStringList m_compSetUnique;
-        QStringList m_categories;
-        //QString m_lastItemClicked;
-        QHash<QString, QString> m_xmlFileList;
+    // Access to the underlying item model (used by CompPluginDialog)
+    QList<QTreeWidgetItem *> findItems(const QString &text,
+                                       Qt::MatchFlags flags) const;
+    QTreeWidget *model()
+    {
+        return m_tree;
+    }
 
-        CompPluginDialog m_pluginsdDialog;
+    void writeSettings();
 
-        ItemLibrary m_itemLibrary;
+  public slots:
+    void refresh();
+    void slotManageComponents();
+
+  private slots:
+    void slotCategoryChanged(int index);
+    void slotSearchChanged(const QString &text);
+    void slotContextMenu(const QPoint &);
+    void doRefresh();
+
+  private:
+    static ComponentSelector *m_pSelf;
+
+    void createWidgets();
+    void addItem(LibraryItem *libItem);
+    void addItem(const QString &caption, const QString &category,
+                 const QString &icon, const QString &type);
+
+    void LoadLibraryItems();
+
+    void updateCategoryBox();
+    void clearGrid();
+    void addSection(const QString &title);
+    void addCard(QTreeWidgetItem *item);
+    void addCategoryContent(QTreeWidgetItem *cat, const QString &title,
+                            bool showTitle);
+    void addSearchResults(QTreeWidgetItem *parent, const QString &text,
+                          const QString &title);
+    bool isEffectivelyHidden(QTreeWidgetItem *item) const;
+
+    QStringList m_compSetUnique;
+    QStringList m_categories;
+    QHash<QString, QString> m_xmlFileList;
+
+    QTreeWidget *m_tree; // Hidden data model
+    QComboBox *m_categoryBox;
+    QLineEdit *m_searchEdit;
+    QToolButton *m_manageButton;
+    QScrollArea *m_scrollArea;
+    QWidget *m_gridHost;
+    QGridLayout *m_gridLayout;
+
+    int m_columns;
+    int m_row;
+    int m_col;
+    bool m_refreshPending;
+
+    CompPluginDialog m_pluginsdDialog;
+
+    ItemLibrary m_itemLibrary;
 };
 
 #endif

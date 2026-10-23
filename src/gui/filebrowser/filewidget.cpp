@@ -18,8 +18,10 @@
  ***************************************************************************/
 
 #include "filewidget.h"
+
 #include "mainwindow.h"
 #include "simuapi_apppath.h"
+#include "thememanager.h"
 
 FileWidget* FileWidget::m_pSelf = 0l;
 
@@ -39,7 +41,7 @@ FileWidget::FileWidget( QWidget* parent )
     vLayout->addLayout( hLayout );
     
     m_cdUpButton = new QPushButton( this );
-    m_cdUpButton->setIcon( QIcon(":/cdup.png") );
+    m_cdUpButton->setIcon(ThemeManager::icon("arrow_upward"));
     m_cdUpButton->setToolTip( tr("cd Up") );
     hLayout->addWidget( m_cdUpButton );
     
@@ -111,10 +113,24 @@ void FileWidget::addEntry( QString name, QString path )
     
     QFont font;
     font.setPixelSize( 11*MainWindow::self()->fontScale() );
-    font.setWeight(70);
+    font.setWeight(QFont::Medium);
     item->setFont( font );
-    item->setIcon( QIcon(":/open.png") );
-    
+
+    QString icon = "folder";
+    if (name == "FileSystem")
+        icon = "hard_drive";
+    else if (name == "Home")
+        icon = "home";
+    else if (name == "Examples")
+        icon = "menu_book";
+    else if (name == "Data")
+        icon = "database";
+    else if (name == "Settings")
+        icon = "settings";
+    else if (name.contains(" ("))
+        icon = "bookmark";
+    item->setIcon(ThemeManager::icon(icon));
+
     resizeToItems();
 }
 
@@ -181,7 +197,8 @@ void FileWidget::contextMenuEvent( QContextMenuEvent* event )
 
         QMenu menu;
 
-        QAction* remBookMarkAction = menu.addAction(QIcon(":/remove.png"),tr("Remove Bookmark"));
+        QAction *remBookMarkAction =
+            menu.addAction(ThemeManager::icon("delete"), tr("Remove Bookmark"));
         connect( remBookMarkAction, SIGNAL( triggered()), 
                  this,              SLOT(   remBookMark() ) );
                  

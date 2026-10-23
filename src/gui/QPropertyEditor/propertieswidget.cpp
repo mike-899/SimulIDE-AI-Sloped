@@ -18,7 +18,11 @@
  ***************************************************************************/
 
 #include "propertieswidget.h"
+
 #include "mainwindow.h"
+#include "thememanager.h"
+
+#include <QToolButton>
 
 PropertiesWidget* PropertiesWidget::m_pSelf = 0l;
 
@@ -39,21 +43,29 @@ void PropertiesWidget::createWidgets()
     QGridLayout* widgetLayout = new QGridLayout( this );
     widgetLayout->setSpacing(0);
     widgetLayout->setContentsMargins(0, 0, 0, 0);
-    widgetLayout->setObjectName( "widgetLayout" );
-    
-    QSplitter* splitter0 = new QSplitter( this );
-    splitter0->setObjectName("splitter0");
-    splitter0->setOrientation( Qt::Vertical );
-    widgetLayout->addWidget( splitter0 );
+    widgetLayout->setObjectName("widgetLayout");
 
     m_properties = new  QPropertyEditorWidget( this );
-    m_help =       new QPlainTextEdit( this );
-    
-    splitter0->addWidget( m_properties );
-    splitter0->addWidget( m_help );
-    
-    m_help->appendPlainText( tr( "Here will be some help ..............................................\n" ));
+    widgetLayout->addWidget(m_properties, 0, 0);
+
+    // Collapsible help (collapsed by default so properties get the space)
+    QToolButton *helpToggle = new QToolButton(this);
+    helpToggle->setObjectName("propertiesHelpToggle");
+    helpToggle->setText(tr("Help"));
+    helpToggle->setIcon(ThemeManager::icon("help"));
+    helpToggle->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    helpToggle->setCheckable(true);
+    helpToggle->setAutoRaise(true);
+    widgetLayout->addWidget(helpToggle, 1, 0, Qt::AlignLeft);
+
+    m_help = new QPlainTextEdit(this);
+    m_help->setObjectName("propertiesHelp");
     m_help->setReadOnly( true );
+    m_help->setMaximumHeight(110);
+    m_help->setVisible(false);
+    widgetLayout->addWidget(m_help, 2, 0);
+
+    connect(helpToggle, &QToolButton::toggled, m_help, &QWidget::setVisible);
 }
 
 void PropertiesWidget::setHelpText( QString* text )

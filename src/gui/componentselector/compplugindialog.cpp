@@ -154,6 +154,7 @@ void CompPluginDialog::reject()
 
         MainWindow::self()->settings()->setValue( listItem->text()+"/hidden", hidden );
     }
+    ComponentSelector::self()->refresh(); // Update component grid
 }
 
 #include "moc_compplugindialog.cpp"

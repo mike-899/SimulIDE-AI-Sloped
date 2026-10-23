@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=SimulIDE AI Sloped
+GenericName=Electronic Circuit Simulator
+Comment=Electronic circuit simulator with real-time MCU simulation
+Exec=simulide
+Icon=simulide
+Terminal=false
+Type=Application
+Categories=Electronics;Development;Engineering;
+Keywords=circuit;electronics;simulator;arduino;avr;pic;

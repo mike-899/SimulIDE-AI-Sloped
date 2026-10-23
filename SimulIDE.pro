@@ -24,7 +24,7 @@ TEMPLATE = app
 
 TARGET = simulide
 
-QT += core gui multimedia widgets serialport concurrent script xml svg
+QT += core gui multimedia widgets serialport concurrent script xml svg network
 
 win32-g++{
     OS = Windows
@@ -45,6 +45,11 @@ macx {
 }
 
 include(./SimulIDE.pri)
+
+# Embedded MCP server (Model Context Protocol)
+INCLUDEPATH += ./src/mcp
+HEADERS += ./src/mcp/mcpserver.h ./src/mcp/mcptools.h
+SOURCES += ./src/mcp/mcpserver.cpp ./src/mcp/mcptools.cpp
 
 QMAKE_CXXFLAGS += -Wno-unused-parameter
 QMAKE_CXXFLAGS += -Wno-missing-field-initializers
@@ -91,7 +96,11 @@ OBJECTS_DIR *= $$_OBJECTS_DIR
 MOC_DIR     *= $$OUT_PWD/build
 INCLUDEPATH += $$MOC_DIR
 
-runLrelease.commands = lrelease $$PWD/resources/translations/simulide.ts \
+LRELEASE = lrelease
+exists($$[QT_INSTALL_BINS]/lrelease-qt5*): LRELEASE = $$[QT_INSTALL_BINS]/lrelease-qt5
+else: exists($$[QT_INSTALL_BINS]/lrelease*): LRELEASE = $$[QT_INSTALL_BINS]/lrelease
+
+runLrelease.commands = $$LRELEASE $$PWD/resources/translations/simulide.ts \
     $$PWD/resources/translations/simulide_en.ts \
     $$PWD/resources/translations/simulide_es.ts \
     $$PWD/resources/translations/simulide_fr.ts \
@@ -103,6 +112,13 @@ QMAKE_EXTRA_TARGETS += runLrelease
 POST_TARGETDEPS     += runLrelease
 
 RESOURCES = ./src/application.qrc
+RESOURCES += ./resources/themes/themes.qrc
+RESOURCES += ./resources/fonts/fonts.qrc
+RESOURCES += ./resources/parts/parts.qrc
+HEADERS += ./src/gui/thememanager.h
+HEADERS += ./src/gui/circuitwidget/partart.h
+SOURCES += ./src/gui/circuitwidget/partart.cpp
+SOURCES += ./src/gui/thememanager.cpp
 
 win32 | linux {
     DESTDIR = $$TARGET_PREFIX/bin

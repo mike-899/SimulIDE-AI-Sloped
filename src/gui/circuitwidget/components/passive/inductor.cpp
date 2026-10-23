@@ -102,6 +102,9 @@ void Inductor::paint( QPainter* p, const QStyleOptionGraphicsItem* option, QWidg
 {
     Component::paint( p, option, widget );
 
+    if (paintArt(p))
+        return; // Realistic part art
+
     QPen pen = p->pen();
     pen.setWidth(2.8);
     p->setPen(pen);

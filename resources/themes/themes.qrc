@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/themes">
+        <file>material3.qss</file>
+    </qresource>
+</RCC>

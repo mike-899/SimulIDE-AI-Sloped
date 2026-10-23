@@ -18,9 +18,11 @@
  ***************************************************************************/
 
 #include "potentiometer.h"
-#include "connector.h"
+
 #include "circuit.h"
+#include "connector.h"
 #include "itemlibrary.h"
+#include "partart.h"
 
 static const char* Potentiometer_properties[] = {
     QT_TRANSLATE_NOOP("App::Property","Value Ohm")
@@ -214,6 +216,27 @@ void Potentiometer::paint( QPainter *p, const QStyleOptionGraphicsItem *option, 
     //p->drawRoundedRect( QRect( 8, -56, 8, 40 ), 1, 1 );
 
     Component::paint( p, option, widget );
+
+    if (paintArt(p)) // Realistic part art
+    {
+        QRectF ar = PartArt::artRect(m_type);
+        QPointF c(ar.x() + ar.width() * 0.5,
+                  ar.y() + ar.height() * 0.46); // Knob center
+        double r = ar.width() * 0.30;
+        double ang =
+            -135 + 270 * (m_dial->value() / 1000.0); // degrees from top
+        p->save();
+        p->setRenderHint(QPainter::Antialiasing);
+        p->setPen(Qt::NoPen);
+        p->setBrush(QColor(238, 238, 238));
+        p->drawEllipse(c, r * 0.95, r * 0.95);
+        p->translate(c);
+        p->rotate(ang);
+        p->setPen(QPen(QColor(40, 40, 40), 1.2, Qt::SolidLine, Qt::RoundCap));
+        p->drawLine(QPointF(0, -r * 0.2), QPointF(0, -r * 0.9));
+        p->restore();
+        return;
+    }
     p->drawRect( -10.5, -4, 21, 8 );
     QPen pen = p->pen();
     pen.setWidth(3);
