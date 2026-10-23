@@ -9,7 +9,7 @@ lit templates, filters removed, <pattern> fills expanded for QtSvg:
 
 Original files, Copyright (c) SimulIDE-AI-Sloped contributors, MIT License:
   ground.svg, rail.svg, currsource.svg, frequencimeter.svg, keypad.svg, memory.svg,
-  pcd8544.svg
+  pcd8544.svg, dcmotor.svg (TT gear motor), l298n.svg (L298N module), l293d.svg
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this
 software and associated documentation files, to deal in the Software without restriction,

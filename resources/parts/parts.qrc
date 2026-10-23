@@ -15,10 +15,13 @@
     <file>fritzing/voltreg.svg</file>
     <file>mit/buzzer.svg</file>
     <file>mit/currsource.svg</file>
+    <file>mit/dcmotor.svg</file>
     <file>mit/frequencimeter.svg</file>
     <file>mit/ground.svg</file>
     <file>mit/hd44780.svg</file>
     <file>mit/keypad.svg</file>
+    <file>mit/l293d.svg</file>
+    <file>mit/l298n.svg</file>
     <file>mit/led.svg</file>
     <file>mit/memory.svg</file>
     <file>mit/pcd8544.svg</file>

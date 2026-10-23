@@ -77,6 +77,11 @@ void PartArt::init()
     add("RelaySPST", "fritzing/relay.svg", QRectF());
     add("WS2812", "mit/ws2812.svg", QRectF());
 
+    // Motors / drivers (pins line up with the art edges)
+    add("DcMotor", "mit/dcmotor.svg", QRectF(-32, -20, 72, 40));
+    add("L298N", "mit/l298n.svg", QRectF(-48, -48, 96, 96));
+    add("L293D", "mit/l293d.svg", QRectF(-20, -36, 40, 72));
+
     // Icon-only art (component keeps its own drawing on canvas)
     add("Seven Segment", "mit/sevensegment.svg", QRectF());
     add("KeyPad", "mit/keypad.svg", QRectF());

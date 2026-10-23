@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.2" baseProfile="tiny" width="72" height="40" viewBox="0 0 72 40">
+  <!-- TT gear motor, top view. Original art, MIT License -->
+  <defs>
+    <linearGradient id="can" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8d9196"/>
+      <stop offset="0.35" stop-color="#e9ecef"/>
+      <stop offset="0.7" stop-color="#b9bdc2"/>
+      <stop offset="1" stop-color="#6f7378"/>
+    </linearGradient>
+    <linearGradient id="gear" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd84a"/>
+      <stop offset="1" stop-color="#e8ac12"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="10.5" width="5" height="3" fill="#d9a441" stroke="#8a6420" stroke-width="0.4"/>
+  <rect x="0" y="26.5" width="5" height="3" fill="#d9a441" stroke="#8a6420" stroke-width="0.4"/>
+  <circle cx="1.6" cy="12" r="0.8" fill="#6b4c16"/>
+  <circle cx="1.6" cy="28" r="0.8" fill="#6b4c16"/>
+  <rect x="3.5" y="6" width="24" height="28" rx="3" fill="url(#can)" stroke="#55595e" stroke-width="0.6"/>
+  <rect x="3.5" y="8" width="3.5" height="24" rx="1.2" fill="#2c2f33"/>
+  <line x1="12" y1="6.4" x2="12" y2="33.6" stroke="#7d8186" stroke-width="0.5"/>
+  <rect x="24" y="1.5" width="47" height="37" rx="3.5" fill="url(#gear)" stroke="#a87808" stroke-width="0.8"/>
+  <rect x="27" y="4.5" width="14" height="31" rx="2" fill="#f5c52a" stroke="#c99410" stroke-width="0.5"/>
+  <circle cx="30.5" cy="8" r="1.7" fill="#b98507"/>
+  <circle cx="30.5" cy="32" r="1.7" fill="#b98507"/>
+  <circle cx="66.5" cy="6" r="1.8" fill="#9a6e06"/>
+  <circle cx="66.5" cy="34" r="1.8" fill="#9a6e06"/>
+  <circle cx="35" cy="20" r="2.2" fill="#c99410"/>
+  <circle cx="52" cy="20" r="12" fill="#f0bb1e" stroke="#a87808" stroke-width="0.8"/>
+  <circle cx="52" cy="20" r="10" fill="#fbe9a8" stroke="#c99410" stroke-width="0.5"/>
+</svg>
