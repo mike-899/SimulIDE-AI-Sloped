@@ -27,6 +27,7 @@
 #include "partart.h"
 #include "propertieswidget.h"
 #include "simuapi_apppath.h"
+#include "thememanager.h"
 #include "utils.h"
 
 #include <math.h>
@@ -96,7 +97,11 @@ Component::Component( QObject* parent, QString type, QString id )
     f.setPixelSize(9);
     m_valLabel->setFont(f);
     setShowVal( false );
-    
+
+    applyThemeColors();
+    connect(ThemeManager::self(), &ThemeManager::themeChanged, this,
+            [this](bool) { applyThemeColors(); });
+
     setObjectName( id );
     setIdLabel( id );
     setId(id);
@@ -542,6 +547,23 @@ QRectF Component::boundingRect() const
     return br;
 }
 
+void Component::applyThemeColors()
+{
+    // Theme-aware id / value labels (readable on light and dark canvas)
+    // Only default colours are replaced (some parts set their own)
+    static const QColor idLight(Qt::darkBlue), idDark(130, 180, 255);
+    static const QColor valLight("#1B1B1F"), valDark("#E3E3E8");
+    bool dark = ThemeManager::self()->isDark();
+
+    QColor c = m_idLabel->defaultTextColor();
+    if (c == idLight || c == idDark)
+        m_idLabel->setDefaultTextColor(dark ? idDark : idLight);
+
+    c = m_valLabel->defaultTextColor();
+    if (c == QColor(Qt::black) || c == valLight || c == valDark)
+        m_valLabel->setDefaultTextColor(dark ? valDark : valLight);
+}
+
 bool Component::artActive() const
 {
     return PartArt::enabled() && PartArt::has(m_type);
@@ -557,10 +579,12 @@ bool Component::paintArt(QPainter *p)
     p->setRenderHint(QPainter::SmoothPixmapTransform);
     QRectF r;
     const PartArtInfo *inf = PartArt::info(m_type);
+    QString res            = artRes();
     if (inf->rect.isNull())
-        r = PartArt::paintRes(p, inf->res, m_area, inf->rot);
+        r = PartArt::paintRes(p, res.isEmpty() ? inf->res : res, m_area,
+                              inf->rot);
     else
-        r = PartArt::paint(p, m_type);
+        r = PartArt::paint(p, m_type, res);
 
     if (isSelected()) {
         p->setPen(QPen(QColor(60, 130, 230), 1, Qt::DashLine));

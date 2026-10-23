@@ -18,15 +18,17 @@
  ***************************************************************************/
 
 #include "arduino.h"
-#include "mainwindow.h"
-#include "circuit.h"
-#include "e-resistor.h"
-#include "itemlibrary.h"
-#include "utils.h"
-
-#include "hd44780.h"
 
 #include "avr_twi.h"
+#include "circuit.h"
+#include "e-resistor.h"
+#include "hd44780.h"
+#include "itemlibrary.h"
+#include "mainwindow.h"
+#include "partart.h"
+#include "utils.h"
+
+#include <QHash>
 
 LibraryItem* Arduino::libraryItem()
 {
@@ -213,6 +215,25 @@ void Arduino::paint( QPainter* p, const QStyleOptionGraphicsItem* option, QWidge
     int ox = m_area.x();
     int oy = m_area.y();
 
+    // Realistic board art: header holes match the package pin positions
+    static const QHash<QString, QString> boards = {
+        { ":/arduinoUno.png", "arduino_uno" },
+        { ":/duemilanove.png", "arduino_duemilanove" },
+        { ":/leonardo.png", "arduino_leonardo" },
+        { ":/mega.png", "arduino_mega" },
+        { ":/arduinoNano.png", "arduino_nano" }
+    };
+    QString board = boards.value(m_BackGround);
+    if (PartArt::enabled() && !board.isEmpty()) {
+        QPixmap pm(m_BackGround); // Same size as the art viewBox
+        p->save();
+        p->setRenderHint(QPainter::Antialiasing);
+        p->setRenderHint(QPainter::TextAntialiasing);
+        PartArt::paintRes(p, ":/parts/boards/" + board + ".svg",
+                          QRectF(ox, oy, pm.width(), pm.height()));
+        p->restore();
+        return;
+    }
     p->drawPixmap( ox, oy, QPixmap( m_BackGround ));
 }
 

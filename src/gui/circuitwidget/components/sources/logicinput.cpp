@@ -67,14 +67,20 @@ LogicInput::LogicInput( QObject* parent, QString type, QString id )
     setShowVal( true );
 
     m_button = new QPushButton( );
-    m_button->setMaximumSize( 16,16 );
-    m_button->setGeometry(-20,-16,16,16);
+    m_button->setFixedSize(26, 18);
     m_button->setCheckable( true );
+    m_button->setText("OFF");
+    m_button->setCursor(Qt::PointingHandCursor);
+    // Rocker style power switch: grey OFF / green ON, readable in both themes
+    m_button->setStyleSheet(
+        "QPushButton{background:#5f6368;color:#eeeeee;border:1px solid #202124;"
+        "border-radius:3px;font-size:8px;font-weight:bold;padding:0;}"
+        "QPushButton:checked{background:#2e9d3e;color:white;}");
 
     m_proxy = Circuit::self()->addWidget( m_button );
     m_proxy->setParentItem( this );
-    m_proxy->setPos( QPoint(-32, -8) );
-    
+    m_proxy->setPos(QPoint(-38, -9));
+
     Simulator::self()->addToUpdateList( this );
 
     connect( m_button, SIGNAL( clicked() ),
@@ -89,6 +95,7 @@ LogicInput::~LogicInput()
 void LogicInput::onbuttonclicked()
 {
     m_out->setOut( m_button->isChecked() );
+    m_button->setText(m_button->isChecked() ? "ON" : "OFF");
     m_changed = true;
     //qDebug() << "LogicInput::onbuttonclicked" ;
     //update();
@@ -141,12 +148,15 @@ void LogicInput::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWi
 {
     Component::paint( p, option, widget );
 
-    if ( m_out->out() )
-        p->setBrush( QColor( 255, 166, 0 ) );
-    else
-        p->setBrush( QColor( 230, 230, 255 ) );
-
-    p->drawRoundedRect( QRectF( -8, -8, 16, 16 ), 2, 2);
+    // Output terminal: red (live) when ON, dark grey when OFF
+    p->setRenderHint(QPainter::Antialiasing);
+    bool on = m_out->out();
+    p->setPen(QPen(on ? QColor(120, 0, 0) : QColor(30, 30, 30), 1));
+    p->setBrush(on ? QColor(230, 40, 40) : QColor(90, 90, 95));
+    p->drawRoundedRect(QRectF(-8, -8, 16, 16), 3, 3);
+    p->setBrush(on ? QColor(255, 150, 140) : QColor(140, 140, 145));
+    p->setPen(Qt::NoPen);
+    p->drawEllipse(QPointF(0, 0), 3, 3);
 }
 
 #include "moc_logicinput.cpp"

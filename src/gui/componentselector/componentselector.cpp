@@ -480,10 +480,7 @@ void ComponentSelector::addItem( const QString &caption, const QString &_categor
 
     QTreeWidgetItem *item = new QTreeWidgetItem(0);
     item->setFlags( QFlag(32) );
-    if (PartArt::hasIcon(type))
-        item->setIcon(0, PartArt::icon(type)); // Realistic art
-    else
-        item->setIcon(0, QIcon(icon));
+    item->setIcon(0, PartArt::cardIcon(type, name, _category, icon));
     item->setText( 0, name+info );
     item->setData(0, TypeRole, type);
     item->setData(0, NameRole, name);
