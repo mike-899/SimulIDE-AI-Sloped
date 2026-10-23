@@ -43,7 +43,7 @@ void PropertiesWidget::createWidgets()
     QGridLayout* widgetLayout = new QGridLayout( this );
     widgetLayout->setSpacing(0);
     widgetLayout->setContentsMargins(0, 0, 0, 0);
-    widgetLayout->setObjectName( "widgetLayout" );
+    widgetLayout->setObjectName("widgetLayout");
 
     m_properties = new  QPropertyEditorWidget( this );
     widgetLayout->addWidget(m_properties, 0, 0);
