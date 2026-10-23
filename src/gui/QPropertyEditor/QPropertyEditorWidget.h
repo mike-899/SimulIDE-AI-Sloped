@@ -112,7 +112,7 @@ public:
          * after the user clicked on it. To overcome this problem you can call
          * updateObject with the object whose property was changed.
          */
-        void updateObject(QObject* propertyObject);
+        void updateObject(QObject *propertyObject);
 
         void clearView();
 
