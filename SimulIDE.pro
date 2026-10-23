@@ -96,7 +96,11 @@ OBJECTS_DIR *= $$_OBJECTS_DIR
 MOC_DIR     *= $$OUT_PWD/build
 INCLUDEPATH += $$MOC_DIR
 
-runLrelease.commands = lrelease $$PWD/resources/translations/simulide.ts \
+LRELEASE = lrelease
+exists($$[QT_INSTALL_BINS]/lrelease-qt5*): LRELEASE = $$[QT_INSTALL_BINS]/lrelease-qt5
+else: exists($$[QT_INSTALL_BINS]/lrelease*): LRELEASE = $$[QT_INSTALL_BINS]/lrelease
+
+runLrelease.commands = $$LRELEASE $$PWD/resources/translations/simulide.ts \
     $$PWD/resources/translations/simulide_en.ts \
     $$PWD/resources/translations/simulide_es.ts \
     $$PWD/resources/translations/simulide_fr.ts \
