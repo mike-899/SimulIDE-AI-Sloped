@@ -66,7 +66,8 @@ class MAINMODULE_EXPORT SerialPort : public Component, public eElement
 
     bool autoOpen()
     {
-        return m_autoOpen; }
+        return m_autoOpen;
+    }
         void setAutoOpen( bool ao ) { m_autoOpen = ao; }
 
         int uart() { return m_uart+1; }
