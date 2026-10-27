@@ -50,7 +50,7 @@ src/mainwindow.cpp       createQmlChrome(): crea y coloca los QQuickWidget
 `kind` (`bool`, `int`, `double`, **`quantity`**, `string`, `enum`, `color`,
 `other`), `options`, `readOnly`. Una propiedad numérica seguida de su `Unit`
 se fusiona en una sola fila `quantity` ("2.2 kΩ"): se acepta `4.7k`, `10 m`,
-`2,2 kΩ`, `100`.
+`2.2 kΩ`, `100`.
 
 ### Arrastrar y soltar
 
