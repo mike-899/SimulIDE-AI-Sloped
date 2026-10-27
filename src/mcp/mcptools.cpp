@@ -396,14 +396,15 @@ QJsonObject McpTools::propsToJson(QObject *obj)
             QMetaEnum me    = mp.enumerator();
             const char *key = me.valueToKey(v.toInt());
             props[n]        = key ? QString(key) : QString::number(v.toInt());
-        } else if (v.type() == QVariant::Bool)
+        } else if (v.typeId() == QMetaType::Bool)
             props[n] = v.toBool();
         else if (v.canConvert<double>() &&
-                 (v.type() == QVariant::Int || v.type() == QVariant::Double ||
-                  v.type() == QVariant::UInt ||
-                  v.type() == QVariant::LongLong ||
-                  v.type() == QVariant::ULongLong ||
-                  (int)v.type() == QMetaType::Float))
+                 (v.typeId() == QMetaType::Int ||
+                  v.typeId() == QMetaType::Double ||
+                  v.typeId() == QMetaType::UInt ||
+                  v.typeId() == QMetaType::LongLong ||
+                  v.typeId() == QMetaType::ULongLong ||
+                  v.typeId() == QMetaType::Float))
             props[n] = v.toDouble();
         else if (v.canConvert<QString>())
             props[n] = v.toString();
@@ -489,7 +490,7 @@ bool McpTools::writeProp(QObject *obj, const QString &name,
         QString s = val.toString().toLower();
         v         = (s == "true" || s == "1" || s == "yes" || s == "on");
     }
-    if (!v.convert(t)) {
+    if (!v.convert(QMetaType(t))) {
         *err = "Cannot convert value to type " + QString(mp.typeName());
         return false;
     }

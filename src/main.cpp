@@ -111,7 +111,8 @@ int main(int argc, char *argv[])
     if( langF == "" ) langF = "../share/simulide/translations/simulide_en.qm";
     
     QTranslator translator;
-    translator.load( langF );
+    if (!translator.load(langF))
+        qWarning() << "Cannot load translation" << langF;
     app.installTranslator( &translator );
 
     MainWindow window;

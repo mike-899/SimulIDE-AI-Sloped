@@ -9,6 +9,7 @@ url='https://github.com/mike-899/SimulIDE-AI-Sloped'
 license=('GPL3')
 depends=('qt6-base' 'qt6-multimedia' 'qt6-serialport' 'qt6-svg' 'qt6-declarative' 'libelf')
 makedepends=('git' 'qt6-tools')
+optdepends=('mesa: hardware-accelerated rendering of the Qt Quick interface (software rendering is used otherwise)')
 provides=('simulide')
 conflicts=('simulide')
 source=("git+${url}.git")
