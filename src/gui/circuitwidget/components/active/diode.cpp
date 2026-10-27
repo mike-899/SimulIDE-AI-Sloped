@@ -18,12 +18,17 @@
  ***************************************************************************/
 
 #include "diode.h"
+
 #include "connector.h"
 #include "pin.h"
 
-static const char* Diode_properties[] = {
-    QT_TRANSLATE_NOOP("App::Property","Threshold"),
-    QT_TRANSLATE_NOOP("App::Property","Zener Volt")
+#include <QMetaEnum>
+
+static const char *Diode_properties[] = {
+    QT_TRANSLATE_NOOP("App::Property", "Threshold"),
+    QT_TRANSLATE_NOOP("App::Property", "Zener Volt"),
+    QT_TRANSLATE_NOOP("App::Property", "Resistance"),
+    QT_TRANSLATE_NOOP("App::Property", "Model")
 };
 
 Component* Diode::construct( QObject* parent, QString type, QString id )
@@ -62,6 +67,28 @@ Diode::Diode( QObject* parent, QString type, QString id )
 }
 Diode::~Diode(){}
 
+Diode::DiodeModel Diode::model()
+{
+    if (m_model == "Custom")
+        return Custom;
+    QMetaEnum me = staticMetaObject.enumerator(
+        staticMetaObject.indexOfEnumerator("DiodeModel"));
+    int v = me.keyToValue(("D" + m_model).toLatin1().constData());
+    return (v < 0) ? Custom : (DiodeModel)v;
+}
+
+void Diode::setModel(DiodeModel model)
+{
+    QMetaEnum me = staticMetaObject.enumerator(
+        staticMetaObject.indexOfEnumerator("DiodeModel"));
+    const char *key = me.valueToKey(model);
+    if (!key || model == Custom)
+        setModelName("Custom");
+    else
+        setModelName(QString(key).mid(1));
+    update();
+}
+
 void Diode::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget )
 {
     Component::paint( p, option, widget );
@@ -83,9 +110,8 @@ void Diode::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget 
    p->setPen(pen);
 
    p->drawLine( 7, -6, 7, 6 );
-   
-   if( m_zenerV>0 ) 
-   {
+
+   if (effectiveZenerV() > 0) {
        p->drawLine( 7,-6, 4,-6 );
        p->drawLine( 7, 6, 10, 6 );
    }

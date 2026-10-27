@@ -81,6 +81,12 @@ class MAINMODULE_EXPORT CircMatrix
     d_matrix_t m_circMatrix;
     d_vector_t m_coefVect;
 
+    // Group (independent sub-circuit) of each eNode and per group dirty
+    // flags, so only the sub-circuits that changed are factored/solved
+    i_vector_t m_nodeGroup;
+    std::vector<char> m_grpAdmit;
+    std::vector<char> m_grpCurr;
+
     bool m_admitChanged;
     bool m_circChanged;
     bool m_currChanged;

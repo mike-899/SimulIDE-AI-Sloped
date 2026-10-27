@@ -58,6 +58,8 @@ class McpTools : public QObject
     QJsonObject setCode(const QJsonObject &a);
     QJsonObject compileCode(const QJsonObject &a);
     QJsonObject screenshotCircuit(const QJsonObject &a);
+    QJsonObject setAnalogEngine(const QJsonObject &a);
+    QJsonObject getSpiceNetlist(const QJsonObject &a);
 
     // helpers
     static QJsonObject ok(const QJsonValue &data);

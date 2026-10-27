@@ -63,6 +63,8 @@ read/write files with your user rights). Use `--no-mcp` if that is a concern.
 | `set_code` | `path, code` | Write a source file and open it in the code editor |
 | `compile_code` | | Compile the current editor file; returns the compiler output |
 | `screenshot_circuit` | `mode?` (`circuit`/`view`), `max_size?` | PNG of the circuit as MCP image content |
+| `set_analog_engine` | `engine?` (`native`/`ngspice`) | Select the analog engine, report ngspice availability (see ANALOG_ENGINE.md) |
+| `get_spice_netlist` | | SPICE netlist of the circuit as exported for ngspice |
 
 Tool failures are returned as normal results with `isError: true` and a text explanation.
 

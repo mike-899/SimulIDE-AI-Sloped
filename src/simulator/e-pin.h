@@ -48,6 +48,12 @@ class MAINMODULE_EXPORT ePin
     void stampAdmitance(double data);
     void stampCurrent(double data);
 
+    // Generic (possibly non-symmetric) MNA stamp used by non-linear devices:
+    // sets the contribution G[node(this)][node(colPin)] = g for this pin pair.
+    // colPin == this (or a pin on the same node) stamps the diagonal.
+    // Unconnected colPin means ground: nothing is stamped.
+    void stampEntry(ePin *colPin, double g);
+
     void reset();
 
     std::string getId();

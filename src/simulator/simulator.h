@@ -89,6 +89,19 @@ class MAINMODULE_EXPORT Simulator : public QObject
     {
         return m_eNodeList;
     }
+    QList<eElement *> elementList()
+    {
+        return m_elementList;
+    }
+    // Newton iteration number inside the present non-linear solve
+    int nlIteration()
+    {
+        return m_nlIter;
+    }
+    bool spiceMode()
+    {
+        return m_spiceMode;
+    }
 
     void addToEnodeBusList(eNode *nod);
     void remFromEnodeBusList(eNode *nod, bool del);
@@ -116,6 +129,9 @@ class MAINMODULE_EXPORT Simulator : public QObject
 
     void addToNoLinList(eElement *el);
     void remFromNoLinList(eElement *el);
+    // Newton device that did not converge in this step: iterate again in
+    // the next one (time continuation instead of endless iterations)
+    void addToNoLinNextStep(eElement *el);
 
     void addToMcuList(BaseProcessor *proc);
     void remFromMcuList(BaseProcessor *proc);
@@ -137,6 +153,7 @@ class MAINMODULE_EXPORT Simulator : public QObject
     void rateChanged();
 
   private:
+    friend class SpiceEngine;
     static Simulator *m_pSelf;
 
     inline void solveMatrix();
@@ -155,6 +172,8 @@ class MAINMODULE_EXPORT Simulator : public QObject
     QList<eElement *> m_changedFast;
     QList<eElement *> m_reactive;
     QList<eElement *> m_nonLinear;
+    QList<eElement *> m_nonLinearRun;
+    QList<eElement *> m_nonLinearNext;
     QList<eElement *> m_simuClock;
     QList<BaseProcessor *> m_mcuList;
 
@@ -163,11 +182,13 @@ class MAINMODULE_EXPORT Simulator : public QObject
     bool m_runMcu;
     bool m_paused;
     bool m_error;
+    bool m_spiceMode; // Analog circuit solved by ngspice (SpiceEngine)
 
     int m_timerId;
     int m_timerTick;
     int m_timerSc;
     int m_noLinAcc;
+    int m_nlIter;
     int m_numEnodes;
     int m_simuRate;
     int m_stepsPrea;

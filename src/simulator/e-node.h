@@ -23,6 +23,10 @@
 #include "e-element.h"
 #include "e-pin.h"
 
+#include <QHash>
+#include <QPair>
+#include <vector>
+
 class MAINMODULE_EXPORT eNode
 {
   public:
@@ -48,6 +52,7 @@ class MAINMODULE_EXPORT eNode
 
     void stampCurrent(ePin *epin, double data);
     void stampAdmitance(ePin *epin, double data);
+    void stampEntry(ePin *rowPin, ePin *colPin, double g);
 
     void pinChanged(ePin *epin, int enodeNum);
 
@@ -103,8 +108,26 @@ class MAINMODULE_EXPORT eNode
     QHash<ePin *, double> m_currList;
     QHash<ePin *, int> m_nodeList;
 
-    QHash<int, double> m_admit;
-    QHash<int, double> m_admitPrev;
+    // Generic Jacobian entries from non-linear devices (row = this node)
+    struct Entry {
+        ePin *row;
+        ePin *col;
+        double g;
+    };
+    std::vector<Entry> m_entries;
+
+    // Matrix columns of this row: admittances (from m_admitList) and
+    // generic entries, aggregated per node, with the previous values used to
+    // detect open/close events
+    struct Col {
+        int node;
+        double admit;
+        double entry;
+        double admitPrev;
+        double entryPrev;
+    };
+    std::vector<Col> m_cols;
+    Col &column(int node);
 
     double m_totalCurr;
     double m_totalAdmit;

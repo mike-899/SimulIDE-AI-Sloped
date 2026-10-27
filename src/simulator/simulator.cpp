@@ -29,6 +29,7 @@
 #include "oscopewidget.h"
 #include "outpaneltext.h"
 #include "plotterwidget.h"
+#include "spiceengine.h"
 
 #include <iostream>
 
@@ -42,6 +43,9 @@ Simulator::Simulator(QObject *parent) : QObject(parent)
     m_debugging = false;
     m_paused    = false;
     m_runMcu    = false;
+    m_spiceMode = false;
+    m_error     = false;
+    m_nlIter    = 0;
 
     m_step        = 0;
     m_numEnodes   = 0;
@@ -87,6 +91,14 @@ void Simulator::timerEvent(
     if (m_error) {
         CircuitWidget::self()->powerCircOff();
         CircuitWidget::self()->setRate(-1);
+        return;
+    }
+    if (m_spiceMode) // ngspice solves the circuit: apply its results
+    {
+        m_refTime = m_RefTimer.nsecsElapsed();
+        SpiceEngine::self()->step();
+        m_tStep = m_step;
+        runGraphicStep();
         return;
     }
     if (!m_CircuitFuture.isFinished()) // Stop remaining parallel thread
@@ -187,6 +199,12 @@ void Simulator::runCircuit()
             }
         }
 
+        if (!m_nonLinearNext.isEmpty()) // Newton solves continued from
+        {                               // the previous step
+            for (eElement *el : m_nonLinearNext)
+                addToNoLinList(el);
+            m_nonLinearNext.clear();
+        }
         if (!m_nonLinear.isEmpty()) // Run Non-Linear elements
         {
             int counter = 0;
@@ -194,9 +212,14 @@ void Simulator::runCircuit()
 
             while (!m_nonLinear.isEmpty()) // Run untill all converged
             {
-                for (eElement *el : m_nonLinear)
-                    el->setVChanged();
+                // Elements may re-schedule themselves (addToNoLinList) when
+                // their Newton step was limited, so iterate over a copy.
+                m_nonLinearRun.swap(m_nonLinear);
                 m_nonLinear.clear();
+                m_nlIter = counter;
+                for (eElement *el : m_nonLinearRun)
+                    el->setVChanged();
+                m_nonLinearRun.clear();
 
                 if (!m_eChangedNodeList.isEmpty())
                     solveMatrix();
@@ -204,6 +227,8 @@ void Simulator::runCircuit()
                 if (++counter > limit)
                     break; // Limit the number of loops
             }
+            m_nlIter = 0;
+
             // if( counter > 0 ) qDebug() << "\nSimulator::runCircuit Non-Linear
             // Solved in steps:"<<counter;
         }
@@ -252,6 +277,18 @@ void Simulator::runContinuous()
     simuRateChanged(m_simuRate);
     startSim();
 
+    m_spiceMode = false;
+    if (SpiceEngine::enabled() && m_isrunning) // Accurate analog mode
+    {
+        QString err;
+        if (SpiceEngine::self()->start(&err))
+            m_spiceMode = true;
+        else
+            std::cout << "\n    ngspice engine not used: " << err.toStdString()
+                      << "\n    Using the native engine.\n"
+                      << std::endl;
+    }
+
     std::cout << "\n    Simulation Running... \n" << std::endl;
     m_timerId = this->startTimer(m_timerTick, Qt::PreciseTimer);
 }
@@ -293,6 +330,7 @@ void Simulator::startSim()
         busNode->createBus(); // Create Buses
 
     m_nonLinear.clear();
+    m_nonLinearNext.clear();
     m_changedFast.clear();
     m_reactive.clear();
     m_eChangedNodeList.clear();
@@ -351,6 +389,10 @@ void Simulator::stopSim()
     // if( !m_isrunning ) return;
 
     stopTimer();
+    if (m_spiceMode) {
+        SpiceEngine::self()->stop();
+        m_spiceMode = false;
+    }
     // emit pauseDebug();
     m_paused   = false;
     m_circTime = 0;
@@ -377,6 +419,8 @@ void Simulator::pauseSim()
     emit pauseDebug();
     m_paused = true;
     stopTimer();
+    if (m_spiceMode)
+        SpiceEngine::self()->stop();
 
     std::cout << "\n    Simulation Paused \n" << std::endl;
 }
@@ -390,6 +434,9 @@ void Simulator::resumeSim()
 
     if (m_debugging)
         return;
+
+    if (m_spiceMode) // Properties may have changed: new netlist
+        SpiceEngine::self()->restart();
 
     std::cout << "\n    Resuming Simulation\n" << std::endl;
     m_timerId = this->startTimer(m_timerTick, Qt::PreciseTimer);
@@ -648,6 +695,13 @@ void Simulator::addToNoLinList(eElement *el)
 void Simulator::remFromNoLinList(eElement *el)
 {
     m_nonLinear.removeOne(el);
+    m_nonLinearNext.removeOne(el);
+}
+
+void Simulator::addToNoLinNextStep(eElement *el)
+{
+    if (!m_nonLinearNext.contains(el))
+        m_nonLinearNext.append(el);
 }
 
 void Simulator::addToMcuList(BaseProcessor *proc)

@@ -456,30 +456,39 @@ void CircuitWidget::about()
     date.append( " (dd-MM-yyyy)" );
 
     QString t ="&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;";
-    QMessageBox::about( this, tr("About SimulIDE"),
-                        "<br><br>"
-    "<b>Version:</b>&nbsp; &nbsp; &nbsp;"+QString( APP_VERSION )+"<br><b>Compiled:</b> "+date+"<br><br><br>"
-    "<b>Web site:</b> <a href=\"https://simulide.blogspot.com/\"> https://simulide.blogspot.com/ </a><br><br>"
-    "<b>Become a Patron:</b> <a href=\"https://www.patreon.com/simulide\"> https://www.patreon.com/simulide </a><br><br>"
-    "<br><br>"
-               "<b>Creator:</b> Santiago Gonzalez. <br>"
-               "<br>"
-               "<b>Developers:</b> <br>"
-               +t+"Santiago Gonzalez. <br>"
-               +t+"Popov Alexey <br>"
-               "<br>"
-               "<b>Contributors:</b> <br>"
-               +t+"Chris Roper <br>"
-               +t+"Sergei Chiyanov <br>"
-               +t+"Sergey Roenko <br>"
-               +t+"Gabor Nagy <br>"
-               "<br>"
-               "<b>Translations:</b> <br>"
-               +t+"Spanish: Santiago Gonzalez. <br>"
-               +t+t+"&nbsp; Kike Gl. <br>"
-               +t+"Russian: Sergei Chiyanov <br>"
-               +t+"French:  Pascal Cotret <br>"
-               );
+    QMessageBox::about(
+        this, tr("About SimulIDE"),
+        "<br><br>"
+        "<b>Version:</b>&nbsp; &nbsp; &nbsp;" +
+            QString(APP_VERSION) + "<br><b>Compiled:</b> " + date +
+            "<br><br><br>"
+            "<b>Web site:</b> <a href=\"https://simulide.blogspot.com/\"> "
+            "https://simulide.blogspot.com/ </a><br><br>"
+            "<b>Become a Patron:</b> <a "
+            "href=\"https://www.patreon.com/simulide\"> "
+            "https://www.patreon.com/simulide </a><br><br>"
+            "<br><br>"
+            "<b>Creator:</b> Santiago Gonzalez. <br>"
+            "<br>"
+            "<b>Developers:</b> <br>" +
+            t + "Santiago Gonzalez. <br>" + t +
+            "Popov Alexey <br>"
+            "<br>"
+            "<b>Contributors:</b> <br>" +
+            t + "Chris Roper <br>" + t + "Sergei Chiyanov <br>" + t +
+            "Sergey Roenko <br>" + t +
+            "Gabor Nagy <br>"
+            "<br>"
+            "<b>Translations:</b> <br>" +
+            t + "Spanish: Santiago Gonzalez. <br>" + t + t +
+            "&nbsp; Kike Gl. <br>" + t + "Russian: Sergei Chiyanov <br>" + t +
+            "French:  Pascal Cotret <br>"
+            "<br>"
+            "<b>Third party:</b> <br>" +
+            t +
+            "Accurate analog engine: <a "
+            "href=\"https://ngspice.sourceforge.io/\">ngspice</a> "
+            "(BSD-3-Clause), loaded at runtime when installed. <br>");
 }
 
 void CircuitWidget::setRate( int rate )
