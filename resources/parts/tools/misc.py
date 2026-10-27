@@ -1,22 +1,5 @@
 import sys
 d = sys.argv[1]
-# 4x3 membrane keypad (same style as mit/keypad.svg)
-labels = "123456789*0#"
-o = []
-W = 3 * 11.7 + 3.6
-o.append('<rect x="0.5" y="0.5" width="%g" height="57" rx="2" fill="#1d1d1d" stroke="#000" stroke-width="0.3"/>' % W)
-o.append('<rect x="%g" y="57" width="18" height="5" fill="#8a7a50" stroke="#5a4f30" stroke-width="0.2"/>' % ((W + 1) / 2 - 9))
-for r in range(4):
-    for c in range(3):
-        x = 3 + c * 11.7; y = 3 + r * 13.4
-        o.append('<rect x="%g" y="%g" width="9.6" height="11.4" rx="1" fill="#f2f2f2" stroke="#666" stroke-width="0.2"/>' % (x, y))
-        o.append('<rect x="%g" y="%g" width="9.6" height="11.4" rx="1" fill="url(#g)"/>' % (x, y))
-        o.append('<text x="%g" y="%g" font-family="sans-serif" font-size="5" font-weight="bold" fill="#222" text-anchor="middle">%s</text>' % (x + 4.8, y + 7.3, labels[r * 3 + c]))
-open(d + "/mit/keypad_4x3.svg", "w").write(
-    '<?xml version="1.0" encoding="UTF-8"?>\n<!-- SPDX-License-Identifier: MIT | (c) SimulIDE-AI-Sloped contributors -->\n'
-    '<svg xmlns="http://www.w3.org/2000/svg" version="1.2" baseProfile="tiny" width="%gmm" height="62.5mm" viewBox="0 0 %g 62.5"><title>4x3 membrane keypad</title><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.25"/><stop offset="1" stop-color="#000" stop-opacity="0.15"/></linearGradient></defs>' % (W + 1, W + 1)
-    + "".join(o) + "</svg>\n")
-
 # Bench power-supply module (icon for Volt. Source)
 psu = '''<?xml version="1.0" encoding="UTF-8"?>
 <!-- SPDX-License-Identifier: MIT | (c) SimulIDE-AI-Sloped contributors -->

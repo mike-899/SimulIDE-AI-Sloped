@@ -49,3 +49,9 @@ use standard SPICE parameters taken from the widely published vendor SPICE
 models of those parts (or fitted to their datasheets where noted in the
 source). The convergence aids (pnjlim, fetlim, limvds) follow the
 algorithms described for Berkeley SPICE3 / ngspice.
+
+Realistic part artwork
+----------------------
+The SVG artwork in resources/parts is derived from the Fritzing parts library
+(CC BY-SA 3.0, resources/parts/fritzing/) and from wokwi-elements (MIT, resources/parts/mit/).
+See the NOTICE file in each of those folders for the files, authors and sources.

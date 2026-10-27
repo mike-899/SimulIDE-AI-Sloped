@@ -53,6 +53,15 @@ void Push::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *
 {
     Component::paint( p, option, widget );
 
+    // The click button sits over the body when the art is shown
+    m_proxy->setPos(artActive() ? QPoint(-8, -8) : QPoint(-8, 4));
+    bool hidden = !m_button->styleSheet().isEmpty();
+    if (artActive() && !hidden)
+        m_button->setStyleSheet("QPushButton{background:transparent;"
+                                "border:none;color:transparent;}");
+    else if (!artActive() && hidden)
+        m_button->setStyleSheet("");
+
     if (paintArt(p)) // Realistic part art
     {
         QRectF ar = PartArt::artRect(m_type);
