@@ -24,6 +24,7 @@
 
 #include "outpaneltext.h"
 
+class BaseProcessor;
 class SerialTerm;
 
 class MAINMODULE_EXPORT TerminalWidget : public QWidget
@@ -78,6 +79,7 @@ class MAINMODULE_EXPORT TerminalWidget : public QWidget
         bool m_addCR;
 
         int m_uart;
+        QPointer<BaseProcessor> m_proc;
 };
 
 #endif

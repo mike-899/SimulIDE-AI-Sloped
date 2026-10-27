@@ -99,6 +99,8 @@ class MAINMODULE_EXPORT MainWindow : public QMainWindow
     void themeToggleRequested();
 
   private slots:
+    void updateMcuSelector();
+    void mcuSelected(int index);
     void updateSimButton();
     void updateProjectLabel(const QString &windowTitle);
     void showRamTable();
@@ -165,6 +167,7 @@ class MAINMODULE_EXPORT MainWindow : public QMainWindow
     QWidget *m_serialPanel;
     QToolButton *m_serialToggle;
     SerialMonitor *m_serialMonitor;
+    QComboBox *m_mcuSelector;
 
     QFrame *m_inspector;
     QLabel *m_inspectorTitle;

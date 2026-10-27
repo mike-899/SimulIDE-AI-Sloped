@@ -65,7 +65,26 @@ class BaseDebugger : public QObject    // Base Class for all debuggers
         virtual QList<int> getSubLines() { return m_subLines; }
         
         int type;
-        
+
+        // MCU this debugger uploads to / steps (falls back to the active one)
+        void setTargetMcu(McuComponent *mcu)
+        {
+            m_mcu = mcu;
+        }
+        bool hasTarget()
+        {
+            return !m_mcu.isNull();
+        }
+        McuComponent *targetMcu()
+        {
+            return m_mcu ? m_mcu.data() : McuComponent::self();
+        }
+        BaseProcessor *proc()
+        {
+            McuComponent *m = targetMcu();
+            return m ? m->processor() : nullptr;
+        }
+
     public slots:
         void ProcRead();
 
@@ -74,8 +93,9 @@ class BaseDebugger : public QObject    // Base Class for all debuggers
         virtual void getSubs(){;}
     
         OutPanelText*  m_outPane;
+        QPointer<McuComponent> m_mcu;
 
- static bool m_loadStatus;                          // Is symbol file loaded?
+        static bool m_loadStatus;                   // Is symbol file loaded?
         bool m_running;                             // Is processor running?
 
         int m_processorType;

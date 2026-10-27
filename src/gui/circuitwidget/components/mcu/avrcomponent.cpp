@@ -33,32 +33,23 @@ LibraryItem* AVRComponent::libraryItem()
 }
 
 Component* AVRComponent::construct( QObject* parent, QString type, QString id )
-{ 
-    if( m_canCreate ) 
-    {
-        AVRComponent* avr = new AVRComponent( parent, type,  id );
-        if( m_error > 0 )
-        {
-            Circuit::self()->compList()->removeOne( avr );
-            avr->deleteLater();
-            avr = 0l;
-            m_error = 0;
-            m_pSelf = 0l;
-            m_canCreate = true;
-        }
-        return avr;
+{
+    // Several AVR MCUs can coexist: each one owns its own simavr core
+    AVRComponent *avr = new AVRComponent(parent, type, id);
+    if (m_error > 0) {
+        unregisterMcu(avr);
+        Circuit::self()->compList()->removeOne(avr);
+        avr->deleteLater();
+        avr     = 0l;
+        m_error = 0;
     }
-    MessageBoxNB( tr("Error")
-                , tr("Only 1 Mcu allowed\n to be in the Circuit.") );
-
-    return 0l;
+    return avr;
 }
 
 AVRComponent::AVRComponent( QObject* parent, QString type, QString id )
             : AvrCompBase( parent, type, id )
 {
-    m_pSelf = this;
-    m_processor = AvrProcessor::self();
+    m_processor = &m_avr;
 
     initChip();
     if( m_error == 0 )

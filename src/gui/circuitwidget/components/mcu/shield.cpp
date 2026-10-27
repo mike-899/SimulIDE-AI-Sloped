@@ -50,25 +50,30 @@ void Shield::attach()
     SubCircuit::attach();
 }
 
+// Forward events to the MCU this shield is mounted on (not the active one)
 void Shield::mousePressEvent( QGraphicsSceneMouseEvent* event )
 {
 
 }
 void Shield::mouseDoubleClickEvent( QGraphicsSceneMouseEvent* event )
 {
-    McuComponent::self()->mouseDoubleClickEvent( event );
+    if (McuComponent *mcu = dynamic_cast<McuComponent *>(parentItem()))
+        mcu->mouseDoubleClickEvent(event);
 }
 void Shield::mouseMoveEvent( QGraphicsSceneMouseEvent* event )
 {
-    McuComponent::self()->mouseMoveEvent( event );
+    if (McuComponent *mcu = dynamic_cast<McuComponent *>(parentItem()))
+        mcu->mouseMoveEvent(event);
 }
 void Shield::mouseReleaseEvent( QGraphicsSceneMouseEvent* event )
 {
-    McuComponent::self()->mouseReleaseEvent( event );
+    if (McuComponent *mcu = dynamic_cast<McuComponent *>(parentItem()))
+        mcu->mouseReleaseEvent(event);
 }
 void Shield::contextMenuEvent( QGraphicsSceneContextMenuEvent* event )
 {
-    McuComponent::self()->contextMenuEvent( event );
+    if (McuComponent *mcu = dynamic_cast<McuComponent *>(parentItem()))
+        mcu->contextMenuEvent(event);
 }
 
 

@@ -25,7 +25,11 @@
 #include "utils.h"
 #include "simuapi_apppath.h"
 
-BaseProcessor* BaseProcessor::m_pSelf = 0l;
+BaseProcessor *BaseProcessor::self()
+{
+    McuComponent *mcu = McuComponent::self();
+    return mcu ? mcu->processor() : nullptr;
+}
 
 BaseProcessor::BaseProcessor( QObject* parent )
              : QObject( parent )
@@ -34,6 +38,12 @@ BaseProcessor::BaseProcessor( QObject* parent )
     m_resetStatus = false;
     m_symbolFile = "";
     m_device     = "";
+    m_component   = nullptr;
+    m_mcuStepNS   = 62.5;
+    m_mcuStepsPT  = 1;
+    m_nextCycle   = 0;
+    m_extraCycle  = 0;
+    m_msimStep    = 0;
 
     m_ramTable = new RamTable( this );
     MainWindow::self()->m_ramTabWidgetLayout->addWidget( m_ramTable );
@@ -48,7 +58,6 @@ void BaseProcessor::terminate()
 {
     //qDebug() <<"\nBaseProcessor::terminate "<<m_device<<m_symbolFile<<"\n";
 
-    m_pSelf = 0l;
     m_loadStatus = false;
     m_symbolFile = "";
 }
@@ -80,7 +89,7 @@ void BaseProcessor::step()
         if( m_extraCycle )
         {
             //qDebug() << "-" << m_extraCycle;qDebug() << " ";
-            Simulator::self()->runExtraStep( m_extraCycle );
+            Simulator::self()->runExtraStep(m_extraCycle, m_mcuStepNS);
             m_extraCycle = 0;
         }
     }
@@ -116,8 +125,9 @@ void BaseProcessor::setDataFile( QString datafile )
 void BaseProcessor::hardReset( bool rst )
 {
     m_resetStatus = rst;
-    
-    if( rst ) McuComponent::self()->reset();
+
+    if (rst && m_component)
+        m_component->reset();
 }
 
 int BaseProcessor::getRegAddress( QString name ) 

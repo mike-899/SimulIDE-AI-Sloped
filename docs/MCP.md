@@ -61,7 +61,8 @@ read/write files with your user rights). Use `--no-mcp` if that is a concern.
 | `get_component_state` | `id` | Pin voltages, voltage across 2-pin parts, properties, MCU firmware |
 | `load_firmware` | `mcu_id, hex_path` | Load a firmware file into an AVR/PIC/Arduino component |
 | `set_code` | `path, code` | Write a source file and open it in the code editor |
-| `compile_code` | | Compile the current editor file; returns the compiler output |
+| `compile_code` | `mcu_id?` | Compile the current editor file (optionally binding it to an MCU); returns the compiler output |
+| `select_mcu` | `mcu_id?` | List MCUs in the circuit (id, device, firmware, active) and optionally make one the active target |
 | `screenshot_circuit` | `mode?` (`circuit`/`view`), `max_size?` | PNG of the circuit as MCP image content |
 
 Tool failures are returned as normal results with `isError: true` and a text explanation.

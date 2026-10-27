@@ -162,8 +162,10 @@ void Simulator::runCircuit()
     for (uint64_t i = 0; i < m_circuitRate; i++) {
         m_circTime = m_step * m_stepNS; // Circuit Time in nanoseconds
 
-        if (m_runMcu)
-            BaseProcessor::self()->step(); // Run MCU
+        if (m_runMcu) {
+            for (BaseProcessor *proc : m_mcuList)
+                proc->step(); // Run every MCU in the circuit
+        }
 
         if (!m_simuClock.isEmpty()) // Run elements at Simulation Clock
         {
@@ -222,12 +224,12 @@ void Simulator::runCircuit()
     // circTime/count;
 }
 
-void Simulator::runExtraStep(uint64_t cycle)
+void Simulator::runExtraStep(uint64_t cycle, double mcuStepNS)
 {
     // if( !m_isrunning ) return;
 
     // qDebug() <<"\nSimulator::runExtraStep"<<m_circTime<<m_step<<m_stepNS;
-    m_circTime = cycle * m_mcuStepNS;
+    m_circTime = cycle * mcuStepNS;
     // qDebug() <<"Simulator::runExtraStep"<<m_circTime<<cycle<<m_mcuStepNS;
 
     if (!m_eChangedNodeList.isEmpty()) {
@@ -301,8 +303,10 @@ void Simulator::startSim()
     for (eElement *el : m_elementList)
         el->attach();
 
-    if (McuComponent::self() && !m_paused)
-        McuComponent::self()->runAutoLoad();
+    if (!m_paused) {
+        for (McuComponent *mcu : McuComponent::mcuList())
+            mcu->runAutoLoad();
+    }
 
     m_numEnodes = m_eNodeList.size();
     std::cout << "  Initializing " << m_eNodeList.size() << "\teNodes"
@@ -363,8 +367,8 @@ void Simulator::stopSim()
     for (eElement *el : m_updateList)
         el->updateStep();
 
-    if (McuComponent::self())
-        McuComponent::self()->reset();
+    for (McuComponent *mcu : McuComponent::mcuList())
+        mcu->reset();
 
     CircuitWidget::self()->setRate(0);
     Circuit::self()->update();
@@ -426,14 +430,13 @@ int Simulator::simuRateChanged(int rate)
 
     m_runMcu = false;
 
-    if (BaseProcessor::self()) {
-        // double mcuSteps = McuComponent::self()->freq()*1e6;
-        // if( mcuSteps > rate ) m_stepsPerus = (int)
-
-        double mcuSteps = McuComponent::self()->freq() / m_stepsPerus;
-        BaseProcessor::self()->setSteps(mcuSteps);
-        m_mcuStepNS = 1000 / McuComponent::self()->freq();
-        m_runMcu    = true;
+    for (BaseProcessor *proc : m_mcuList) {
+        McuComponent *mcu = proc->component();
+        if (!mcu || mcu->freq() <= 0)
+            continue;
+        proc->setSteps(mcu->freq() / m_stepsPerus);
+        proc->setStepNS(1000 / mcu->freq());
+        m_runMcu = true;
         // qDebug() <<"Simulator::simuRateChanged
         // mcuSteps"<<mcuSteps<<m_mcuStepNS;
     }

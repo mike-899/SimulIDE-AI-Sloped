@@ -22,9 +22,12 @@
 
 #include "component.h"
 #include "e-element.h"
+
+#include <QPointer>
 #include <QtSerialPort/QSerialPort>
 
 class LibraryItem;
+class McuComponent;
 
 class MAINMODULE_EXPORT SerialPort : public Component, public eElement
 {
@@ -93,6 +96,7 @@ class MAINMODULE_EXPORT SerialPort : public Component, public eElement
         QSerialPort* m_serial;
 
         int m_uart;
+        QPointer<McuComponent> m_mcu;
         bool m_active;
         bool m_autoOpen;
 

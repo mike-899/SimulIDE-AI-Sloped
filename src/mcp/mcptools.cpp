@@ -15,6 +15,7 @@
 #include "circuitwidget.h"
 #include "codeeditor.h"
 #include "component.h"
+#include "componentselector.h"
 #include "connector.h"
 #include "editorwindow.h"
 #include "itemlibrary.h"
@@ -26,6 +27,7 @@
 
 #include <QBuffer>
 #include <QDir>
+#include <QDomDocument>
 #include <QFile>
 #include <QFileInfo>
 #include <QImage>
@@ -188,10 +190,23 @@ McpTools::McpTools(QObject *parent) : QObject(parent)
             "editor.",
             schema(p, { "path", "code" }), &McpTools::setCode);
     }
-    reg("compile_code",
-        "Compile the file currently open in the code editor and return the "
-        "compiler output.",
-        schema(), &McpTools::compileCode);
+    {
+        QJsonObject p;
+        p["mcu_id"] = prop("string", "Optional: bind the editor file to this "
+                                     "MCU (upload/debug target)");
+        reg("compile_code",
+            "Compile the file currently open in the code editor and return the "
+            "compiler output.",
+            schema(p), &McpTools::compileCode);
+    }
+    {
+        QJsonObject p;
+        p["mcu_id"] = prop("string", "Id of the MCU to make active");
+        reg("select_mcu",
+            "List the MCUs in the circuit and optionally make one the active "
+            "target (code editor upload/debug, RAM table, Serial Monitor).",
+            schema(p), &McpTools::selectMcu);
+    }
     {
         QJsonObject p;
         p["mode"] =
@@ -568,6 +583,18 @@ QJsonObject McpTools::addComponent(const QJsonObject &a)
                 li = it;
                 break;
             }
+    // Sub-models defined in xml sets (e.g. "Arduino Uno", "atmega328",
+    // "attiny85"): resolve the parent library type, id must keep the name.
+    QString model;
+    if (!li) {
+        QString parentType = xmlParentType(type);
+        for (LibraryItem *it : ItemLibrary::self()->items())
+            if (!parentType.isEmpty() && it->type() == parentType) {
+                li    = it;
+                model = type;
+                break;
+            }
+    }
     if (!li)
         return fail("Unknown component type '" + type +
                     "'. Use list_component_types.");
@@ -580,6 +607,8 @@ QJsonObject McpTools::addComponent(const QJsonObject &a)
     name.remove(QRegExp("[^A-Za-z0-9_]"));
     if (name.isEmpty())
         name = "Comp";
+    if (!model.isEmpty())
+        name = model;
     QString id = name + "-" + circ->newSceneId();
 
     circ->saveState();
@@ -853,6 +882,7 @@ QJsonObject McpTools::getComponentState(const QJsonObject &a)
     if (mcu) {
         r["firmware"] = mcu->program();
         r["device"]   = mcu->device();
+        r["active"]   = (mcu == McuComponent::self());
     }
 
     if (!running)
@@ -902,7 +932,50 @@ QJsonObject McpTools::setCode(const QJsonObject &a)
     return ok(QString("Wrote and opened " + fi.absoluteFilePath()));
 }
 
-QJsonObject McpTools::compileCode(const QJsonObject &)
+QString McpTools::xmlParentType(const QString &model)
+{
+    QString file = ComponentSelector::self()->getXmlFile(model);
+    QFile f(file);
+    if (file.isEmpty() || !f.open(QFile::ReadOnly | QFile::Text))
+        return QString();
+    QDomDocument doc;
+    if (!doc.setContent(&f))
+        return QString();
+    QDomNode r = doc.documentElement().firstChild();
+    for (; !r.isNull(); r = r.nextSibling()) {
+        QDomElement cat = r.toElement();
+        for (QDomNode n = cat.firstChild(); !n.isNull(); n = n.nextSibling())
+            if (n.toElement().attribute("name") == model)
+                return cat.attribute("type");
+    }
+    return QString();
+}
+
+QJsonObject McpTools::selectMcu(const QJsonObject &a)
+{
+    QString id = a.value("mcu_id").toString();
+    if (!id.isEmpty()) {
+        McuComponent *mcu = McuComponent::findMcu(id);
+        if (!mcu)
+            return fail("No MCU with id '" + id + "'");
+        McuComponent::setSelf(mcu);
+    }
+    QJsonArray list;
+    for (McuComponent *mcu : McuComponent::mcuList()) {
+        QJsonObject o;
+        o["id"]       = mcu->itemID();
+        o["device"]   = mcu->device();
+        o["firmware"] = mcu->program();
+        o["active"]   = (mcu == McuComponent::self());
+        list.append(o);
+    }
+    QJsonObject r;
+    r["mcus"]   = list;
+    r["active"] = McuComponent::self() ? McuComponent::self()->itemID() : "";
+    return ok(r);
+}
+
+QJsonObject McpTools::compileCode(const QJsonObject &a)
 {
     EditorWindow *ed = EditorWindow::self();
     if (!ed)
@@ -910,6 +983,14 @@ QJsonObject McpTools::compileCode(const QJsonObject &)
     CodeEditor *ce = ed->getCodeEditor();
     if (!ce)
         return fail("No file open in the code editor (use set_code)");
+    QString mcuId = a.value("mcu_id").toString();
+    if (!mcuId.isEmpty()) {
+        McuComponent *mcu = McuComponent::findMcu(mcuId);
+        if (!mcu)
+            return fail("No MCU with id '" + mcuId + "'");
+        ce->setTargetMcuId(mcuId);
+        McuComponent::setSelf(mcu);
+    }
     OutPanelText *out = ed->findChild<OutPanelText *>();
     int before        = out ? out->toPlainText().size() : 0;
     ce->compile();

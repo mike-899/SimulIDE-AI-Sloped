@@ -17,6 +17,7 @@
 #include "serialmonitor.h"
 
 #include "baseprocessor.h"
+#include "mcucomponent.h"
 #include "outpaneltext.h"
 #include "thememanager.h"
 
@@ -101,7 +102,11 @@ void SerialMonitor::attach(BaseProcessor *proc)
     if (proc) {
         connect(proc, SIGNAL(uartDataOut(int, int)), this,
                 SLOT(uartOut(int, int)));
-        m_status->setText(tr("MCU connected"));
+        McuComponent *mcu = proc->component();
+        QString name      = mcu ? mcu->itemID() : tr("MCU");
+        m_status->setText(tr("Connected: %1").arg(name));
+        if (!m_output->toPlainText().isEmpty())
+            m_output->appendText("\n--- " + name + " ---\n");
     } else
         m_status->setText(tr("No MCU"));
 

@@ -52,7 +52,10 @@ BaseDebugger::BaseDebugger( QObject* parent, OutPanelText* outPane, QString file
 }
 BaseDebugger::~BaseDebugger( )
 {
-    if( BaseProcessor::self() ) BaseProcessor::self()->getRamTable()->remDebugger( this );
+    for (McuComponent *mcu :
+         McuComponent::mcuList()) // Table may belong to any MCU
+        if (mcu->processor())
+            mcu->processor()->getRamTable()->remDebugger(this);
 }
 
 bool BaseDebugger::loadFirmware()
@@ -79,17 +82,19 @@ void BaseDebugger::upload()
     m_outPane->appendText( "\n"+tr("Uploading: ")+"\n" );
     m_outPane->appendText( m_firmware );
     m_outPane->writeText( "\n\n" );
-    
-    if( McuComponent::self() ) 
-    {
-        McuComponent::self()->load( m_firmware );
-        m_outPane->appendText( "\n"+tr("FirmWare Uploaded to ")+McuComponent::self()->device()+"\n" );
+
+    McuComponent *mcu = targetMcu();
+    if (mcu) {
+        mcu->load(m_firmware);
+        m_outPane->appendText("\n" + tr("FirmWare Uploaded to ") +
+                              mcu->itemID() + " (" + mcu->device() + ")\n");
         m_outPane->writeText( "\n\n" );
 
-        BaseProcessor::self()->getRamTable()->setDebugger( this );
+        mcu->processor()->getRamTable()->setDebugger(this);
         mapFlashToSource();
-    }
-    else m_outPane->writeText( "\n"+tr("Error: No Mcu in Simulator... ")+"\n" );
+    } else
+        m_outPane->writeText("\n" + tr("Error: No Mcu in Simulator... ") +
+                             "\n");
 }
 
 void BaseDebugger::stop()
@@ -103,14 +108,17 @@ void BaseDebugger::getProcName()
 
 int BaseDebugger::step()
 {
-    int pc = BaseProcessor::self()->pc();
-    
+    BaseProcessor *p = proc();
+    if (!p)
+        return 0;
+    int pc = p->pc();
+
     int i = 0;
     for( i=0; i<10; i++ ) // If runs 10 times and get to same PC return 0
     {
-        BaseProcessor::self()->stepOne();
+        p->stepOne();
 
-        int pc2 = BaseProcessor::self()->pc();
+        int pc2 = p->pc();
         //qDebug() <<"BaseDebugger::step "<<pc<<pc2;
         if( pc != pc2 ) 
         {

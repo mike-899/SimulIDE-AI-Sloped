@@ -83,9 +83,10 @@ void WS2812::updateStep()
 void WS2812::initialize()
 {
     m_stepsPerus = Simulator::self()->stepsPerus();
-    if( McuComponent::self() )
-    {
-        double freq = McuComponent::self()->freq();
+    double freq  = 0; // Fastest MCU in the circuit sets the pace
+    for (McuComponent *mcu : McuComponent::mcuList())
+        freq = qMax(freq, mcu->freq());
+    if (freq > 0) {
         double simurate = freq*1e6;
         if( Simulator::self()->simuRate() == simurate ) return;
 

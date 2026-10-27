@@ -23,11 +23,13 @@
 #include "appiface.h"
 #include "circuit.h"
 #include "circuitwidget.h"
+#include "codeeditor.h"
 #include "component.h"
 #include "componentselector.h"
 #include "editorwindow.h"
 #include "filewidget.h"
 #include "mcpserver.h"
+#include "mcucomponent.h"
 #include "partart.h"
 #include "propertieswidget.h"
 #include "serialmonitor.h"
@@ -429,6 +431,37 @@ void MainWindow::createEditToolBar()
     m_editToolBar->addWidget(pad);
 }
 
+void MainWindow::updateMcuSelector()
+{
+    QSignalBlocker blocker(m_mcuSelector);
+    m_mcuSelector->clear();
+    QList<McuComponent *> mcus = McuComponent::mcuList();
+    if (mcus.isEmpty()) {
+        m_mcuSelector->addItem(tr("No MCU"));
+        m_mcuSelector->setEnabled(false);
+        return;
+    }
+    m_mcuSelector->setEnabled(true);
+    for (McuComponent *mcu : mcus) {
+        QString text = mcu->itemID() + " (" + mcu->device() + ")";
+        m_mcuSelector->addItem(text, mcu->itemID());
+        if (mcu == McuComponent::self())
+            m_mcuSelector->setCurrentIndex(m_mcuSelector->count() - 1);
+    }
+}
+
+void MainWindow::mcuSelected(int index)
+{
+    McuComponent *mcu =
+        McuComponent::findMcu(m_mcuSelector->itemData(index).toString());
+    if (!mcu)
+        return;
+    McuComponent::setSelf(mcu);
+    // Bind the current editor tab to this MCU
+    if (CodeEditor *ce = m_editor->getCodeEditor())
+        ce->setTargetMcuId(mcu->itemID());
+}
+
 void MainWindow::createCodePanel()
 {
     m_codePanel = new QWidget(this);
@@ -451,6 +484,24 @@ void MainWindow::createCodePanel()
     title->setFont(tf);
     headerLayout->addWidget(title);
     headerLayout->addStretch();
+
+    // Target MCU: upload/debug, RAM table and Serial Monitor follow it.
+    QLabel *mcuLabel = new QLabel(tr("Target:"), header);
+    headerLayout->addWidget(mcuLabel);
+    m_mcuSelector = new QComboBox(header);
+    m_mcuSelector->setObjectName("mcuSelector");
+    m_mcuSelector->setToolTip(
+        tr("MCU targeted by upload, debugger, RAM table and Serial Monitor"));
+    m_mcuSelector->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    headerLayout->addWidget(m_mcuSelector);
+    connect(McuSignals::self(), SIGNAL(mcuListChanged()), this,
+            SLOT(updateMcuSelector()));
+    connect(McuSignals::self(), SIGNAL(activeMcuChanged(McuComponent *)), this,
+            SLOT(updateMcuSelector()));
+    connect(m_mcuSelector, SIGNAL(activated(int)), this,
+            SLOT(mcuSelected(int)));
+    updateMcuSelector();
+
     QToolButton *closeButton = new QToolButton(header);
     closeButton->setObjectName("codePanelClose");
     closeButton->setIcon(materialIcon("close"));

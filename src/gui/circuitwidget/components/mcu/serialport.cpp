@@ -83,17 +83,17 @@ SerialPort::SerialPort( QObject* parent, QString type, QString id )
     connect( m_button, SIGNAL( clicked() ),
                  this, SLOT(   onbuttonclicked() ));
 
-    connect( McuComponent::self(), SIGNAL( closeSerials()),
-                             this, SLOT(   slotClose()) );
-
-    connect( McuComponent::self(), SIGNAL( openSerials()),
-                             this, SLOT(   slotAutoOpen()) );
+    // Bound to the MCU that is active when the port is created
+    m_mcu = McuComponent::self();
+    if (m_mcu) {
+        connect(m_mcu, SIGNAL(closeSerials()), this, SLOT(slotClose()));
+        connect(m_mcu, SIGNAL(openSerials()), this, SLOT(slotAutoOpen()));
+        connect(m_mcu->processor(), SIGNAL(uartDataOut(int, int)), this,
+                SLOT(slotWriteData(int, int)));
+    }
 
     connect( m_serial, SIGNAL( readyRead()),
                  this, SLOT(   readData()) );
-
-    connect( BaseProcessor::self(), SIGNAL( uartDataOut( int, int )),
-                              this, SLOT(   slotWriteData( int, int )) );
 
     Simulator::self()->addToUpdateList( this );
 }
@@ -155,7 +155,10 @@ void SerialPort::readData()
     update();
     //qDebug()<<"SerialPort::readData" << data;
 
-    for( int i=0; i<data.size(); i++ ) BaseProcessor::self()->uartIn( m_uart, data.at(i) );
+    if (!m_mcu || !m_mcu->processor())
+        return;
+    for (int i = 0; i < data.size(); i++)
+        m_mcu->processor()->uartIn(m_uart, data.at(i));
 }
 
 void SerialPort::slotWriteData( int uart, int value )

@@ -57,6 +57,8 @@ class McpTools : public QObject
     QJsonObject loadFirmware(const QJsonObject &a);
     QJsonObject setCode(const QJsonObject &a);
     QJsonObject compileCode(const QJsonObject &a);
+    QJsonObject selectMcu(const QJsonObject &a);
+    QString xmlParentType(const QString &model);
     QJsonObject screenshotCircuit(const QJsonObject &a);
 
     // helpers
