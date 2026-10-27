@@ -105,7 +105,8 @@ void ComponentModel::rebuild()
         Section s;
         s.title = cs.title;
         for (QTreeWidgetItem *item : cs.items) {
-            QString name = item->data(0, ComponentSelector::NameRole).toString();
+            QString name =
+                item->data(0, ComponentSelector::NameRole).toString();
             QVariantMap card;
             card["name"]   = name;
             card["info"]   = item->data(0, ComponentSelector::InfoRole);
@@ -175,10 +176,10 @@ QPixmap IconImageProvider::requestPixmap(const QString &id, QSize *size,
 {
     QString name = id.section('/', 0, 0);
     QString hex  = id.section('/', 1, 1).section('?', 0, 0);
-    QColor color = hex.isEmpty() ? ThemeManager::self()->iconColor()
-                                 : QColor("#" + hex);
-    QSize want   = requestedSize.isValid() ? requestedSize : QSize(24, 24);
-    QPixmap pm   = ThemeManager::icon(name, color).pixmap(want);
+    QColor color =
+        hex.isEmpty() ? ThemeManager::self()->iconColor() : QColor("#" + hex);
+    QSize want = requestedSize.isValid() ? requestedSize : QSize(24, 24);
+    QPixmap pm = ThemeManager::icon(name, color).pixmap(want);
     pm.setDevicePixelRatio(1.0);
     if (size)
         *size = pm.size();

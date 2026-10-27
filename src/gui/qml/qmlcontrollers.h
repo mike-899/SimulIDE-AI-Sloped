@@ -131,9 +131,10 @@ class ShellController : public QObject
     Q_OBJECT
     Q_PROPERTY(bool componentsVisible READ componentsVisible WRITE
                    setComponentsVisible NOTIFY panelsChanged)
+    Q_PROPERTY(bool codeVisible READ codeVisible WRITE setCodeVisible NOTIFY
+                   panelsChanged)
     Q_PROPERTY(
-        bool codeVisible READ codeVisible WRITE setCodeVisible NOTIFY panelsChanged)
-    Q_PROPERTY(int sidePage READ sidePage WRITE setSidePage NOTIFY panelsChanged)
+        int sidePage READ sidePage WRITE setSidePage NOTIFY panelsChanged)
     Q_PROPERTY(bool realisticParts READ realisticParts WRITE setRealisticParts
                    NOTIFY togglesChanged)
     Q_PROPERTY(bool spice READ spice WRITE setSpice NOTIFY togglesChanged)

@@ -64,7 +64,8 @@ void QmlUi::init(MainWindow *window, CircuitWidget *circuit,
     ctx->setContextProperty("Files", new FileController(window, circuit, this));
     ctx->setContextProperty("Mcus", new McuModel(this));
     ctx->setContextProperty("Inspector", m_inspector);
-    ctx->setContextProperty("Shell", new ShellController(window, circuit, this));
+    ctx->setContextProperty("Shell",
+                            new ShellController(window, circuit, this));
 }
 
 QQuickWidget *QmlUi::createWidget(const QString &file, QWidget *parent,

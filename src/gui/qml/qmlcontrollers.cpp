@@ -124,8 +124,7 @@ void FileController::saveAs()
 McuModel::McuModel(QObject *parent) : QObject(parent)
 {
     m_current = -1;
-    connect(McuSignals::self(), SIGNAL(mcuListChanged()), this,
-            SLOT(update()));
+    connect(McuSignals::self(), SIGNAL(mcuListChanged()), this, SLOT(update()));
     connect(McuSignals::self(), SIGNAL(activeMcuChanged(McuComponent *)), this,
             SLOT(update()));
     update();
@@ -151,7 +150,8 @@ void McuModel::select(int index)
 {
     if (index < 0 || index >= m_mcus.size())
         return;
-    MainWindow::self()->selectMcu(m_mcus.at(index).toMap().value("id").toString());
+    MainWindow::self()->selectMcu(
+        m_mcus.at(index).toMap().value("id").toString());
 }
 
 //------------------------------------------------------------------------
@@ -163,14 +163,22 @@ ShellController::ShellController(MainWindow *window, CircuitWidget *circuit,
 {
     QQmlPropertyMap *acts = new QQmlPropertyMap(this);
     const QList<QPair<const char *, QAction *>> list = {
-        { "copy", circuit->copyAct },         { "paste", circuit->pasteAct },
-        { "remove", circuit->deleteAct },     { "undo", circuit->undoAct },
-        { "redo", circuit->redoAct },         { "rotateCW", circuit->rotateCWAct },
-        { "rotateCCW", circuit->rotateCCWAct }, { "hFlip", circuit->hFlipAct },
-        { "vFlip", circuit->vFlipAct },       { "zoomIn", circuit->zoomInAct },
-        { "zoomOut", circuit->zoomOutAct },   { "zoomFit", circuit->zoomFitAct },
-        { "zoomReset", circuit->zoomResetAct }, { "pause", circuit->pauseSimAct },
-        { "newCirc", circuit->newCircAct },   { "openCirc", circuit->openCircAct },
+        { "copy", circuit->copyAct },
+        { "paste", circuit->pasteAct },
+        { "remove", circuit->deleteAct },
+        { "undo", circuit->undoAct },
+        { "redo", circuit->redoAct },
+        { "rotateCW", circuit->rotateCWAct },
+        { "rotateCCW", circuit->rotateCCWAct },
+        { "hFlip", circuit->hFlipAct },
+        { "vFlip", circuit->vFlipAct },
+        { "zoomIn", circuit->zoomInAct },
+        { "zoomOut", circuit->zoomOutAct },
+        { "zoomFit", circuit->zoomFitAct },
+        { "zoomReset", circuit->zoomResetAct },
+        { "pause", circuit->pauseSimAct },
+        { "newCirc", circuit->newCircAct },
+        { "openCirc", circuit->openCircAct },
         { "saveCirc", circuit->saveCircAct },
     };
     for (auto &p : list)
@@ -245,7 +253,8 @@ QString ShellController::version() const
 void ShellController::popupMenu(QQuickItem *anchor)
 {
     hideToolTip();
-    QPoint pos = QmlUi::self()->globalPos(anchor, 0, anchor ? anchor->height() + 4 : 0);
+    QPoint pos =
+        QmlUi::self()->globalPos(anchor, 0, anchor ? anchor->height() + 4 : 0);
     m_window->mainMenu()->popup(pos);
 }
 
@@ -266,7 +275,8 @@ int ShellController::popupChoice(QQuickItem *anchor, const QStringList &items,
     }
     if (anchor)
         menu.setMinimumWidth(int(anchor->width()));
-    QPoint pos = QmlUi::self()->globalPos(anchor, 0, anchor ? anchor->height() + 4 : 0);
+    QPoint pos =
+        QmlUi::self()->globalPos(anchor, 0, anchor ? anchor->height() + 4 : 0);
     QAction *act = menu.exec(pos, selected);
     return act ? act->data().toInt() : -1;
 }

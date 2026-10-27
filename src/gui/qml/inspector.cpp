@@ -26,9 +26,9 @@ int PropertyListModel::rowCount(const QModelIndex &parent) const
 
 QHash<int, QByteArray> PropertyListModel::roleNames() const
 {
-    return { { NameRole, "name" },       { LabelRole, "label" },
-             { ValueRole, "value" },     { DisplayRole, "display" },
-             { KindRole, "kind" },       { OptionsRole, "options" },
+    return { { NameRole, "name" },        { LabelRole, "label" },
+             { ValueRole, "value" },      { DisplayRole, "display" },
+             { KindRole, "kind" },        { OptionsRole, "options" },
              { ReadOnlyRole, "readOnly" } };
 }
 
@@ -59,24 +59,24 @@ QVariant PropertyListModel::data(const QModelIndex &index, int role) const
         return QVariant();
     const Prop &p = m_props.at(index.row());
     switch (role) {
-    case NameRole:
-        return QString(p.meta.name());
-    case LabelRole:
-        return p.label;
-    case ValueRole:
-        if (p.kind == "enum")
+        case NameRole:
+            return QString(p.meta.name());
+        case LabelRole:
+            return p.label;
+        case ValueRole:
+            if (p.kind == "enum")
+                return displayText(p.meta, p.kind, p.value);
+            if (p.kind == "color")
+                return p.value.value<QColor>();
+            return p.value;
+        case DisplayRole:
             return displayText(p.meta, p.kind, p.value);
-        if (p.kind == "color")
-            return p.value.value<QColor>();
-        return p.value;
-    case DisplayRole:
-        return displayText(p.meta, p.kind, p.value);
-    case KindRole:
-        return p.kind;
-    case OptionsRole:
-        return p.options;
-    case ReadOnlyRole:
-        return !p.meta.isWritable();
+        case KindRole:
+            return p.kind;
+        case OptionsRole:
+            return p.options;
+        case ReadOnlyRole:
+            return !p.meta.isWritable();
     }
     return QVariant();
 }
@@ -98,7 +98,8 @@ void PropertyListModel::setObject(QObject *obj)
         do {
             for (int i = 0; i < mo->propertyCount(); ++i) {
                 QMetaProperty prop = mo->property(i);
-                if (!prop.isUser() || QString(prop.name()) == "plainText")
+                if (!prop.isUser() || QString(prop.name()) == "plainText" ||
+                    QString(prop.name()) == "itemtype")
                     continue;
                 int found = -1;
                 for (int j = 0; j < props.size(); ++j)
@@ -117,7 +118,7 @@ void PropertyListModel::setObject(QObject *obj)
                 if (pair.owner != cls)
                     continue;
                 Prop p;
-                p.meta = pair.prop;
+                p.meta       = pair.prop;
                 QString name = QString(pair.prop.name()).replace('_', ' ');
                 p.label =
                     QApplication::translate("App::Property", name.toLatin1());

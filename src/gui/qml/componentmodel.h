@@ -23,8 +23,8 @@ class ComponentModel : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(QVariantList categories READ categories NOTIFY categoriesChanged)
-    Q_PROPERTY(QString category READ category WRITE setCategory NOTIFY
-                   categoryChanged)
+    Q_PROPERTY(
+        QString category READ category WRITE setCategory NOTIFY categoryChanged)
     Q_PROPERTY(int categoryIndex READ categoryIndex NOTIFY categoryChanged)
     Q_PROPERTY(QString search READ search WRITE setSearch NOTIFY searchChanged)
     Q_PROPERTY(int cardCount READ cardCount NOTIFY contentChanged)

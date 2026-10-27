@@ -28,10 +28,10 @@
 #include "componentselector.h"
 #include "editorwindow.h"
 #include "filewidget.h"
+#include "inspector.h"
 #include "mcpserver.h"
 #include "mcucomponent.h"
 #include "partart.h"
-#include "inspector.h"
 #include "propertieswidget.h"
 #include "qmlui.h"
 #include "serialmonitor.h"
@@ -58,8 +58,8 @@ MainWindow::MainWindow() :
     setWindowIcon(QIcon(":/simulide.png"));
     m_pSelf   = this;
     m_circuit = 0l;
-    m_simButton    = 0l;
-    m_projectLabel = 0l;
+    m_simButton        = 0l;
+    m_projectLabel     = 0l;
     m_codeButton       = 0l;
     m_componentsButton = 0l;
     m_mcuSelector      = 0l;
@@ -67,7 +67,7 @@ MainWindow::MainWindow() :
     m_qmlInspector     = 0l;
     m_qmlToolbar       = 0l;
     m_sideHost         = 0l;
-    m_qml = QmlUi::enabled(m_settings.value("ui/qml", true).toBool());
+    m_qml     = QmlUi::enabled(m_settings.value("ui/qml", true).toBool());
     m_version = "SimulIDE-" + QString(APP_VERSION);
 
     this->setWindowTitle(m_version);
@@ -250,7 +250,8 @@ void MainWindow::createWidgets()
     m_ramTabWidgetLayout->setSpacing(0);
     m_ramTabWidgetLayout->setContentsMargins(0, 0, 0, 0);
     m_ramTabWidgetLayout->setObjectName("ramTabWidgetLayout");
-    int ramTab = m_sidepanel->addTab(m_ramTabWidget, materialIcon("memory"), "");
+    int ramTab =
+        m_sidepanel->addTab(m_ramTabWidget, materialIcon("memory"), "");
     m_sidepanel->setTabToolTip(ramTab, tr("RamTable"));
 
     m_fileSystemTree = new FileWidget(this);
@@ -523,45 +524,45 @@ void MainWindow::createCodePanel()
     layout->setSpacing(0);
 
     if (!m_qml) {
-    QWidget *header = new QWidget(m_codePanel);
-    header->setObjectName("codePanelHeader");
-    header->setAttribute(Qt::WA_StyledBackground, true);
-    QHBoxLayout *headerLayout = new QHBoxLayout(header);
-    headerLayout->setContentsMargins(8, 4, 4, 4);
-    QLabel *title = new QLabel(tr("Code"), header);
-    title->setObjectName("codePanelTitle");
-    QFont tf = title->font();
-    tf.setBold(true);
-    title->setFont(tf);
-    headerLayout->addWidget(title);
-    headerLayout->addStretch();
+        QWidget *header = new QWidget(m_codePanel);
+        header->setObjectName("codePanelHeader");
+        header->setAttribute(Qt::WA_StyledBackground, true);
+        QHBoxLayout *headerLayout = new QHBoxLayout(header);
+        headerLayout->setContentsMargins(8, 4, 4, 4);
+        QLabel *title = new QLabel(tr("Code"), header);
+        title->setObjectName("codePanelTitle");
+        QFont tf = title->font();
+        tf.setBold(true);
+        title->setFont(tf);
+        headerLayout->addWidget(title);
+        headerLayout->addStretch();
 
-    // Target MCU: upload/debug, RAM table and Serial Monitor follow it.
-    QLabel *mcuLabel = new QLabel(tr("Target:"), header);
-    headerLayout->addWidget(mcuLabel);
-    m_mcuSelector = new QComboBox(header);
-    m_mcuSelector->setObjectName("mcuSelector");
-    m_mcuSelector->setToolTip(
-        tr("MCU targeted by upload, debugger, RAM table and Serial Monitor"));
-    m_mcuSelector->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-    headerLayout->addWidget(m_mcuSelector);
-    connect(McuSignals::self(), SIGNAL(mcuListChanged()), this,
-            SLOT(updateMcuSelector()));
-    connect(McuSignals::self(), SIGNAL(activeMcuChanged(McuComponent *)), this,
-            SLOT(updateMcuSelector()));
-    connect(m_mcuSelector, SIGNAL(activated(int)), this,
-            SLOT(mcuSelected(int)));
-    updateMcuSelector();
+        // Target MCU: upload/debug, RAM table and Serial Monitor follow it.
+        QLabel *mcuLabel = new QLabel(tr("Target:"), header);
+        headerLayout->addWidget(mcuLabel);
+        m_mcuSelector = new QComboBox(header);
+        m_mcuSelector->setObjectName("mcuSelector");
+        m_mcuSelector->setToolTip(tr(
+            "MCU targeted by upload, debugger, RAM table and Serial Monitor"));
+        m_mcuSelector->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+        headerLayout->addWidget(m_mcuSelector);
+        connect(McuSignals::self(), SIGNAL(mcuListChanged()), this,
+                SLOT(updateMcuSelector()));
+        connect(McuSignals::self(), SIGNAL(activeMcuChanged(McuComponent *)),
+                this, SLOT(updateMcuSelector()));
+        connect(m_mcuSelector, SIGNAL(activated(int)), this,
+                SLOT(mcuSelected(int)));
+        updateMcuSelector();
 
-    QToolButton *closeButton = new QToolButton(header);
-    closeButton->setObjectName("codePanelClose");
-    closeButton->setIcon(materialIcon("close"));
-    closeButton->setToolTip(tr("Close code panel"));
-    closeButton->setAutoRaise(true);
-    headerLayout->addWidget(closeButton);
-    layout->addWidget(header);
-    connect(closeButton, &QToolButton::clicked,
-            [this]() { setCodePanelVisible(false); });
+        QToolButton *closeButton = new QToolButton(header);
+        closeButton->setObjectName("codePanelClose");
+        closeButton->setIcon(materialIcon("close"));
+        closeButton->setToolTip(tr("Close code panel"));
+        closeButton->setAutoRaise(true);
+        headerLayout->addWidget(closeButton);
+        layout->addWidget(header);
+        connect(closeButton, &QToolButton::clicked,
+                [this]() { setCodePanelVisible(false); });
     }
 
     m_codeSplitter = new QSplitter(Qt::Vertical, m_codePanel);
@@ -1045,7 +1046,8 @@ void MainWindow::createQmlChrome(QVBoxLayout *baseLayout)
         ui->createWidget("SidePanelHeader.qml", m_sideHost);
     sideHeader->setObjectName("sidePanelHeader");
     sideHeader->setFixedHeight(60);
-    static_cast<QVBoxLayout *>(m_sideHost->layout())->insertWidget(0, sideHeader);
+    static_cast<QVBoxLayout *>(m_sideHost->layout())
+        ->insertWidget(0, sideHeader);
 
     QQuickWidget *library = ui->createWidget("ComponentPanel.qml", m_sidepanel);
     library->setObjectName("componentLibrary");
@@ -1057,7 +1059,8 @@ void MainWindow::createQmlChrome(QVBoxLayout *baseLayout)
         ui->createWidget("CodePanelHeader.qml", m_codePanel);
     codeHeader->setObjectName("codePanelHeader");
     codeHeader->setFixedHeight(60);
-    static_cast<QVBoxLayout *>(m_codePanel->layout())->insertWidget(0, codeHeader);
+    static_cast<QVBoxLayout *>(m_codePanel->layout())
+        ->insertWidget(0, codeHeader);
 
     // Floating overlays over the canvas
     QWidget *view  = m_circuit->view();

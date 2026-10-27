@@ -189,7 +189,7 @@ Item {
                             anchors.leftMargin: 20
                             anchors.verticalCenter: parent.verticalCenter
                             width: 112
-                            text: row.label
+                            text: row.label.length ? row.label.charAt(0).toUpperCase() + row.label.slice(1) : ""
                             style: "bodyM"
                             color: Theme.onSurfaceVariant
                         }
