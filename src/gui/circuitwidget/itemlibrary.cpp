@@ -71,6 +71,7 @@
 #include "mosfet.h"
 #include "mux.h"
 #include "mux_analog.h"
+#include "netlabel.h"
 #include "op_amp.h"
 #include "oscope.h"
 //#include "outbus.h"
@@ -138,6 +139,9 @@ void ItemLibrary::loadItems()
     addItem( CurrSource::libraryItem() );
     addItem( Rail::libraryItem() );
     addItem( Ground::libraryItem() );
+    addItem(NetLabel::libraryItem());
+    addItem(NetLabel::powerLibraryItem());
+    addItem(NetLabel::groundLibraryItem());
     // Switches
     addItem( Push::libraryItem() );
     addItem( Switch::libraryItem() );

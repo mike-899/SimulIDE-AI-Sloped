@@ -214,6 +214,7 @@ HEADERS += \
     ./src/gui/circuitwidget/components/sources/clock.h \
     ./src/gui/circuitwidget/components/sources/currsource.h \
     ./src/gui/circuitwidget/components/sources/ground.h \
+    ./src/gui/circuitwidget/components/sources/netlabel.h \
     ./src/gui/circuitwidget/components/sources/logicinput.h \
     ./src/gui/circuitwidget/components/sources/rail.h \
     ./src/gui/circuitwidget/components/sources/voltsource.h \
@@ -571,6 +572,7 @@ SOURCES += \
     ./src/gui/circuitwidget/components/sources/clock.cpp \
     ./src/gui/circuitwidget/components/sources/currsource.cpp \
     ./src/gui/circuitwidget/components/sources/ground.cpp \
+    ./src/gui/circuitwidget/components/sources/netlabel.cpp \
     ./src/gui/circuitwidget/components/sources/logicinput.cpp \
     ./src/gui/circuitwidget/components/sources/rail.cpp \
     ./src/gui/circuitwidget/components/sources/voltsource.cpp \

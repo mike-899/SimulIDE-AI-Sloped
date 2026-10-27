@@ -74,6 +74,8 @@
         <file alias="subc.png">../src/icons/components/subc.png</file>
         <file alias="subc2.png">../src/icons/components/subc2.png</file>
         <file alias="ground.png">../src/icons/components/ground.png</file>
+        <file alias="netlabel.png">../src/icons/components/netlabel.png</file>
+        <file alias="powerlabel.png">../src/icons/components/powerlabel.png</file>
         <file alias="voltsource.png">../src/icons/components/voltsource.png</file>
         <file alias="capacitor.png">../src/icons/components/capacitor.png</file>
         <file alias="elcapacitor.png">../src/icons/components/elcapacitor.png</file>
