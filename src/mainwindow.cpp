@@ -125,7 +125,14 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::readSettings()
 {
-    restoreGeometry(m_settings.value("geometry").toByteArray());
+    if (!restoreGeometry(m_settings.value("geometry").toByteArray())) {
+        // No (valid) saved geometry: 80% of the screen, at least 1280x720
+        QRect avail = qApp->primaryScreen()->availableGeometry();
+        int w       = qMin(qMax(int(avail.width() * 0.8), 1280), avail.width());
+        int h = qMin(qMax(int(avail.height() * 0.8), 720), avail.height());
+        resize(w, h);
+        move(avail.center() - QPoint(w / 2, h / 2));
+    }
     restoreState(m_settings.value("windowState").toByteArray());
 
     if (m_settings.contains("mainSplitter/state"))
@@ -322,8 +329,6 @@ void MainWindow::createWidgets()
     connect(m_circuit->powerCircAct, SIGNAL(changed()), this,
             SLOT(updateSimButton()));
     updateSimButton();
-
-    this->showMaximized();
 }
 
 void MainWindow::createTopBar()

@@ -12,6 +12,7 @@
 #include <QApplication>
 #include <QColor>
 #include <QMetaEnum>
+#include <QRegularExpression>
 #include <QTimer>
 
 PropertyListModel::PropertyListModel(QObject *parent) :
@@ -39,9 +40,38 @@ QVariant PropertyListModel::readValue(const Prop &p) const
     return p.meta.read(m_object.data());
 }
 
-static QString displayText(const QMetaProperty &meta, const QString &kind,
-                           const QVariant &v)
+QString PropertyListModel::readUnit(const Prop &p) const
 {
+    if (!m_object || !p.unitMeta.isValid())
+        return QString();
+    return p.unitMeta.read(m_object.data()).toString();
+}
+
+static const QString s_prefixes = "TGMkmunp";
+
+// Unit property text (" kΩ") -> prefix char (or ' ') and base unit ("Ω")
+static void splitUnit(const QString &unit, QChar &prefix, QString &base)
+{
+    QString u = unit.trimmed();
+    prefix    = ' ';
+    base      = u;
+    if (u.size() > 1 && s_prefixes.contains(u.at(0))) {
+        prefix = u.at(0);
+        base   = u.mid(1);
+    }
+}
+
+static QString quantityText(const QVariant &v, const QString &unit)
+{
+    return (QString::number(v.toDouble(), 'g', 8) + " " + unit.trimmed())
+        .trimmed();
+}
+
+static QString displayText(const QMetaProperty &meta, const QString &kind,
+                           const QVariant &v, const QString &unit = QString())
+{
+    if (kind == "quantity")
+        return quantityText(v, unit);
     if (kind == "enum")
         return QString(meta.enumerator().valueToKey(v.toInt()));
     if (kind == "double")
@@ -70,7 +100,7 @@ QVariant PropertyListModel::data(const QModelIndex &index, int role) const
                 return p.value.value<QColor>();
             return p.value;
         case DisplayRole:
-            return displayText(p.meta, p.kind, p.value);
+            return displayText(p.meta, p.kind, p.value, p.unit);
         case KindRole:
             return p.kind;
         case OptionsRole:
@@ -142,6 +172,17 @@ void PropertyListModel::setObject(QObject *obj)
                 else
                     p.kind = "other";
                 p.value = readValue(p);
+                if (QString(pair.prop.name()) == "Unit" &&
+                    pair.prop.metaType().id() == QMetaType::QString &&
+                    !m_props.isEmpty() && m_props.last().kind == "double" &&
+                    !m_props.last().unitMeta.isValid()) {
+                    // value + unit in a single editor
+                    Prop &q    = m_props.last();
+                    q.kind     = "quantity";
+                    q.unitMeta = pair.prop;
+                    q.unit     = p.value.toString();
+                    continue;
+                }
                 m_props.append(p);
             }
     }
@@ -157,9 +198,11 @@ void PropertyListModel::refreshValues()
         return;
     }
     for (int i = 0; i < m_props.size(); ++i) {
-        QVariant v = readValue(m_props[i]);
-        if (v != m_props[i].value) {
+        QVariant v   = readValue(m_props[i]);
+        QString unit = readUnit(m_props[i]);
+        if (v != m_props[i].value || unit != m_props[i].unit) {
             m_props[i].value = v;
+            m_props[i].unit  = unit;
             QModelIndex idx  = index(i);
             emit dataChanged(idx, idx);
         }
@@ -175,6 +218,37 @@ bool PropertyListModel::setValue(int row, const QVariant &value)
         return false;
 
     QVariant v = value;
+    if (p.kind == "quantity") {
+        // "2 kΩ", "4.7k", "10 m", "100": number, then optional prefix/unit
+        static const QRegularExpression re(
+            "^\\s*([-+]?(?:\\d+\\.?\\d*|\\.\\d+)(?:[eE][-+]?\\d+)?)\\s*(.*)$");
+        QRegularExpressionMatch m = re.match(value.toString());
+        if (!m.hasMatch())
+            return false;
+        double d  = m.captured(1).toDouble();
+        QString t = m.captured(2);
+        t.remove(' ');
+        t.replace(QChar(0x00B5), 'u').replace(QChar(0x03BC), 'u');
+        if (t.startsWith('K'))
+            t[0] = 'k';
+        if (!t.isEmpty()) {
+            QChar curPrefix;
+            QString base;
+            splitUnit(p.unit, curPrefix, base);
+            QChar prefix = ' ';
+            if (t.size() == 1 && s_prefixes.contains(t.at(0)) && t != base)
+                prefix = t.at(0); // only a prefix: keep the base unit
+            else if (t.size() > 1 && s_prefixes.contains(t.at(0)) &&
+                     t.mid(1) == base)
+                prefix = t.at(0);
+            else if (t != base)
+                return false; // unknown unit text
+            m_object->setProperty(p.unitMeta.name(), QString(prefix) + base);
+        }
+        bool ok = m_object->setProperty(p.meta.name(), d);
+        refreshValues();
+        return ok;
+    }
     if (p.kind == "double") {
         bool ok;
         double d = value.toString().trimmed().toDouble(&ok);

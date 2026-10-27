@@ -16,7 +16,8 @@ class Component;
 // The editable (USER) Q_PROPERTYs of one object, in the same order as the
 // classic QPropertyEditor (base classes first).
 // Roles: name, label, value (raw), display (text), kind ("bool", "int",
-// "double", "string", "enum", "color", "other"), options (enum keys),
+// "double", "quantity" (value + unit in one text, eg. "2 kΩ"), "string",
+// "enum", "color", "other"), options (enum keys),
 // readOnly.
 class PropertyListModel : public QAbstractListModel
 {
@@ -66,8 +67,12 @@ class PropertyListModel : public QAbstractListModel
         QString kind;
         QStringList options;
         QVariant value;
+        // "quantity": a double merged with the following "Unit" property
+        QMetaProperty unitMeta;
+        QString unit;
     };
     QVariant readValue(const Prop &p) const;
+    QString readUnit(const Prop &p) const;
 
     QPointer<QObject> m_object;
     QList<Prop> m_props;

@@ -120,7 +120,7 @@ Item {
             implicitHeight: content.implicitHeight
             boundsBehavior: Flickable.StopAtBounds
             ScrollBar.vertical: ScrollBar {
-                policy: ScrollBar.AsNeeded
+                policy: body.contentHeight > body.height + 2 ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
                 contentItem: Rectangle { implicitWidth: 6; radius: 3; color: Theme.outlineVariant }
             }
 
@@ -167,6 +167,8 @@ Item {
 
                         width: content.width
                         height: 48
+
+                        readonly property bool numeric: kind === "int" || kind === "double" || kind === "quantity"
 
                         function commit(v) {
                             if (String(v) !== row.display)
@@ -269,7 +271,7 @@ Item {
                             }
                             // text-like editors
                             M3TextField {
-                                visible: row.kind === "int" || row.kind === "double"
+                                visible: row.kind === "int" || row.kind === "double" || row.kind === "quantity"
                                          || row.kind === "string" || row.kind === "color"
                                          || (row.kind === "other" && !row.readOnly)
                                 anchors.left: row.kind === "color" ? swatch.right : parent.left
@@ -281,8 +283,8 @@ Item {
                                 inputMethodHints: row.kind === "int" || row.kind === "double"
                                                   ? Qt.ImhFormattedNumbersOnly : Qt.ImhNone
                                 onCommitted: (t) => row.commit(t)
-                                Keys.onUpPressed: if (row.kind === "int" || row.kind === "double") row.commit(Number(row.display) + 1)
-                                Keys.onDownPressed: if (row.kind === "int" || row.kind === "double") row.commit(Number(row.display) - 1)
+                                Keys.onUpPressed: if (row.numeric) Inspector.model.setValue(row.index, Number(row.value) + 1)
+                                Keys.onDownPressed: if (row.numeric) Inspector.model.setValue(row.index, Number(row.value) - 1)
                             }
                             Txt {
                                 visible: row.kind === "other" && row.readOnly

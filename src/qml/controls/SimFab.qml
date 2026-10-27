@@ -7,6 +7,7 @@ import QtQuick.Controls.Basic
 AbstractButton {
     id: fab
     property string state_: Sim.state
+    property bool shortLabel: false
     readonly property bool on: state_ === "On" || state_ === "Paused"
 
     enabled: Sim.canToggle
@@ -14,10 +15,10 @@ AbstractButton {
     focusPolicy: Qt.NoFocus
     implicitHeight: 56
     implicitWidth: content.implicitWidth + 40
-    text: state_ === "On" ? qsTr("Stop Simulation")
+    text: state_ === "On" ? (shortLabel ? qsTr("Stop") : qsTr("Stop Simulation"))
         : state_ === "Paused" ? qsTr("Paused")
-        : state_ === "Debug" ? qsTr("Debugging")
-        : qsTr("Start Simulation")
+        : state_ === "Debug" ? (shortLabel ? qsTr("Debug") : qsTr("Debugging"))
+        : (shortLabel ? qsTr("Start") : qsTr("Start Simulation"))
 
     Behavior on implicitWidth { SpringAnimation { spring: 3.5; damping: 0.3; epsilon: 0.5 } }
 

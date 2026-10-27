@@ -7,6 +7,9 @@ import "controls"
 Rectangle {
     id: bar
     color: Theme.surfaceContainer
+    // Narrow windows: file actions move into the menu, labels shorten
+    readonly property bool compact: width < 960
+    readonly property bool tiny: width < 700
     Behavior on color { ColorAnimation { duration: 200 } }
 
     Rectangle { // bottom divider
@@ -59,6 +62,7 @@ Rectangle {
             Layout.preferredWidth: Math.min(projectText.implicitWidth + 32 + (Files.modified ? 16 : 0), 360)
             Layout.minimumWidth: 60
             Layout.fillWidth: false
+            visible: !bar.tiny
             radius: 20
             color: projectHover.hovered ? Theme.surfaceContainerHighest : "transparent"
             Behavior on color { ColorAnimation { duration: 150 } }
@@ -98,18 +102,21 @@ Rectangle {
         }
         IconButton {
             objectName: "newCircuitButton"
+            visible: !bar.compact
             iconName: "note_add"
             tip: qsTr("New Circuit (Ctrl+N)")
             onClicked: Files.newCircuit()
         }
         IconButton {
             objectName: "openCircuitButton"
+            visible: !bar.compact
             iconName: "folder_open"
             tip: qsTr("Open Circuit (Ctrl+O)")
             onClicked: Files.open()
         }
         IconButton {
             objectName: "saveCircuitButton"
+            visible: !bar.compact
             iconName: "save"
             tip: qsTr("Save Circuit (Ctrl+S)")
             onClicked: Files.save()
@@ -123,7 +130,7 @@ Rectangle {
                 objectName: "componentsButton"
                 position: "first"
                 iconName: "widgets"
-                text: qsTr("Components")
+                text: bar.tiny ? "" : qsTr("Components")
                 tip: qsTr("Show / hide the component panel")
                 checked: Shell.componentsVisible
                 onClicked: Shell.componentsVisible = !Shell.componentsVisible
@@ -132,7 +139,7 @@ Rectangle {
                 objectName: "codeButton"
                 position: "last"
                 iconName: "code"
-                text: qsTr("Code")
+                text: bar.tiny ? "" : qsTr("Code")
                 tip: qsTr("Show / hide the code editor")
                 checked: Shell.codeVisible
                 onClicked: Shell.codeVisible = !Shell.codeVisible
@@ -140,6 +147,7 @@ Rectangle {
         }
         SimFab {
             objectName: "simButton"
+            shortLabel: bar.compact
         }
     }
 }
