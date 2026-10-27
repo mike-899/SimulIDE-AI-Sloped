@@ -15,6 +15,7 @@
 #include <QCoreApplication>
 #include <QCursor>
 #include <QDebug>
+#include <QQmlComponent>
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QQuickItem>
@@ -43,6 +44,33 @@ bool QmlUi::enabled(bool settingValue)
     if (qEnvironmentVariable("SIMULIDE_UI") == "widgets")
         return false;
     return settingValue;
+}
+
+bool QmlUi::preflight(QString *error)
+{
+    static const QStringList files = {
+        "TopBar.qml",           "SidePanelHeader.qml", "ComponentPanel.qml",
+        "CodePanelHeader.qml",  "CodeEmptyState.qml",  "EditToolbar.qml",
+        "PropertyInspector.qml"
+    };
+    QString dir = qEnvironmentVariable("SIMULIDE_QML_DIR");
+    QQmlEngine engine;
+    engine.addImportPath("qrc:/qml");
+    for (const QString &file : files) {
+        QQmlComponent comp(
+            &engine, dir.isEmpty() ? QUrl("qrc:/qml/" + file)
+                                   : QUrl::fromLocalFile(dir + "/" + file));
+        if (comp.isError()) {
+            if (error) {
+                QStringList msgs;
+                for (const QQmlError &e : comp.errors())
+                    msgs << e.toString();
+                *error = file + ": " + msgs.join("; ");
+            }
+            return false;
+        }
+    }
+    return true;
 }
 
 void QmlUi::init(MainWindow *window, CircuitWidget *circuit,

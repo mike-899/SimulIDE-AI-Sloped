@@ -17,10 +17,15 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <QApplication>
-#include <QTranslator>
-
 #include "mainwindow.h"
+
+#include <QApplication>
+#include <QDebug>
+#include <QOffscreenSurface>
+#include <QOpenGLContext>
+#include <QQuickWindow>
+#include <QSGRendererInterface>
+#include <QTranslator>
 
 #ifdef _WIN32
 #    include <windows.h>
@@ -34,6 +39,31 @@ QString langFile( QString locale )
     if( !file.exists() ) langF = "";
 
     return langF;
+}
+
+// The QML shell renders with Qt Quick: use the software renderer when
+// SIMULIDE_SOFTWARE_RENDER=1, when the user already picked a backend with
+// QT_QUICK_BACKEND, or when no OpenGL context can be created (VMs, remote
+// desktops, missing drivers) so the UI never fails to show.
+static void chooseRenderBackend()
+{
+    if (qEnvironmentVariableIsSet("QT_QUICK_BACKEND") ||
+        qEnvironmentVariableIsSet("QSG_RHI_BACKEND"))
+        return; // User choice
+
+    bool software = qEnvironmentVariable("SIMULIDE_SOFTWARE_RENDER") == "1";
+    if (!software) {
+        QOpenGLContext ctx;
+        QOffscreenSurface surface;
+        surface.create();
+        if (!ctx.create() || !surface.isValid() || !ctx.makeCurrent(&surface)) {
+            qWarning() << "OpenGL not available: using the software renderer";
+            software = true;
+        } else
+            ctx.doneCurrent();
+    }
+    if (software)
+        QQuickWindow::setGraphicsApi(QSGRendererInterface::Software);
 }
 
 int main(int argc, char *argv[])
@@ -61,6 +91,7 @@ int main(int argc, char *argv[])
 
     //QApplication::setGraphicsSystem( "raster" );//native, raster, opengl
     QApplication app( argc, argv );
+    chooseRenderBackend();
 
     QSettings settings(
         QStandardPaths::standardLocations(QStandardPaths::AppLocalDataLocation)

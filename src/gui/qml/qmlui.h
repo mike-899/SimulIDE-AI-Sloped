@@ -36,6 +36,12 @@ class QmlUi : public QObject
     // or SIMULIDE_UI=widgets force the classic Widgets chrome.
     static bool enabled(bool settingValue);
 
+    // Can the QML shell run? Compiles every root QML file (and the Qt Quick
+    // modules it imports) in a throw-away engine; false (and the reason in
+    // *error) when a module is missing or a file does not compile, so the
+    // caller falls back to the Widgets UI.
+    static bool preflight(QString *error = 0l);
+
     void init(MainWindow *window, CircuitWidget *circuit,
               ComponentSelector *selector);
 

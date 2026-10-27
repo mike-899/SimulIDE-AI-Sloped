@@ -67,7 +67,14 @@ MainWindow::MainWindow() :
     m_qmlInspector     = 0l;
     m_qmlToolbar       = 0l;
     m_sideHost         = 0l;
-    m_qml     = QmlUi::enabled(m_settings.value("ui/qml", true).toBool());
+    m_qml = QmlUi::enabled(m_settings.value("ui/qml", true).toBool());
+    if (m_qml) {
+        QString err;
+        if (!QmlUi::preflight(&err)) { // Qt Quick missing/broken: classic UI
+            qWarning() << "QML UI unavailable, using the Widgets UI:" << err;
+            m_qml = false;
+        }
+    }
     m_version = "SimulIDE-" + QString(APP_VERSION);
 
     this->setWindowTitle(m_version);
@@ -723,6 +730,20 @@ void MainWindow::createMenus()
     });
 
     QMenu *toolsMenu = m_mainMenu->addMenu(tr("&Tools"));
+    QAction *uiAct   = toolsMenu->addAction(materialIcon("widgets"),
+                                            tr("Classic Widgets interface"));
+    uiAct->setObjectName("widgetsUiAction");
+    uiAct->setToolTip(tr("Use the classic Qt Widgets interface instead of the "
+                         "Qt Quick one (takes effect after restarting)"));
+    uiAct->setCheckable(true);
+    uiAct->setChecked(!m_settings.value("ui/qml", true).toBool());
+    connect(uiAct, &QAction::toggled, [this](bool widgets) {
+        m_settings.setValue("ui/qml", !widgets);
+        QMessageBox::information(this, tr("Interface"),
+                                 tr("The interface change takes effect the "
+                                    "next time SimulIDE starts."));
+    });
+
     QAction *manageAct =
         toolsMenu->addAction(materialIcon("tune"), tr("Manage Components"));
     connect(manageAct, SIGNAL(triggered()), m_components,
