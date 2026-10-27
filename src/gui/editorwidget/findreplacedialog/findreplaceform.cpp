@@ -22,12 +22,13 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <QtGui>
-#include <QRegExp>
-#include <QSettings>
-
 #include "findreplaceform.h"
+
 #include "ui_findreplaceform.h"
+
+#include <QRegularExpression>
+#include <QSettings>
+#include <QtGui>
 
 #define TEXT_TO_FIND "textToFind"
 #define TEXT_TO_REPLACE "textToReplace"
@@ -116,7 +117,10 @@ void FindReplaceForm::validateRegExp(const QString &text)
         ui->errorLabel->setText("");
         return; // nothing to validate
     }
-    QRegExp reg(text, (ui->caseCheckBox->isChecked() ? Qt::CaseSensitive : Qt::CaseInsensitive));
+    QRegularExpression reg(text,
+                           (ui->caseCheckBox->isChecked()
+                                ? QRegularExpression::NoPatternOption
+                                : QRegularExpression::CaseInsensitiveOption));
 
     if( reg.isValid() ) showError("");
     else                showError(reg.errorString());
@@ -160,7 +164,10 @@ void FindReplaceForm::find( bool next )
     if (ui->wholeCheckBox->isChecked()) flags |= QTextDocument::FindWholeWords;
     if (ui->regexCheckBox->isChecked()) 
     {
-        QRegExp reg(toSearch, (ui->caseCheckBox->isChecked() ? Qt::CaseSensitive : Qt::CaseInsensitive));
+        QRegularExpression reg(
+            toSearch, (ui->caseCheckBox->isChecked()
+                           ? QRegularExpression::NoPatternOption
+                           : QRegularExpression::CaseInsensitiveOption));
 
         //qDebug() << "searching for regexp: " << reg.pattern();
 

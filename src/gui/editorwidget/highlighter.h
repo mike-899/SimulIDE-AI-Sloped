@@ -23,6 +23,7 @@
 
 #include <QSyntaxHighlighter>
 //#include <QHash>
+#include <QRegularExpression>
 #include <QTextCharFormat>
 
 QT_BEGIN_NAMESPACE
@@ -49,7 +50,7 @@ class Highlighter : public QSyntaxHighlighter
     private:
         struct HighlightingRule
         {
-            QRegExp pattern;
+            QRegularExpression pattern;
             QTextCharFormat format;
         };
         
@@ -61,8 +62,8 @@ class Highlighter : public QSyntaxHighlighter
         
         QVector<HighlightingRule> m_highlightingRules;
 
-        QRegExp commentStartExpression;
-        QRegExp commentEndExpression;
+        QRegularExpression commentStartExpression;
+        QRegularExpression commentEndExpression;
 
         QTextCharFormat keyword1Format;
         QTextCharFormat registerFormat;

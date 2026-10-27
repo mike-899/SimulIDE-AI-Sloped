@@ -39,6 +39,7 @@
 #include <QMetaEnum>
 #include <QMetaProperty>
 #include <QPainter>
+#include <QRegularExpression>
 #include <QTextStream>
 #include <QTimer>
 
@@ -625,7 +626,7 @@ QJsonObject McpTools::addComponent(const QJsonObject &a)
         circ->deleteNewConnector();
 
     QString name = li->type(); // Ids are "<Type>-<n>", safe characters only
-    name.remove(QRegExp("[^A-Za-z0-9_]"));
+    name.remove(QRegularExpression("[^A-Za-z0-9_]"));
     if (name.isEmpty())
         name = "Comp";
     if (!model.isEmpty())

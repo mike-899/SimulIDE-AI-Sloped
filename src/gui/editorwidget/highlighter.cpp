@@ -30,8 +30,8 @@ Highlighter::Highlighter( QTextDocument* parent )
     multiLineCommentFormat.setForeground( Qt::red );
     multiLineCommentFormat.setFontItalic( true );
 
-    commentStartExpression = QRegExp( "/\\*" );
-    commentEndExpression   = QRegExp( "\\*/" );
+    commentStartExpression = QRegularExpression("/\\*");
+    commentEndExpression   = QRegularExpression("\\*/");
 }
 Highlighter::~Highlighter(){}
 
@@ -141,11 +141,13 @@ void Highlighter::highlightBlock( const QString &text )
         setCurrentBlockState( 0 );
         int startIndex = 0;
         if( previousBlockState() != 1 )
-            startIndex = commentStartExpression.indexIn( text );
+            startIndex = text.indexOf(commentStartExpression);
 
         while( startIndex >= 0 )
         {
-            int endIndex = commentEndExpression.indexIn( text, startIndex );
+            QRegularExpressionMatch endMatch =
+                commentEndExpression.match(text, startIndex);
+            int endIndex = endMatch.hasMatch() ? endMatch.capturedStart() : -1;
             int commentLength;
             if( endIndex == -1 )
             {
@@ -154,23 +156,22 @@ void Highlighter::highlightBlock( const QString &text )
             }
             else
             {
-                commentLength = endIndex - startIndex + commentEndExpression.matchedLength();
+                commentLength =
+                    endIndex - startIndex + endMatch.capturedLength();
             }
             setFormat( startIndex, commentLength, multiLineCommentFormat );
-            startIndex = commentStartExpression.indexIn( text, startIndex + commentLength );
+            startIndex = text.indexOf(commentStartExpression,
+                                      startIndex + commentLength);
         }
     }
 }
 
 void Highlighter::processRule( HighlightingRule rule, QString lcText )
 {
-    QRegExp expression( rule.pattern );
-    int index = expression.indexIn( lcText );
-    while( index >= 0 )
-    {
-        int length = expression.matchedLength();
-        setFormat( index, length, rule.format );
-        index = expression.indexIn( lcText, index + length );
+    QRegularExpressionMatchIterator it = rule.pattern.globalMatch(lcText);
+    while (it.hasNext()) {
+        QRegularExpressionMatch match = it.next();
+        setFormat(match.capturedStart(), match.capturedLength(), rule.format);
     }
 }
 
@@ -183,7 +184,7 @@ void Highlighter::addRule( QTextCharFormat format, QString exp )
 {
     HighlightingRule rule;
 
-    rule.pattern = QRegExp( exp );
+    rule.pattern = QRegularExpression(exp);
     rule.format = format;
     m_highlightingRules.append(rule);
 }
@@ -195,18 +196,17 @@ void Highlighter::setMultiline( bool set )
 
 /*classFormat.setFontWeight( QFont::Bold );
 classFormat.setForeground( Qt::darkMagenta );
-rule.pattern = QRegExp( "\\bQ[A-Za-z]+\\b" );
+rule.pattern = QRegularExpression( "\\bQ[A-Za-z]+\\b" );
 rule.format = classFormat;
 m_highlightingRules.append( rule );*/
 
 //multiLineCommentFormat.setForeground( Qt::red );
 
-
 /*functionFormat.setFontItalic( true );
 functionFormat.setForeground( Qt::blue );
-rule.pattern = QRegExp("\\b[A-Za-z0-9_]+(?=\\()"); //( "\\b[A-Za-z0-9_]+(?=\\()" );
-rule.format = functionFormat;
+rule.pattern = QRegularExpression("\\b[A-Za-z0-9_]+(?=\\()"); //(
+"\\b[A-Za-z0-9_]+(?=\\()" ); rule.format = functionFormat;
 m_highlightingRules.append( rule );*/
 
-//commentStartExpression = QRegExp( "/\\*" );
-//commentEndExpression = QRegExp( "\\*/" );
+// commentStartExpression = QRegularExpression( "/\\*" );
+// commentEndExpression = QRegularExpression( "\\*/" );
