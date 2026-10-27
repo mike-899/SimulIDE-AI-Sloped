@@ -168,6 +168,8 @@ HEADERS += \
     ./src/gui/circuitwidget/components/mcu/piccomponent.h \
     ./src/gui/circuitwidget/components/mcu/piccomponentpin.h \
     ./src/gui/circuitwidget/components/mcu/serialport.h \
+    ./src/gui/circuitwidget/components/mcu/uartfeeder.h \
+    ./src/gui/circuitwidget/components/mcu/ispuploader.h \
     ./src/gui/circuitwidget/components/mcu/serialterm.h \
     ./src/gui/circuitwidget/components/mcu/shield.h \
     ./src/gui/circuitwidget/components/mcu/sr04.h \
@@ -387,6 +389,8 @@ HEADERS += \
     ./src/simulator/elements/passive/e-resistor.h \
     ./src/simulator/elements/passive/e-resistordip.h \
     ./src/simulator/elements/processors/avrprocessor.h \
+    ./src/simulator/elements/processors/avrisp.h \
+    ./src/simulator/elements/processors/stk500client.h \
     ./src/simulator/elements/processors/baseprocessor.h \
     ./src/simulator/elements/processors/picprocessor.h \
     ./src/simulator/matrixsolver.h \
@@ -516,6 +520,8 @@ SOURCES += \
     ./src/gui/circuitwidget/components/mcu/piccomponent.cpp \
     ./src/gui/circuitwidget/components/mcu/piccomponentpin.cpp \
     ./src/gui/circuitwidget/components/mcu/serialport.cpp \
+    ./src/gui/circuitwidget/components/mcu/uartfeeder.cpp \
+    ./src/gui/circuitwidget/components/mcu/ispuploader.cpp \
     ./src/gui/circuitwidget/components/mcu/serialterm.cpp \
     ./src/gui/circuitwidget/components/mcu/shield.cpp \
     ./src/gui/circuitwidget/components/mcu/sr04.cpp \
@@ -715,6 +721,8 @@ SOURCES += \
     ./src/simulator/elements/passive/e-resistor.cpp \
     ./src/simulator/elements/passive/e-resistordip.cpp \
     ./src/simulator/elements/processors/avrprocessor.cpp \
+    ./src/simulator/elements/processors/avrisp.cpp \
+    ./src/simulator/elements/processors/stk500client.cpp \
     ./src/simulator/elements/processors/baseprocessor.cpp \
     ./src/simulator/elements/processors/picprocessor.cpp \
     ./src/simulator/elements/processors/read_elf.c \

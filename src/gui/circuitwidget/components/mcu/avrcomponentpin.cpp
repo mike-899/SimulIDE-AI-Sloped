@@ -18,6 +18,8 @@
  ***************************************************************************/
 
 #include "avrcomponentpin.h"
+
+#include "avrcompbase.h"
 #include "baseprocessor.h"
 #include "simulator.h"
 
@@ -25,6 +27,8 @@ AVRComponentPin::AVRComponentPin( McuComponent* mcu, QString id, QString type, Q
                : McuComponentPin( mcu, id, type, label, pos, xpos, ypos, angle )
 {
     m_channel = -1;
+    m_ispRole     = 0;
+    m_resetLocked = false;
 }
 AVRComponentPin::~AVRComponentPin(){}
 
@@ -124,17 +128,33 @@ void AVRComponentPin::setVChanged()
     {
         if( volt  > 2.5 ) avr_raise_irq(m_Write_stat_irq, 1);
         else              avr_raise_irq(m_Write_stat_irq, 0);
+
+        if (m_ispRole) // RESET, SCK or MOSI of serial programming
+            static_cast<AvrCompBase *>(m_mcuComponent)
+                ->ispPinChanged(this, volt > 2.5);
     }
     else if( m_pinType == 21 ) // reset
     {
-        if (volt < 3)
-            m_mcuComponent->processor()->hardReset(true);
-        else
-            m_mcuComponent->processor()->hardReset(false);
+        static_cast<AvrCompBase *>(m_mcuComponent)
+            ->ispPinChanged(this, volt >= 3);
     }
     else if( m_pinType == 22 ) { m_avrProcessor->vcc  = volt*1000;}
     else if( m_pinType == 23 ) { m_avrProcessor->avcc = volt*1000;}
     else if( m_pinType == 24 ) { m_avrProcessor->aref = volt*1000;}
+}
+
+void AVRComponentPin::setResetPullup(bool up)
+{
+    if (m_pinType != 1)
+        return;
+    if (!up && !m_resetLocked)
+        return; // GPIO: pull-up belongs to the firmware
+
+    m_resetLocked = up;
+    if (up && !m_isInput)
+        setDirection(false);
+    m_pupAdmit = up ? 1 / 1e5 : 0;
+    update();
 }
 
 void AVRComponentPin::resetState()

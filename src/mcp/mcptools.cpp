@@ -10,6 +10,7 @@
 
 #include "mcptools.h"
 
+#include "avrcompbase.h"
 #include "circuit.h"
 #include "circuitview.h"
 #include "circuitwidget.h"
@@ -18,6 +19,7 @@
 #include "componentselector.h"
 #include "connector.h"
 #include "editorwindow.h"
+#include "ispuploader.h"
 #include "itemlibrary.h"
 #include "mainwindow.h"
 #include "mcucomponent.h"
@@ -28,6 +30,8 @@
 #include <QBuffer>
 #include <QDir>
 #include <QDomDocument>
+#include <QElapsedTimer>
+#include <QEventLoop>
 #include <QFile>
 #include <QFileInfo>
 #include <QImage>
@@ -36,6 +40,7 @@
 #include <QMetaProperty>
 #include <QPainter>
 #include <QTextStream>
+#include <QTimer>
 
 // ---------------------------------------------------------------- schema
 // helpers
@@ -179,6 +184,22 @@ McpTools::McpTools(QObject *parent) : QObject(parent)
                                        "(.hex, or .elf/.cod as supported)");
         reg("load_firmware", "Load a firmware file into an MCU component.",
             schema(p, { "mcu_id", "hex_path" }), &McpTools::loadFirmware);
+    }
+    {
+        QJsonObject p;
+        p["programmer_id"] = prop("string", "Id of the MCU running a STK500v1 "
+                                            "programmer firmware (ArduinoISP)");
+        p["hex_path"]   = prop("string", "Absolute path of the .hex to write "
+                                           "into the target");
+        p["target"]     = prop("string", "Target device, e.g. attiny85 "
+                                             "(default: the other AVR in the circuit)");
+        p["timeout_ms"] = prop("number", "Real time limit (default 120000)");
+        reg("isp_program",
+            "Program the AVR wired to the ISP pins of a simulated ArduinoISP "
+            "using the built-in STK500v1 uploader (like avrdude -c stk500v1). "
+            "Starts the simulation if needed and waits until done; returns the "
+            "uploader log.",
+            schema(p, { "programmer_id", "hex_path" }), &McpTools::ispProgram);
     }
     {
         QJsonObject p;
@@ -884,6 +905,26 @@ QJsonObject McpTools::getComponentState(const QJsonObject &a)
         r["device"]   = mcu->device();
         r["active"]   = (mcu == McuComponent::self());
     }
+    AvrCompBase *avr = dynamic_cast<AvrCompBase *>(comp);
+    if (avr && avr->avrProcessor()->getCpu()) {
+        AvrProcessor *ap = avr->avrProcessor();
+        avr_t *cpu       = ap->getCpu();
+        QJsonObject isp;
+        isp["blank"]              = ap->isBlank();
+        isp["in_reset"]           = ap->isp()->inReset();
+        isp["prog_enabled"]       = ap->isp()->progEnabled();
+        isp["reset_pin_function"] = avr->resetFunction();
+        QString head;
+        for (int i = 0; i < 16 && i <= (int)cpu->flashend; ++i)
+            head += QString("%1 ").arg(cpu->flash[i], 2, 16, QChar('0'));
+        isp["flash_head"] = head.trimmed();
+        isp["fuses"]      = QString("L=%1 H=%2 E=%3 lock=%4")
+                           .arg(cpu->fuse[0], 2, 16, QChar('0'))
+                           .arg(cpu->fuse[1], 2, 16, QChar('0'))
+                           .arg(cpu->fuse[2], 2, 16, QChar('0'))
+                           .arg(cpu->lockbits, 2, 16, QChar('0'));
+        r["avr"] = isp;
+    }
 
     if (!running)
         r["note"] = "Simulation is not running: voltages are not meaningful.";
@@ -909,6 +950,51 @@ QJsonObject McpTools::loadFirmware(const QJsonObject &a)
     r["firmware"] = mcu->program();
     if (mcu->program().isEmpty())
         return fail("Firmware could not be loaded into " + id);
+    return ok(r);
+}
+
+QJsonObject McpTools::ispProgram(const QJsonObject &a)
+{
+    QString id        = a.value("programmer_id").toString();
+    Component *comp   = findComp(id);
+    McuComponent *mcu = dynamic_cast<McuComponent *>(comp);
+    if (!mcu)
+        return fail("No MCU with id '" + id + "'");
+    QFileInfo fi(a.value("hex_path").toString());
+    if (!fi.exists())
+        return fail("File not found: " + fi.filePath());
+    QString target = a.value("target").toString();
+    if (target.isEmpty())
+        target = IspUploader::guessTarget(mcu);
+    int timeout = a.value("timeout_ms").toInt(120000);
+
+    if (!Simulator::self()->isRunning())
+        CircuitWidget::self()->powerCircOn();
+
+    IspUploader up(mcu);
+    if (!up.start(fi.absoluteFilePath(), target))
+        return fail(up.error());
+
+    QEventLoop loop;
+    QTimer guard;
+    guard.setSingleShot(true);
+    connect(&up, &IspUploader::finished, &loop, &QEventLoop::quit);
+    connect(&guard, &QTimer::timeout, &loop, &QEventLoop::quit);
+    guard.start(timeout);
+    QElapsedTimer clock;
+    clock.start();
+    if (up.running())
+        loop.exec();
+
+    QJsonObject r;
+    r["target"]  = target;
+    r["log"]     = up.log();
+    r["real_ms"] = (double)clock.elapsed();
+    if (up.running())
+        return fail("Timeout. Log so far:\n" + up.log());
+    if (!up.ok())
+        return fail(up.error() + "\n" + up.log());
+    r["ok"] = true;
     return ok(r);
 }
 

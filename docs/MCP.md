@@ -58,8 +58,9 @@ read/write files with your user rights). Use `--no-mcp` if that is a concern.
 | `save_circuit` | `path` | Save to a `.simu` file |
 | `start_simulation` / `stop_simulation` | | Power the circuit on/off |
 | `get_simulation_state` | | running, paused, step, time, rates |
-| `get_component_state` | `id` | Pin voltages, voltage across 2-pin parts, properties, MCU firmware |
+| `get_component_state` | `id` | Pin voltages, voltage across 2-pin parts, properties, MCU firmware; for AVRs also `avr` (blank, in_reset, prog_enabled, flash_head, fuses) |
 | `load_firmware` | `mcu_id, hex_path` | Load a firmware file into an AVR/PIC/Arduino component |
+| `isp_program` | `programmer_id, hex_path, target?, timeout_ms?` | Program the AVR wired to a simulated ArduinoISP with the built-in STK500v1 uploader; waits and returns the log (see `docs/ISP.md`) |
 | `set_code` | `path, code` | Write a source file and open it in the code editor |
 | `compile_code` | `mcu_id?` | Compile the current editor file (optionally binding it to an MCU); returns the compiler output |
 | `select_mcu` | `mcu_id?` | List MCUs in the circuit (id, device, firmware, active) and optionally make one the active target |

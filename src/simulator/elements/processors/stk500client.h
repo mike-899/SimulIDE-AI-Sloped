@@ -40,38 +40,50 @@ class Stk500Client
     enum State { Idle, Running, Done, Failed };
 
     struct Options {
-        bool erase = true;
-        bool verify = true;
-        int lfuse = -1; // -1: leave unchanged
-        int hfuse = -1;
-        int efuse = -1;
+        bool erase       = true;
+        bool verify      = true;
+        int lfuse        = -1; // -1: leave unchanged
+        int hfuse        = -1;
+        int efuse        = -1;
         double timeoutMs = 3000; // Per command (sync uses a shorter one)
     };
 
     Stk500Client();
 
-    // Parse Intel HEX text into a flash image (0xFF filled). Returns false on error.
-    static bool parseHex(const std::string &text, std::vector<uint8_t> &flash, std::string &error);
+    // Parse Intel HEX text into a flash image (0xFF filled). Returns false on
+    // error.
+    static bool parseHex(const std::string &text, std::vector<uint8_t> &flash,
+                         std::string &error);
 
     // Start programming flash image into a target of type dev.
-    bool start(const std::vector<uint8_t> &flash, const AvrIspDevice *dev, const Options &opt);
+    bool start(const std::vector<uint8_t> &flash, const AvrIspDevice *dev,
+               const Options &opt);
     void abort(const std::string &why);
 
-    void rxByte(uint8_t b);      // Byte received from the programmer
-    bool popTx(uint8_t &b);      // Next byte to send to the programmer
-    bool hasTx() const { return !m_tx.empty(); }
-    void tick(double nowMs);     // Drive timeouts
+    void rxByte(uint8_t b); // Byte received from the programmer
+    bool popTx(uint8_t &b); // Next byte to send to the programmer
+    bool hasTx() const
+    {
+        return !m_tx.empty();
+    }
+    void tick(double nowMs); // Drive timeouts
 
-    State state() const { return m_state; }
-    int progress() const;        // 0..100
-    const std::string &error() const { return m_error; }
+    State state() const
+    {
+        return m_state;
+    }
+    int progress() const; // 0..100
+    const std::string &error() const
+    {
+        return m_error;
+    }
 
     std::function<void(const std::string &)> onLog;
 
   private:
     struct Request {
         std::vector<uint8_t> cmd;
-        size_t respLen;          // Data bytes between INSYNC and OK
+        size_t respLen; // Data bytes between INSYNC and OK
         std::function<bool(const std::vector<uint8_t> &)> check;
         std::string what;
         bool sync = false;

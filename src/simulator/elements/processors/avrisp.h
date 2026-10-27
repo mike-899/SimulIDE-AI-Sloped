@@ -36,21 +36,20 @@
 
 struct avr_t;
 
-struct AvrIspDevice
-{
-    const char *name;     // simavr / SimulIDE device name
-    uint8_t sig[3];       // Signature bytes
-    uint16_t pageWords;   // Flash page size in words
-    uint8_t eePage;       // EEPROM page size in bytes
-    uint32_t flashSize;   // Flash size in bytes
-    uint16_t eeSize;      // EEPROM size in bytes
-    uint8_t nFuses;       // 1..3 (low, high, extended)
-    uint8_t fuse[3];      // Factory default fuse values
-    uint8_t eesaveFuse;   // Fuse byte index holding EESAVE (0xFF: none)
+struct AvrIspDevice {
+    const char *name;   // simavr / SimulIDE device name
+    uint8_t sig[3];     // Signature bytes
+    uint16_t pageWords; // Flash page size in words
+    uint8_t eePage;     // EEPROM page size in bytes
+    uint32_t flashSize; // Flash size in bytes
+    uint16_t eeSize;    // EEPROM size in bytes
+    uint8_t nFuses;     // 1..3 (low, high, extended)
+    uint8_t fuse[3];    // Factory default fuse values
+    uint8_t eesaveFuse; // Fuse byte index holding EESAVE (0xFF: none)
     uint8_t eesaveBit;
     uint8_t rstdisblFuse; // Fuse byte index holding RSTDISBL (0xFF: none)
     uint8_t rstdisblBit;
-    const char *rst;      // Pin ids (SimulIDE package ids) of the ISP signals
+    const char *rst; // Pin ids (SimulIDE package ids) of the ISP signals
     const char *sck;
     const char *mosi;
     const char *miso;
@@ -68,24 +67,48 @@ class AvrIsp
 
     // Attach to a simavr core. Initializes default fuses/lock if needed.
     void setCpu(avr_t *cpu);
-    avr_t *cpu() { return m_cpu; }
-    const AvrIspDevice *dev() { return m_dev; }
+    avr_t *cpu()
+    {
+        return m_cpu;
+    }
+    const AvrIspDevice *dev()
+    {
+        return m_dev;
+    }
 
     // RESET pin went low (true) or high (false).
     void setReset(bool low);
     // Clock edge on SCK. mosi is the MOSI level at this moment.
     void sckEdge(bool level, bool mosi);
 
-    bool inReset() const { return m_inReset; }
+    bool inReset() const
+    {
+        return m_inReset;
+    }
     // True once the programmer started talking: MISO must be driven.
-    bool misoEnabled() const { return m_inReset && m_misoEn; }
-    bool misoBit() const { return m_misoBit; }
+    bool misoEnabled() const
+    {
+        return m_inReset && m_misoEn;
+    }
+    bool misoBit() const
+    {
+        return m_misoBit;
+    }
     // Programming Enable was accepted.
-    bool progEnabled() const { return m_progEn; }
+    bool progEnabled() const
+    {
+        return m_progEn;
+    }
     // Something in non-volatile memory changed while in reset.
-    bool memChanged() const { return m_memChanged; }
+    bool memChanged() const
+    {
+        return m_memChanged;
+    }
     // Number of flash pages written since reset went low.
-    int pagesWritten() const { return m_pagesWritten; }
+    int pagesWritten() const
+    {
+        return m_pagesWritten;
+    }
 
     // RSTDISBL fuse programmed: reset pin acts as GPIO.
     bool resetDisabled() const;

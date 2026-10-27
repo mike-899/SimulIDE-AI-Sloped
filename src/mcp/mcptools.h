@@ -55,6 +55,7 @@ class McpTools : public QObject
     QJsonObject getSimulationState(const QJsonObject &a);
     QJsonObject getComponentState(const QJsonObject &a);
     QJsonObject loadFirmware(const QJsonObject &a);
+    QJsonObject ispProgram(const QJsonObject &a);
     QJsonObject setCode(const QJsonObject &a);
     QJsonObject compileCode(const QJsonObject &a);
     QJsonObject selectMcu(const QJsonObject &a);

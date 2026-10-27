@@ -28,11 +28,19 @@
 
 class LibraryItem;
 class McuComponent;
+class QSocketNotifier;
+class QTcpServer;
+class QTcpSocket;
+class UartFeeder;
 
 class MAINMODULE_EXPORT SerialPort : public Component, public eElement
 {
     Q_OBJECT
     Q_PROPERTY( bool     Auto_Open     READ autoOpen  WRITE setAutoOpen  DESIGNABLE true  USER true )
+    Q_PROPERTY(Link_Mode Mode READ mode WRITE setMode DESIGNABLE true USER true)
+    Q_PROPERTY(
+        int Tcp_Port READ tcpPort WRITE setTcpPort DESIGNABLE true USER true)
+    Q_PROPERTY(QString Mcu READ mcuId WRITE setMcuId DESIGNABLE true USER true)
     Q_PROPERTY( int      Mcu_Uart      READ uart  WRITE setUart  DESIGNABLE true  USER true )
     Q_PROPERTY( QString  Port_Name     READ port  WRITE setPort  DESIGNABLE true  USER true )
     Q_PROPERTY( QSerialPort::BaudRate BaudRate READ baudRate WRITE setBaudRate  DESIGNABLE true  USER true )
@@ -40,18 +48,25 @@ class MAINMODULE_EXPORT SerialPort : public Component, public eElement
     Q_PROPERTY( QSerialPort::Parity   Parity   READ parity   WRITE setParity    DESIGNABLE true  USER true )
     Q_PROPERTY( QSerialPort::StopBits StopBits READ stopBits WRITE setStopBits  DESIGNABLE true  USER true )
     Q_PROPERTY( QSerialPort::FlowControl FlowControl READ flowControl WRITE setFlowControl  DESIGNABLE true  USER true )
+    Q_ENUMS(Link_Mode)
 
-    public:
+  public:
+    // Serial_Port: a real port of the host (QSerialPort)
+    // TCP_Server: listen on 127.0.0.1:Tcp_Port (avrdude -P net:127.0.0.1:PORT)
+    // PTY: create a pseudo terminal (Linux/macOS), e.g. /dev/pts/3
+    enum Link_Mode { Serial_Port = 0, TCP_Server, PTY };
 
-        SerialPort( QObject* parent, QString type, QString id );
-        ~SerialPort();
-        
- static Component* construct( QObject* parent, QString type, QString id );
- static LibraryItem* libraryItem();
+    SerialPort(QObject *parent, QString type, QString id);
+    ~SerialPort();
 
-        void updateStep();
+    static Component *construct(QObject *parent, QString type, QString id);
+    static LibraryItem *libraryItem();
 
-        bool autoOpen() { return m_autoOpen; }
+    void updateStep();
+
+    bool autoOpen()
+    {
+        return m_autoOpen; }
         void setAutoOpen( bool ao ) { m_autoOpen = ao; }
 
         int uart() { return m_uart+1; }
@@ -75,6 +90,34 @@ class MAINMODULE_EXPORT SerialPort : public Component, public eElement
         QSerialPort::FlowControl flowControl() { return m_flowControl; }
         void setFlowControl( QSerialPort::FlowControl fc ) { m_flowControl = fc; }
 
+        Link_Mode mode()
+        {
+            return m_mode;
+        }
+        void setMode(Link_Mode mode);
+
+        int tcpPort()
+        {
+            return m_tcpPort;
+        }
+        void setTcpPort(int port);
+
+        // Id of the MCU whose UART is linked (empty: active MCU at creation)
+        QString mcuId();
+        void setMcuId(QString id);
+
+        bool isOpen();
+        // Where the host connects: port name, "127.0.0.1:5333" or "/dev/pts/N"
+        QString linkName();
+        void openLink()
+        {
+            open();
+        }
+        void closeLink()
+        {
+            close();
+        }
+
         virtual void paint( QPainter* p, const QStyleOptionGraphicsItem* option, QWidget* widget );
 
     public slots:
@@ -85,10 +128,19 @@ class MAINMODULE_EXPORT SerialPort : public Component, public eElement
 
     private slots:
         void readData();
+        void newTcpConnection();
+        void readTcp();
+        void tcpDisconnected();
+        void readPty();
 
-    private:
+      private:
         void open();
         void close();
+        McuComponent *mcu();
+        void bindMcu(McuComponent *mcu);
+        void hostData(const QByteArray &data);
+        bool openPty();
+        void closePty();
 
         QPushButton* m_button;
         QGraphicsProxyWidget* m_proxy;
@@ -106,6 +158,17 @@ class MAINMODULE_EXPORT SerialPort : public Component, public eElement
         QSerialPort::Parity      m_parity;
         QSerialPort::StopBits    m_stopBits;
         QSerialPort::FlowControl m_flowControl;
+
+        Link_Mode m_mode;
+        int m_tcpPort;
+        QString m_mcuId;
+        QTcpServer *m_server;
+        QPointer<QTcpSocket> m_client;
+        int m_ptyFd;
+        int m_ptySlaveFd;
+        QString m_ptyName;
+        QSocketNotifier *m_ptyNotifier;
+        UartFeeder *m_feeder;
 };
 
 #endif

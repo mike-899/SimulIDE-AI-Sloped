@@ -20,10 +20,11 @@
 #ifndef AVRPROCESSOR_H
 #define AVRPROCESSOR_H
 
-#include <QtGui>
-#include <QHash>
-
+#include "avrisp.h"
 #include "baseprocessor.h"
+
+#include <QHash>
+#include <QtGui>
 
 // simavr includes
 #include "sim_avr.h"
@@ -43,9 +44,26 @@ class AvrProcessor : public BaseProcessor
         bool loadFirmware( QString file );
         void terminate();
 
+        // Create the core with an erased flash (no firmware file), so the
+        // chip can be programmed through its ISP pins.
+        bool createBlank();
+        bool isBlank()
+        {
+            return m_blank;
+        }
+        void setBlank(bool blank)
+        {
+            m_blank = blank;
+        }
+
+        AvrIsp *isp()
+        {
+            return &m_isp;
+        }
+
         void reset();
         void stepOne();
-        void stepCpu() { m_avrProcessor->run( m_avrProcessor ); }
+        void stepCpu();
         int pc();
 
         virtual uint64_t cycle(){ return m_avrProcessor->cycle; }
@@ -73,8 +91,12 @@ class AvrProcessor : public BaseProcessor
 
     private:
         virtual int  validate( int address );
+        bool createCpu(const char *mmcu, bool quiet = false);
 
         bool m_initGdb;
+        bool m_blank;
+
+        AvrIsp m_isp;
 
         struct UartHook {
             AvrProcessor *proc;

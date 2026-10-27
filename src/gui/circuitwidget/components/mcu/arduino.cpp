@@ -102,6 +102,8 @@ void Arduino::remove()
 
 void Arduino::attach()
 {
+    AvrCompBase::attach(); // Blank core (ISP target) and reset pin state
+
     eNode* enod = m_pb5Pin->getEnode();
     
     if( !enod )                        // Not connected: Create boardLed eNode
