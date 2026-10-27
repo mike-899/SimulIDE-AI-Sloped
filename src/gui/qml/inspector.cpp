@@ -280,6 +280,7 @@ Inspector::Inspector(QObject *parent) : QObject(parent)
 {
     m_model     = new PropertyListModel(this);
     m_collapsed = false;
+    m_active    = false;
     m_tick      = 0;
     m_timer     = new QTimer(this);
     connect(m_timer, &QTimer::timeout, this, &Inspector::update);
@@ -313,6 +314,12 @@ void Inspector::setCollapsed(bool c)
 
 void Inspector::update()
 {
+    if (m_active && m_comp.isNull()) { // selected component was deleted
+        m_active = false;
+        m_model->setObject(0l);
+        m_lastId.clear();
+        emit changed();
+    }
     Circuit *circ  = Circuit::self();
     Component *sel = 0l;
     if (circ) {
@@ -329,7 +336,8 @@ void Inspector::update()
             sel = 0l;
     }
     if (sel != m_comp.data()) {
-        m_comp = sel;
+        m_comp   = sel;
+        m_active = sel != 0l;
         m_model->setObject(sel);
         if (sel) {
             // Keep the classic (hidden) editor in sync: other code talks to it

@@ -79,6 +79,9 @@ class FileController : public QObject
     Q_INVOKABLE void open();
     Q_INVOKABLE void save();
     Q_INVOKABLE void saveAs();
+    // Code editor: open a source file / start a new one
+    Q_INVOKABLE void openCode();
+    Q_INVOKABLE void newCode();
 
   signals:
     void titleChanged();

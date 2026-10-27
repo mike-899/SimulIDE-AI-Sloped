@@ -1067,6 +1067,11 @@ void MainWindow::createQmlChrome(QVBoxLayout *baseLayout)
     static_cast<QVBoxLayout *>(m_codePanel->layout())
         ->insertWidget(0, codeHeader);
 
+    // Friendly empty state of the editor (no file open)
+    QQuickWidget *empty = ui->createWidget("CodeEmptyState.qml", m_editor);
+    empty->setObjectName("codeEmptyState");
+    m_editor->setEmptyState(empty);
+
     // Floating overlays over the canvas
     QWidget *view  = m_circuit->view();
     m_qmlToolbar   = ui->createWidget("EditToolbar.qml", view, true);

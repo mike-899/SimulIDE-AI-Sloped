@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/qml">
+        <file>CodeEmptyState.qml</file>
         <file>CodePanelHeader.qml</file>
         <file>ComponentPanel.qml</file>
         <file>EditToolbar.qml</file>
@@ -15,6 +16,7 @@
         <file>controls/M3Switch.qml</file>
         <file>controls/M3TextField.qml</file>
         <file>controls/PillDropdown.qml</file>
+        <file>controls/PillButton.qml</file>
         <file>controls/PlayStopIcon.qml</file>
         <file>controls/RoundRect.qml</file>
         <file>controls/SearchBar.qml</file>

@@ -5,6 +5,7 @@
 #include "qmlcontrollers.h"
 
 #include "circuitwidget.h"
+#include "editorwindow.h"
 #include "mainwindow.h"
 #include "mcucomponent.h"
 #include "qmlui.h"
@@ -118,6 +119,18 @@ void FileController::saveAs()
     m_circuit->saveCircAsAct->trigger();
 }
 
+void FileController::openCode()
+{
+    if (EditorWindow::self())
+        QMetaObject::invokeMethod(EditorWindow::self(), "open");
+}
+
+void FileController::newCode()
+{
+    if (EditorWindow::self())
+        QMetaObject::invokeMethod(EditorWindow::self(), "newFile");
+}
+
 //------------------------------------------------------------------------
 // McuModel
 
@@ -138,7 +151,9 @@ void McuModel::update()
         QVariantMap m;
         m["id"]     = mcu->itemID();
         m["device"] = mcu->device();
-        m["label"]  = mcu->itemID() + " (" + mcu->device() + ")";
+        m["label"]  = mcu->device().isEmpty()
+                          ? mcu->itemID()
+                          : mcu->itemID() + " (" + mcu->device() + ")";
         if (mcu == McuComponent::self())
             m_current = m_mcus.size();
         m_mcus.append(m);

@@ -277,9 +277,34 @@ void EditorWindow::tabContextMenu(const QPoint &eventpoint)
     menu->deleteLater();
 }
 
+void EditorWindow::setEmptyState(QWidget *w)
+{
+    m_emptyState = w;
+    w->setParent(m_docWidget);
+    m_docWidget->installEventFilter(this);
+    updateEmptyState();
+}
+
+void EditorWindow::updateEmptyState()
+{
+    if (!m_emptyState)
+        return;
+    m_emptyState->setGeometry(m_docWidget->rect());
+    m_emptyState->setVisible(m_docWidget->count() == 0);
+    m_emptyState->raise();
+}
+
+bool EditorWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    if (obj == m_docWidget && event->type() == QEvent::Resize)
+        updateEmptyState();
+    return QWidget::eventFilter(obj, event);
+}
+
 void EditorWindow::tabChanged(int tab)
 {
     Q_UNUSED(tab);
+    updateEmptyState();
     // A tab bound to an MCU makes that MCU the active target
     CodeEditor *ce = getCodeEditor();
     if (ce && !ce->targetMcuId().isEmpty()) {

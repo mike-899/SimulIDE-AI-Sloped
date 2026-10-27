@@ -123,6 +123,7 @@ class Inspector : public QObject
     QPointer<Component> m_comp;
     QTimer *m_timer;
     bool m_collapsed;
+    bool m_active;
     int m_tick;
     QString m_lastId;
 };
