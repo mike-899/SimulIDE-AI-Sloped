@@ -247,7 +247,7 @@ void Stepper::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidge
     //p->setBrush( QColor(250, 210, 230) );
     p->drawRoundedRect(-64, -40, 25, 80, 25, 25, Qt::RelativeSize);
 
-    p->setBrush( QColor(50, 70, 100) );
+    p->setBrush(QColor(50, 70, 100));
     p->drawRoundedRect(-48, -48, 96, 96, 25, 25, Qt::RelativeSize);
 
     p->setPen( QColor(0, 0, 0) );

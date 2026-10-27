@@ -655,15 +655,17 @@ void Circuit::loadObjectProperties( QDomElement element, QObject* Item )
         else if( metaproperty.type() == QVariant::Double ) Item->setProperty( chName, value.toDouble() );
         else if( metaproperty.type() == QVariant::PointF ) Item->setProperty( chName, value.toPointF() );
         else if( metaproperty.type() == QVariant::Bool   ) Item->setProperty( chName, value.toBool() );
-        else if (metaproperty.isEnumType())
-            Item->setProperty(chName, value.toInt()); // Qt6: enums are not Int
-        else if( metaproperty.type() == QVariant::StringList )
-        {
+        else if (metaproperty.isEnumType()) { // Qt6: enums are not Int
+            bool isInt  = false;
+            int enumVal = value.toString().toInt(&isInt);
+            if (isInt)
+                Item->setProperty(chName, enumVal);
+            else
+                Item->setProperty(chName, value); // Key name
+        } else if (metaproperty.type() == QVariant::StringList) {
             QStringList list= value.toString().split(",");
             Item->setProperty( chName, list );
-        }
-        else if( (lowN=="mem") || (lowN=="eeprom") )
-        {
+        } else if ((lowN == "mem") || (lowN == "eeprom")) {
             QStringList list = value.toString().split(",");
             
             QVector<int> vmem;
@@ -678,8 +680,8 @@ void Circuit::loadObjectProperties( QDomElement element, QObject* Item )
             }
             QVariant value = QVariant::fromValue( vmem );
             Item->setProperty( chName, value );
-        }
-        else Item->setProperty( chName, value );
+        } else
+            Item->setProperty(chName, value);
         //else qDebug() << "    ERROR!!! Circuit::loadObjectProperties\n  unknown type:  "<<"name "<<name<<"   value "<<value ;
     }
 }

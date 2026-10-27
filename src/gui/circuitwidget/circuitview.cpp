@@ -137,7 +137,7 @@ void CircuitView::clear()
     //setCircTime( 0 );
 }
 
-void CircuitView::wheelEvent( QWheelEvent *event ) 
+void CircuitView::wheelEvent( QWheelEvent *event )
 {
     qreal scaleFactor = pow(2.0, event->angleDelta().y() / 700.0);
     scale( scaleFactor, scaleFactor );
