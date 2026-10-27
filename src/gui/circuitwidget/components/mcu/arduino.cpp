@@ -200,32 +200,47 @@ void Arduino::initBoard()
     }
 }
 
+// Realistic board art key (see partart.cpp) for the board background image
+static QString boardArt(const QString &background)
+{
+    static const QHash<QString, QString> boards = {
+        { ":/arduinoUno.png", "board:arduino_uno" },
+        { ":/duemilanove.png", "board:arduino_duemilanove" },
+        { ":/leonardo.png", "board:arduino_leonardo" },
+        { ":/mega.png", "board:arduino_mega" },
+        { ":/arduinoNano.png", "board:arduino_nano" }
+    };
+    return boards.value(background);
+}
+
+QRectF Arduino::boundingRect() const
+{
+    // The board art may reach a little outside the package area
+    QRectF br = Component::boundingRect();
+    const PartArtInfo *inf =
+        PartArt::enabled() ? PartArt::info(boardArt(m_BackGround)) : 0l;
+    if (inf)
+        br = br.united(inf->rect.adjusted(-2, -2, 2, 2));
+    return br;
+}
+
 void Arduino::paint( QPainter* p, const QStyleOptionGraphicsItem* option, QWidget* widget )
 {
     Component::paint( p, option, widget );
 
-    int ox = m_area.x();
-    int oy = m_area.y();
-
     // Realistic board art: header holes match the package pin positions
-    static const QHash<QString, QString> boards = {
-        { ":/arduinoUno.png", "arduino_uno" },
-        { ":/duemilanove.png", "arduino_duemilanove" },
-        { ":/leonardo.png", "arduino_leonardo" },
-        { ":/mega.png", "arduino_mega" },
-        { ":/arduinoNano.png", "arduino_nano" }
-    };
-    QString board = boards.value(m_BackGround);
+    QString board = boardArt(m_BackGround);
     if (PartArt::enabled() && !board.isEmpty()) {
-        QPixmap pm(m_BackGround); // Same size as the art viewBox
         p->save();
         p->setRenderHint(QPainter::Antialiasing);
         p->setRenderHint(QPainter::TextAntialiasing);
-        PartArt::paintRes(p, ":/parts/boards/" + board + ".svg",
-                          QRectF(ox, oy, pm.width(), pm.height()));
+        p->setRenderHint(QPainter::SmoothPixmapTransform);
+        PartArt::paint(p, board);
         p->restore();
         return;
     }
+    int ox = m_area.x();
+    int oy = m_area.y();
     p->drawPixmap( ox, oy, QPixmap( m_BackGround ));
 }
 
