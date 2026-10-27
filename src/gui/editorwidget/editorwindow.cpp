@@ -23,6 +23,7 @@
 
 #include "filebrowser.h"
 #include "mainwindow.h"
+#include "mcucomponent.h"
 #include "thememanager.h"
 #include "utils.h"
 
@@ -278,8 +279,14 @@ void EditorWindow::tabContextMenu(const QPoint &eventpoint)
 
 void EditorWindow::tabChanged(int tab)
 {
-    qDebug() << "EditorWindow::tabChanged" << m_docWidget->currentIndex()
-             << tab;
+    Q_UNUSED(tab);
+    // A tab bound to an MCU makes that MCU the active target
+    CodeEditor *ce = getCodeEditor();
+    if (ce && !ce->targetMcuId().isEmpty()) {
+        McuComponent *mcu = McuComponent::findMcu(ce->targetMcuId());
+        if (mcu)
+            McuComponent::setSelf(mcu);
+    }
 }
 
 void EditorWindow::setCompiler()

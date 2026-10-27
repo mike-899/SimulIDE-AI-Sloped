@@ -63,7 +63,7 @@ void AvrCompBase::attachPins()
         avr_irq_register_notify( i2cOutIrq, i2c_out_hook, this );
 
         // TWEN change irq
-        int twcrAddr = BaseProcessor::self()->getRegAddress( "TWCR" );
+        int twcrAddr = m_processor->getRegAddress("TWCR");
         if( twcrAddr < 0 ) qDebug()<<"AvrCompBase::attachPins: TWCR Register Not found";
         else
         {
@@ -198,8 +198,8 @@ void AvrCompBase::twenChanged( uint32_t value )
 
         double i2cFreq = 4e5;
 
-        int twbr = BaseProcessor::self()->getRamValue( "TWBR" );
-        int twsr = BaseProcessor::self()->getRamValue( "TWSR" );
+        int twbr = m_processor->getRamValue("TWBR");
+        int twsr = m_processor->getRamValue("TWSR");
 
         if( (twbr<0) || (twsr<0) ) qDebug() << "AvrCompBase::twenChanged: TWBR or TWSR not found";
         else                       // Calculate Prescaler and Frequency

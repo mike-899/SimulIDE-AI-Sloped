@@ -17,23 +17,24 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <qstringlist.h>
-#include <QDomDocument>
-#include <QFileInfo>
-
-#include "mainwindow.h"
 #include "mcucomponent.h"
-#include "mcucomponentpin.h"
+
 #include "baseprocessor.h"
-#include "terminalwidget.h"
-#include "componentselector.h"
-#include "circuitwidget.h"
 #include "circuit.h"
+#include "circuitwidget.h"
+#include "componentselector.h"
 #include "connector.h"
-#include "simulator.h"
+#include "mainwindow.h"
+#include "mcucomponentpin.h"
+#include "ramtable.h"
 #include "simuapi_apppath.h"
+#include "simulator.h"
+#include "terminalwidget.h"
 #include "utils.h"
 
+#include <QDomDocument>
+#include <QFileInfo>
+#include <qstringlist.h>
 
 static const char* McuComponent_properties[] = {
     QT_TRANSLATE_NOOP("App::Property","Program"),
@@ -44,6 +45,46 @@ static const char* McuComponent_properties[] = {
 
 McuComponent* McuComponent::m_pSelf = 0l;
 bool McuComponent::m_canCreate = true;
+QList<McuComponent *> McuComponent::m_mcuList;
+
+McuSignals *McuSignals::self()
+{
+    static McuSignals *s = new McuSignals();
+    return s;
+}
+
+void McuComponent::setSelf(McuComponent *mcu)
+{
+    if (mcu && !m_mcuList.contains(mcu))
+        return;
+
+    // Only the active MCU's RAM table is visible
+    for (McuComponent *m : m_mcuList) {
+        if (m->m_processor && m->m_processor->getRamTable())
+            m->m_processor->getRamTable()->setVisible(m == mcu);
+    }
+    if (m_pSelf == mcu)
+        return;
+    m_pSelf = mcu;
+    emit McuSignals::self() -> activeMcuChanged(mcu);
+}
+
+void McuComponent::unregisterMcu(McuComponent *mcu)
+{
+    if (!m_mcuList.removeOne(mcu))
+        return;
+    if (m_pSelf == mcu) // Hand the active role to another MCU
+        setSelf(m_mcuList.isEmpty() ? nullptr : m_mcuList.last());
+    emit McuSignals::self() -> mcuListChanged();
+}
+
+McuComponent *McuComponent::findMcu(const QString &id)
+{
+    for (McuComponent *m : m_mcuList)
+        if (m->itemID() == id || m->objectName() == id)
+            return m;
+    return nullptr;
+}
 
 McuComponent::McuComponent( QObject* parent, QString type, QString id )
             : Chip( parent, type, id )
@@ -75,6 +116,8 @@ McuComponent::McuComponent( QObject* parent, QString type, QString id )
 }
 McuComponent::~McuComponent()
 {
+    Simulator::self()->remFromMcuList(m_processor);
+    unregisterMcu(this);
 }
 
 void McuComponent::runAutoLoad()
@@ -94,6 +137,16 @@ void McuComponent::updateStep()
 
 void McuComponent::initChip()
 {
+    if (m_processor) {
+        m_processor->setComponent(this);
+        Simulator::self()->addToMcuList(m_processor);
+    }
+    if (!m_mcuList.contains(this)) {
+        m_mcuList.append(this);
+        m_pSelf = nullptr; // force refresh
+        setSelf(this);     // Newest MCU becomes the active one
+        emit McuSignals::self() -> mcuListChanged();
+    }
     QString compName = m_id.split("-").first(); // for example: "atmega328-1" to: "atmega328"
 
     QString dataFile = ComponentSelector::self()->getXmlFile( compName );
@@ -248,8 +301,6 @@ void McuComponent::terminate()
 
     m_processor->terminate();
 
-    m_pSelf = 0l;
-
     qDebug() <<"     ..."<<m_id<<"Terminated\n";
 }
 
@@ -264,11 +315,19 @@ void McuComponent::remove()
         if( pin->connector() ) pin->connector()->remove();
     }
     terminate();
+    Simulator::self()->remFromMcuList(m_processor);
     m_pinList.clear();
-    
+
+    unregisterMcu(this);
     m_canCreate = true;
 
     Component::remove();
+}
+
+void McuComponent::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    setSelf(this); // Clicking an MCU makes it the active target
+    Chip::mousePressEvent(event);
 }
 
 void McuComponent::contextMenuEvent( QGraphicsSceneContextMenuEvent* event )
@@ -285,6 +344,9 @@ void McuComponent::contextMenuEvent( QGraphicsSceneContextMenuEvent* event )
 
 void McuComponent::contextMenu( QGraphicsSceneContextMenuEvent* event, QMenu* menu )
 {
+    setSelf(
+        this); // Menu actions (Serial Monitor, Serial Port...) target this MCU
+
     QAction* loadAction = menu->addAction( QIcon(":/load.png"),tr("Load firmware") );
     connect( loadAction, SIGNAL(triggered()), this, SLOT(slotLoad()) );
 
@@ -312,6 +374,7 @@ void McuComponent::contextMenu( QGraphicsSceneContextMenuEvent* event, QMenu* me
 
 void McuComponent::slotOpenSerial()
 {
+    setSelf(this); // New SerialPort binds to the active MCU
     Component* ser = Circuit::self()->createItem( "SerialPort", "SerialPort-"+Circuit::self()->newSceneId());
     ser->setPos( pos());
     Circuit::self()->addItem( ser );
@@ -327,6 +390,7 @@ void McuComponent::slotOpenSerial()
 void McuComponent::slotOpenTerm()
 {
     // Use the integrated Serial Monitor docked under the code editor
+    setSelf(this);
     MainWindow::self()->openSerialMonitor();
 }
 
@@ -362,6 +426,7 @@ void McuComponent::load( QString fileName )
         reset();
         
         m_symbolFile = circuitDir.relativeFilePath( fileName );
+        m_firmwareAbs = cleanPathAbs;
         m_lastFirmDir = cleanPathAbs;
 
         QSettings* settings = MainWindow::self()->settings();

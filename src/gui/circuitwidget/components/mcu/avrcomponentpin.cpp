@@ -42,7 +42,7 @@ void AVRComponentPin::attach( avr_t*  AvrProcessor )
         QString portName = "PORT";
         portName.append( m_id.at(1) );
 
-        int portAddr = BaseProcessor::self()->getRegAddress( portName );
+        int portAddr = m_mcuComponent->processor()->getRegAddress(portName);
         if( portAddr < 0 )
         {
             qDebug()<<"PORT Register for"<<AvrProcessor->mmcu<<"Not found\nAVRComponentPin::attach"<<portName<<m_pinN;
@@ -58,7 +58,7 @@ void AVRComponentPin::attach( avr_t*  AvrProcessor )
         // DDRX Register change irq
         QString ddrName = "DDR";
         ddrName.append( m_id.at(1) );
-        int ddrAddr = BaseProcessor::self()->getRegAddress( ddrName );
+        int ddrAddr = m_mcuComponent->processor()->getRegAddress(ddrName);
         if( ddrAddr < 0 )
         {
             qDebug()<<"DDR Register for"<<AvrProcessor->mmcu<<"Not found\nAVRComponentPin::attach"<<ddrName<<m_pinN;
@@ -127,8 +127,10 @@ void AVRComponentPin::setVChanged()
     }
     else if( m_pinType == 21 ) // reset
     {
-        if( volt < 3 )  BaseProcessor::self()->hardReset( true );
-        else            BaseProcessor::self()->hardReset( false );
+        if (volt < 3)
+            m_mcuComponent->processor()->hardReset(true);
+        else
+            m_mcuComponent->processor()->hardReset(false);
     }
     else if( m_pinType == 22 ) { m_avrProcessor->vcc  = volt*1000;}
     else if( m_pinType == 23 ) { m_avrProcessor->avcc = volt*1000;}

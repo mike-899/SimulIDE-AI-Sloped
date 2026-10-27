@@ -38,6 +38,7 @@ class QSize;
 class QWidget;
 
 class BaseDebugger;
+class McuComponent;
 class LineNumberArea;
 
 class CodeEditor : public QPlainTextEdit
@@ -82,7 +83,18 @@ class CodeEditor : public QPlainTextEdit
 
         void setCompilerPath();
 
-    signals:
+        // Target MCU of this tab: bound by id, else the active MCU.
+        QString targetMcuId() const
+        {
+            return m_targetMcuId;
+        }
+        void setTargetMcuId(const QString &id)
+        {
+            m_targetMcuId = id;
+        }
+        McuComponent *targetMcu();
+
+      signals:
         void msg( QString text );
 
     public slots:
@@ -128,6 +140,7 @@ class CodeEditor : public QPlainTextEdit
 
         //QString m_appPath;
         QString m_file;
+        QString m_targetMcuId;
         QString m_fileDir;
         QString m_fileName;
         QString m_fileExt;

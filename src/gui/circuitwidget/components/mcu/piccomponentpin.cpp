@@ -91,8 +91,10 @@ void PICComponentPin::setVChanged()
     }
     else if( m_pinType == 21 ) // reset
     {
-        if( volt < 3 )  BaseProcessor::self()->hardReset( true );
-        else            BaseProcessor::self()->hardReset( false );
+        if (volt < 3)
+            m_mcuComponent->processor()->hardReset(true);
+        else
+            m_mcuComponent->processor()->hardReset(false);
     }
 }
 

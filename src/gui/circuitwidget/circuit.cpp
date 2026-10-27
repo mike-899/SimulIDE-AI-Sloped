@@ -387,7 +387,8 @@ void Circuit::loadDomDoc( QDomDocument* doc )
 
                     if( docType != "simulide_0.4" )
                     {
-                        if( type == "SerialPort") item->setPos( McuComponent::self()->pos() );
+                        if (type == "SerialPort" && McuComponent::self())
+                            item->setPos(McuComponent::self()->pos());
                     }
                     if( m_pasting ) item->setSelected( true );
                 }

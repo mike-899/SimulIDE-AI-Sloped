@@ -41,34 +41,24 @@ LibraryItem* Arduino::libraryItem()
 }
 
 Component* Arduino::construct( QObject* parent, QString type, QString id )
-{ 
-    if( m_canCreate ) 
-    {
-        Arduino* ard = new Arduino( parent, type,  id );
-        if( m_error > 0 )
-        {
-            Circuit::self()->compList()->removeOne( ard );
-            ard->deleteLater();
-            ard = 0l;
-            m_error = 0;
-            m_pSelf = 0l;
-            m_canCreate = true;
-        }
-        return ard;
+{
+    // Several AVR MCUs can coexist: each one owns its own simavr core
+    Arduino *ard = new Arduino(parent, type, id);
+    if (m_error > 0) {
+        unregisterMcu(ard);
+        Circuit::self()->compList()->removeOne(ard);
+        ard->deleteLater();
+        ard     = 0l;
+        m_error = 0;
     }
-    MessageBoxNB( tr("Error")
-                , tr("Only 1 Mcu allowed\n to be in the Circuit.") );
-
-    return 0l;
+    return ard;
 }
 
 Arduino::Arduino( QObject* parent, QString type, QString id )
        : AvrCompBase( parent, type, id )
 {
-    m_pSelf = this;
+    m_processor = &m_avr;
 
-    m_processor = AvrProcessor::self();
-    
     setLabelPos( 100,-21, 0); // X, Y, Rot
     
     initChip();

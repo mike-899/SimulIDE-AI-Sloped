@@ -38,7 +38,6 @@ int elf_read_firmware_ext(const char * file, elf_firmware_t * firmware);
 AvrProcessor::AvrProcessor( QObject* parent ) 
             : BaseProcessor( parent )
 {
-    m_pSelf = this;
     m_avrProcessor = 0l;
     m_initGdb = false;
     setSteps( 16 );
@@ -173,8 +172,11 @@ bool AvrProcessor::loadFirmware( QString fileN )
             if( src )
             {
                 qDebug() << "    UART"<<i;
-                intptr_t uart = i;
-                avr_irq_register_notify( src, uart_pty_out_hook, (void*)uart ); // Irq to get data coming from AVR
+                m_uartHooks[i].proc = this;
+                m_uartHooks[i].uart = i;
+                avr_irq_register_notify(
+                    src, uart_pty_out_hook,
+                    &m_uartHooks[i]); // Irq to get data coming from AVR
 
                 // Irq to send data to AVR:
                 m_uartInIrq[i] = avr_io_getirq(m_avrProcessor, AVR_IOCTL_UART_GETIRQ('0'+i), UART_IRQ_INPUT);

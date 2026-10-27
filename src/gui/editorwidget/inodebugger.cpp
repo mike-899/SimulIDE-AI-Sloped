@@ -257,7 +257,7 @@ void InoDebugger::getVariables()
                 if( ok )
                 {
                     address -= 0x800000;          // 0x800000 offset
-                    BaseProcessor* proc = BaseProcessor::self();
+                    BaseProcessor *proc = this->proc();
                     if( proc ) proc->addWatchVar( varName, address, i.value() );
                     //qDebug() << "InoDebugger::compile  variable "<<addr<<varName<<address<<i.value();
                 }
@@ -329,23 +329,22 @@ void InoDebugger::mapFlashToSource()
             readFlasAddr = true;
         }
         /*QHashIterator<QString, QString> i( m_varList );
-        while (i.hasNext())                             // Find Variable 
+        while (i.hasNext())                             // Find Variable
         {
             i.next();
             QString varName = "<"+i.key()+">";
             if( line.contains( varName ) )       // Get variable address
             {
-                line = line.remove( " "+varName ).split( " " ).last().remove( "0x80" );
-                bool ok = false;
-                int address = line.toInt( &ok, 16 );
-                if( ok ) BaseProcessor::self()->addWatchVar( i.key(), address, i.value() );
-                
-                qDebug() << "InoDebugger::mapInoToFlash  variable "<<line<<i.key()<<address<<i.value();
-                
+                line = line.remove( " "+varName ).split( " " ).last().remove(
+        "0x80" ); bool ok = false; int address = line.toInt( &ok, 16 ); if( ok
+        && proc() ) proc()->addWatchVar( i.key(), address, i.value() );
+
+                qDebug() << "InoDebugger::mapInoToFlash  variable
+        "<<line<<i.key()<<address<<i.value();
+
                 break;
             }
         }*/
-        
     }
 }
 

@@ -115,7 +115,8 @@ void McuComponentPin::setDirection( bool out )
         m_gndAdmit = cero_doub;
         update();
 
-        BaseProcessor::self()->setExtraStep(); // Run Extra Simulation Step
+        m_mcuComponent->processor()
+            ->setExtraStep(); // Run Extra Simulation Step
     }
 }
 
@@ -147,7 +148,7 @@ void McuComponentPin::setState( bool state )
         eSource::setOut( state );
         eSource::stampOutput();
     }
-    BaseProcessor::self()->setExtraStep(); // Run Extra Simulation Step
+    m_mcuComponent->processor()->setExtraStep(); // Run Extra Simulation Step
 }
 
 void McuComponentPin::update()
@@ -177,7 +178,7 @@ void McuComponentPin::setPullup( bool up )
     }
     update();
 
-    BaseProcessor::self()->setExtraStep(); // Run Extra Simulation Step
+    m_mcuComponent->processor()->setExtraStep(); // Run Extra Simulation Step
 }
 
 void McuComponentPin::setExtraSource( double vddAdmit, double gndAdmit )

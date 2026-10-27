@@ -34,7 +34,6 @@ PicProcessor::PicProcessor( QObject* parent )
             : BaseProcessor( parent )
             , m_hexLoader()
 {
-    m_pSelf = this;
     m_pPicProcessor = 0l;
     m_loadStatus    = false;
 }
@@ -96,7 +95,7 @@ bool PicProcessor::loadFirmware( QString fileN )
 
     //m_pPicProcessor->set_frequency( (double)McuComponent::self()->freq()*1e6 );
     qDebug() <<"\nProcessor Ready:\n    Device    ="<<m_pPicProcessor->name().c_str();
-    qDebug() << "    Freq. MHz =" <<  McuComponent::self()->freq();
+    qDebug() << "    Freq. MHz =" << (m_component ? m_component->freq() : 0);
     qDebug() << "    Int. OSC  =" << (m_pPicProcessor->get_int_osc() ? "true" : "false");
     qDebug() << "    Use PLLx4 =" << (m_pPicProcessor->get_pplx4_osc() ? "true" : "false");
 
@@ -144,7 +143,7 @@ void PicProcessor::stepOne()
     while( m_nextCycle < 1 )
     {
         runSimuStep(); // 1 simu step = 1uS
-        m_nextCycle += McuComponent::self()->freq()/4;
+        m_nextCycle += m_component->freq() / 4;
     }
 }
 

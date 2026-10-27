@@ -67,14 +67,20 @@ class AvrProcessor : public BaseProcessor
             //AvrProcessor* ptrAvrProcessor = reinterpret_cast<AvrProcessor*> (param);
             
             //ptrAvrProcessor->uartOut( value );
-            intptr_t uart = reinterpret_cast<intptr_t> (param);
-            BaseProcessor::self()->uartOut( uart, value );
+            UartHook *hook = static_cast<UartHook *>(param);
+            hook->proc->uartOut(hook->uart, value);
         }
 
     private:
         virtual int  validate( int address );
 
         bool m_initGdb;
+
+        struct UartHook {
+            AvrProcessor *proc;
+            int uart;
+        };
+        UartHook m_uartHooks[6];
 
         //From simavr
         avr_t*     m_avrProcessor;

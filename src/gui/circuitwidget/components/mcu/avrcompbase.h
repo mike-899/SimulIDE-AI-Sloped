@@ -89,7 +89,8 @@ class AvrCompBase : public McuComponent
 
         avr_irq_t* m_i2cInIrq;
 
-        AvrProcessor m_avr;
+      protected:
+        AvrProcessor m_avr; // This MCU's own simavr core
 };
 
 #endif

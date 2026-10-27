@@ -51,7 +51,7 @@ class MAINMODULE_EXPORT Simulator : public QObject
     void startSim();
     void debug(bool run);
     void runGraphicStep();
-    void runExtraStep(uint64_t cycle);
+    void runExtraStep(uint64_t cycle, double mcuStepNS);
     void runGraphicStep1();
     void runGraphicStep2();
     void runCircuit();

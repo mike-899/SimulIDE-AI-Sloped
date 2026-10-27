@@ -263,8 +263,21 @@ void CodeEditor::setCompilerPath()
     }
 }
 
+McuComponent *CodeEditor::targetMcu()
+{
+    McuComponent *mcu = nullptr;
+    if (!m_targetMcuId.isEmpty())
+        mcu = McuComponent::findMcu(m_targetMcuId);
+    if (!mcu)
+        mcu = McuComponent::self();
+    if (m_debugger && !m_debugging)
+        m_debugger->setTargetMcu(mcu);
+    return mcu;
+}
+
 void CodeEditor::compile()
 {
+    targetMcu(); // Bind debugger (watch vars, upload) to the target MCU
     if( document()->isModified() ) EditorWindow::self()->save();
     m_debugLine  = -1;
     update();
@@ -335,7 +348,12 @@ void CodeEditor::upload()
         m_outPane->appendText( m_file );
         m_outPane->writeText( "\n\n" );
 
-        if( McuComponent::self() ) McuComponent::self()->load( m_file );
+        McuComponent *mcu = targetMcu();
+        if (mcu) {
+            mcu->load(m_file);
+            m_outPane->writeText(tr("Uploaded to ") + mcu->itemID() + "\n");
+        } else
+            m_outPane->writeText(tr("Error: No Mcu in Simulator... ") + "\n");
         return;
     }
     if( !m_isCompiled ) compile();
@@ -477,18 +495,16 @@ bool CodeEditor::initDebbuger()
     m_outPane->writeText( tr("Starting Debbuger...")+"\n" );
 
     bool error = false;
-    
-    if( !McuComponent::self() )             // Must be an Mcu in Circuit
+
+    if (!targetMcu()) // Must be an Mcu in Circuit
     {
         m_outPane->writeText( "\n    "+tr("Error: No Mcu in Simulator... ")+"\n" );
         error = true;
-    }
-    else if( !m_debugger )             // No debugger for this file type
+    } else if (!m_debugger) // No debugger for this file type
     {
         m_outPane->writeText( "\n    "+tr("Error: No Debugger Suited for this File... ")+"\n" );
         error = true;
-    }
-    else if( m_file == "" )                                   // No File
+    } else if (m_file == "") // No File
     {
         m_outPane->writeText( "\n    "+tr("Error: No File... ")+"\n" );
         error = true;
@@ -572,13 +588,10 @@ void CodeEditor::resume()
 {
     if( !m_debugging )  return;
 
-    if( !BaseProcessor::self() )
-    {
+    if (!m_debugger || !m_debugger->hasTarget()) {
         m_outPane->writeText( tr("\nError:  Mcu Deleted while Debugging!!\n") );
         EditorWindow::self()->stop() ;
-    }
-    else
-    {
+    } else {
         m_state = m_resume;
         if( !m_driveCirc ) Simulator::self()->resumeTimer();
     }
@@ -589,7 +602,10 @@ void CodeEditor::reset()
 {
     if( m_state == DBG_RUNNING ) pause();
 
-    McuComponent::self()->reset();
+    McuComponent *mcu =
+        m_debugger ? m_debugger->targetMcu() : McuComponent::self();
+    if (mcu)
+        mcu->reset();
     m_debugLine = 1; //m_debugger->getProgramStart();
 
     updateScreen();

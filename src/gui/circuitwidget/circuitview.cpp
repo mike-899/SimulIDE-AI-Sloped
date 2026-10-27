@@ -108,9 +108,13 @@ void CircuitView::setCircTime( uint64_t step)
     
     if( McuComponent::self() ) 
     {
-        QString device = McuComponent::self()->device();
-        QString freq = QString::number( McuComponent::self()->freq() );
-        strMcu = "      Mcu: "+device+" at "+freq+" MHz";
+        McuComponent *mcu = McuComponent::self();
+        QString freq      = QString::number(mcu->freq());
+        strMcu = "      Mcu: " + mcu->itemID() + " (" + mcu->device() +
+                 ") at " + freq + " MHz";
+        int n = McuComponent::mcuList().size();
+        if (n > 1)
+            strMcu += " [" + QString::number(n) + " MCUs]";
     }
     m_info->setPlainText( tr("Time: ")+strH+":"+strM+":"+strS+"."+strMS + strMcu );
 }

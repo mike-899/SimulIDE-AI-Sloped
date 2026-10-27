@@ -30,6 +30,20 @@
 
 class BaseProcessor;
 class McuComponentPin;
+class McuComponent;
+
+// Broadcasts changes of the set of MCUs in the circuit and of the
+// active (target) MCU used by the editor, RAM table and Serial Monitor.
+class MAINMODULE_EXPORT McuSignals : public QObject
+{
+    Q_OBJECT
+  public:
+    static McuSignals *self();
+
+  signals:
+    void mcuListChanged();
+    void activeMcuChanged(McuComponent *mcu);
+};
 
 class MAINMODULE_EXPORT McuComponent : public Chip, public MemData
 {
@@ -43,8 +57,27 @@ class MAINMODULE_EXPORT McuComponent : public Chip, public MemData
 
         McuComponent( QObject* parent, QString type, QString id );
         ~McuComponent();
-        
- static McuComponent* self() { return m_pSelf; }
+
+        // Active (target) MCU: editor upload/debug, RAM table, Serial Monitor.
+        static McuComponent *self()
+        {
+            return m_pSelf;
+        }
+        static void setSelf(McuComponent *mcu);
+        static QList<McuComponent *> mcuList()
+        {
+            return m_mcuList;
+        }
+        static McuComponent *findMcu(const QString &id);
+
+        BaseProcessor *processor()
+        {
+            return m_processor;
+        }
+        QString firmware() const
+        {
+            return m_firmwareAbs;
+        }
 
         virtual void updateStep();
         virtual void runAutoLoad();
@@ -93,32 +126,37 @@ class MAINMODULE_EXPORT McuComponent : public Chip, public MemData
     protected:
  static McuComponent* m_pSelf;
  static bool m_canCreate;
-        
-        virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
+ static QList<McuComponent *> m_mcuList;
+ static void unregisterMcu(McuComponent *mcu);
 
-        virtual void addPin( QString id, QString type, QString label,
-                             int pos, int xpos, int ypos, int angle )=0;
+ QString m_firmwareAbs; // absolute path of loaded firmware
 
-        virtual void updatePin( QString id, QString type, QString label,
-                                int pos, int xpos, int ypos, int angle );
+ virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
+ void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
 
-        virtual void attachPins()=0;
+ virtual void addPin(QString id, QString type, QString label, int pos, int xpos,
+                     int ypos, int angle) = 0;
 
-        BaseProcessor* m_processor;
+ virtual void updatePin(QString id, QString type, QString label, int pos,
+                        int xpos, int ypos, int angle);
 
-        double m_freq;           // Clock Frequency Mhz
-        
-        bool m_attached;
-        bool m_autoLoad;
+ virtual void attachPins() = 0;
 
-        QString m_device;       // Name of device
-        QString m_symbolFile;   // firmware file loaded
-        QString m_lastFirmDir;  // Last firmware folder used
+ BaseProcessor *m_processor;
 
-        QList<McuComponentPin*> m_pinList;
+ double m_freq; // Clock Frequency Mhz
 
-        Shield* m_shield;
+ bool m_attached;
+ bool m_autoLoad;
 
-    friend class Shield;
+ QString m_device;      // Name of device
+ QString m_symbolFile;  // firmware file loaded
+ QString m_lastFirmDir; // Last firmware folder used
+
+ QList<McuComponentPin *> m_pinList;
+
+ Shield *m_shield;
+
+ friend class Shield;
 };
 #endif
