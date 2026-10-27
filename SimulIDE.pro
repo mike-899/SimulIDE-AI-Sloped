@@ -145,6 +145,7 @@ macx {
         $(MOVE)     $$PWD/resources/translations/*.qm $$TARGET_PREFIX/simulide.app/Contents/share/simulide/translations ;
 }
 
+copy2dest.depends = runLrelease
 QMAKE_EXTRA_TARGETS += copy2dest
 POST_TARGETDEPS     += copy2dest
 
