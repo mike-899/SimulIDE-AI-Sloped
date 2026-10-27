@@ -3,5 +3,6 @@
         <file>Inter-Regular.otf</file>
         <file>Inter-Medium.otf</file>
         <file>Inter-SemiBold.otf</file>
+        <file>Inter-Bold.otf</file>
     </qresource>
 </RCC>

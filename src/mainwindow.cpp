@@ -311,7 +311,7 @@ void MainWindow::createTopBar()
     appName->setObjectName("appTitle");
     QFont nameFont = appName->font();
     nameFont.setBold(true);
-    nameFont.setPixelSize(int(16 * m_fontScale));
+    nameFont.setPixelSize(int(20 * m_fontScale));
     appName->setFont(nameFont);
     layout->addWidget(appName);
 
