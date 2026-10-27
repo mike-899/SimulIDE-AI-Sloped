@@ -25,13 +25,29 @@
 #include "partart.h"
 #include "pin.h"
 
-static const char* BJT_properties[] = {
-    QT_TRANSLATE_NOOP("App::Property","Gain"),
-    QT_TRANSLATE_NOOP("App::Property","Threshold"),
-    QT_TRANSLATE_NOOP("App::Property","PNP"),
-    QT_TRANSLATE_NOOP("App::Property","BC diode")
+#include <QMetaEnum>
+
+static const char *BJT_properties[] = {
+    QT_TRANSLATE_NOOP("App::Property", "Gain"),
+    QT_TRANSLATE_NOOP("App::Property", "Threshold"),
+    QT_TRANSLATE_NOOP("App::Property", "PNP"),
+    QT_TRANSLATE_NOOP("App::Property", "Model")
 };
 
+// Enum key <-> SPICE preset name ("Q2N2222" <-> "2N2222", "BC547" as is)
+static QString presetName(const char *key)
+{
+    QString k(key);
+    if (k.size() > 1 && k[1].isDigit())
+        return k.mid(1);
+    return k;
+}
+static QString presetKey(const QString &name, char prefix)
+{
+    if (!name.isEmpty() && name[0].isDigit())
+        return QString(prefix) + name;
+    return name;
+}
 
 Component* BJT::construct( QObject* parent, QString type, QString id )
 {
@@ -93,9 +109,29 @@ void BJT::updateStep()
     update();
 }
 
-void BJT::setPnp( bool pnp ) 
+void BJT::setPnp(bool pnp)
 {
-    m_PNP = pnp;
+    eBJT::setPnp(pnp);
+    update();
+}
+
+BJT::BjtModel BJT::model()
+{
+    QMetaEnum me = staticMetaObject.enumerator(
+        staticMetaObject.indexOfEnumerator("BjtModel"));
+    int v = me.keyToValue(presetKey(m_model, 'Q').toLatin1().constData());
+    return (v < 0) ? Custom : (BjtModel)v;
+}
+
+void BJT::setModel(BjtModel model)
+{
+    QMetaEnum me = staticMetaObject.enumerator(
+        staticMetaObject.indexOfEnumerator("BjtModel"));
+    const char *key = me.valueToKey(model);
+    if (!key || model == Custom)
+        setModelName("Custom");
+    else
+        setModelName(presetName(key));
     update();
 }
 
@@ -105,8 +141,9 @@ void BJT::setBCd( bool bcd )
     if( pauseSim )  Simulator::self()->pauseSim();
     
     eBJT::setBCd( bcd );
-    
-    if( pauseSim ) Simulator::self()->runContinuous();
+
+    if (pauseSim)
+        Simulator::self()->resumeSim();
 }
 
 void BJT::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget )
@@ -131,7 +168,8 @@ void BJT::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *w
         return;
     }
 
-    if( Circuit::self()->animate() && m_baseCurr > 1e-4 )  p->setBrush( Qt::yellow );
+    if (Circuit::self()->animate() && fabs(m_baseCurr) > 1e-4)
+        p->setBrush(Qt::yellow);
     else                                                   p->setBrush( Qt::white );
 
     p->drawEllipse( m_area );

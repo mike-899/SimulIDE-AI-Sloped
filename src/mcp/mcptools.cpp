@@ -26,6 +26,7 @@
 #include "outpaneltext.h"
 #include "pin.h"
 #include "simulator.h"
+#include "spiceengine.h"
 
 #include <QBuffer>
 #include <QDir>
@@ -238,6 +239,21 @@ McpTools::McpTools(QObject *parent) : QObject(parent)
         reg("screenshot_circuit", "Return a PNG image of the circuit.",
             schema(p), &McpTools::screenshotCircuit);
     }
+    {
+        QJsonObject p;
+        p["engine"] =
+            prop("string", "'native' (default real-time engine, works with "
+                           "MCUs) or 'ngspice' (accurate analog, purely "
+                           "analog circuits). Omit to only query.");
+        reg("set_analog_engine",
+            "Select the analog engine used by the next start_simulation and "
+            "report ngspice availability (docs/ANALOG_ENGINE.md).",
+            schema(p), &McpTools::setAnalogEngine);
+    }
+    reg("get_spice_netlist",
+        "Return the SPICE netlist of the current circuit as exported for "
+        "ngspice (or the reason it cannot be exported).",
+        schema(), &McpTools::getSpiceNetlist);
 }
 
 void McpTools::reg(const QString &name, const QString &desc,
@@ -1149,4 +1165,44 @@ QJsonObject McpTools::screenshotCircuit(const QJsonObject &a)
     r["content"] = QJsonArray{ c, t };
     r["isError"] = false;
     return r;
+}
+
+QJsonObject McpTools::setAnalogEngine(const QJsonObject &a)
+{
+    QString engine = a.value("engine").toString().toLower();
+    if (!engine.isEmpty()) {
+        if (engine != "native" && engine != "ngspice")
+            return fail("engine must be 'native' or 'ngspice'");
+        bool running = Simulator::self()->isRunning();
+        if (running)
+            CircuitWidget::self()->powerCircOff();
+        SpiceEngine::setEnabled(engine == "ngspice");
+        if (running)
+            CircuitWidget::self()->powerCircOn();
+    }
+    QString err;
+    bool avail = SpiceEngine::self()->available(&err);
+    QJsonObject r;
+    r["engine"]            = SpiceEngine::enabled() ? "ngspice" : "native";
+    r["ngspice_available"] = avail;
+    if (avail)
+        r["ngspice_version"] = SpiceEngine::self()->version();
+    else
+        r["ngspice_error"] = err;
+    r["ngspice_active"] = Simulator::self()->spiceMode();
+    return ok(r);
+}
+
+QJsonObject McpTools::getSpiceNetlist(const QJsonObject &)
+{
+    QString err;
+    QString text = SpiceEngine::self()->netlistText(&err);
+    QJsonObject r;
+    r["netlist"] = text;
+    if (!err.isEmpty())
+        r["error"] = err;
+    r["ngspice_active"] = Simulator::self()->spiceMode();
+    if (Simulator::self()->spiceMode())
+        r["ngspice_log"] = SpiceEngine::self()->log();
+    return ok(r);
 }

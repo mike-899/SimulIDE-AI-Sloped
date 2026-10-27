@@ -23,6 +23,7 @@ INCLUDEPATH += \
     ./src/simulator \
     ./src/simulator/elements \
     ./src/simulator/elements/active \
+    ./src/simulator/spice \
     ./src/simulator/elements/logic \
     ./src/simulator/elements/outputs \
     ./src/simulator/elements/passive \
@@ -355,6 +356,11 @@ HEADERS += \
     ./src/simulator/e-source.h \
     ./src/simulator/elements/active/e-bjt.h \
     ./src/simulator/elements/active/e-diode.h \
+    ./src/simulator/spice/ngspice-api.h \
+    ./src/simulator/spice/spicenetlist.h \
+    ./src/simulator/spice/spiceengine.h \
+    ./src/simulator/elements/active/e-semimodel.h \
+    ./src/simulator/elements/active/e-nlstamp.h \
     ./src/simulator/elements/active/e-mosfet.h \
     ./src/simulator/elements/active/e-mux_analog.h \
     ./src/simulator/elements/active/e-op_amp.h \
@@ -687,6 +693,9 @@ SOURCES += \
     ./src/simulator/e-source.cpp \
     ./src/simulator/elements/active/e-bjt.cpp \
     ./src/simulator/elements/active/e-diode.cpp \
+    ./src/simulator/spice/spicenetlist.cpp \
+    ./src/simulator/spice/spiceengine.cpp \
+    ./src/simulator/elements/active/e-semimodel.cpp \
     ./src/simulator/elements/active/e-mosfet.cpp \
     ./src/simulator/elements/active/e-mux_analog.cpp \
     ./src/simulator/elements/active/e-op_amp.cpp \

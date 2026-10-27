@@ -31,22 +31,41 @@ class MAINMODULE_EXPORT BJT : public Component, public eBJT
     Q_PROPERTY( double Gain      READ gain  WRITE setGain  DESIGNABLE true USER true )
     Q_PROPERTY( double Threshold READ BEthr WRITE setBEthr DESIGNABLE true USER true )
     Q_PROPERTY( bool   PNP       READ pnp   WRITE setPnp   DESIGNABLE true USER true )
-    Q_PROPERTY( bool   BC_diode  READ BCd   WRITE setBCd   DESIGNABLE true USER true )
-    
-    public:
+    Q_PROPERTY(
+        BjtModel Model READ model WRITE setModel DESIGNABLE true USER true)
 
-        BJT( QObject* parent, QString type, QString id );
-        ~BJT();
-        
-        static Component* construct( QObject* parent, QString type, QString id );
-        static LibraryItem *libraryItem();
-        
-        void updateStep();
-        
-        void setPnp( bool pnp );
-        void setBCd( bool bcd );
+  public:
+    BJT(QObject *parent, QString type, QString id);
+    ~BJT();
 
-        virtual void paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget );
+    static Component *construct(QObject *parent, QString type, QString id);
+    static LibraryItem *libraryItem();
+
+    // Custom uses Gain (BF) and Threshold (Vbe at Ic = 10 mA).
+    // Append new presets at the end (saved as an integer).
+    enum BjtModel {
+        Custom = 0,
+        Q2N2222,
+        Q2N2907,
+        Q2N3904,
+        Q2N3906,
+        BC547,
+        BC557,
+        TIP120,
+        TIP125
+    };
+    Q_ENUMS(BjtModel)
+
+    BjtModel model();
+    void setModel(BjtModel model);
+
+    void updateStep();
+
+    void setPnp(bool pnp);
+    void setBCd(bool bcd);
+
+    virtual void paint(QPainter *p, const QStyleOptionGraphicsItem *option,
+                       QWidget *widget);
 };
 
 #endif

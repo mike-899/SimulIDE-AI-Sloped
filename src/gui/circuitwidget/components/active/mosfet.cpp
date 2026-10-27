@@ -18,18 +18,37 @@
  ***************************************************************************/
 
 #include "mosfet.h"
-#include "connector.h"
-#include "simulator.h"
-#include "circuit.h"
-#include "itemlibrary.h"
-#include "e-source.h"
-#include "pin.h"
 
-static const char* Mosfet_properties[] = {
-    QT_TRANSLATE_NOOP("App::Property","RDSon"),
-    QT_TRANSLATE_NOOP("App::Property","P Channel"),
-    QT_TRANSLATE_NOOP("App::Property","Depletion")
+#include "circuit.h"
+#include "connector.h"
+#include "e-source.h"
+#include "itemlibrary.h"
+#include "pin.h"
+#include "simulator.h"
+
+#include <QMetaEnum>
+
+static const char *Mosfet_properties[] = {
+    QT_TRANSLATE_NOOP("App::Property", "RDSon"),
+    QT_TRANSLATE_NOOP("App::Property", "P Channel"),
+    QT_TRANSLATE_NOOP("App::Property", "Depletion"),
+    QT_TRANSLATE_NOOP("App::Property", "Model")
 };
+
+// Enum key <-> SPICE preset name ("Q2N2222" <-> "2N2222", "BC547" as is)
+static QString presetName(const char *key)
+{
+    QString k(key);
+    if (k.size() > 1 && k[1].isDigit())
+        return k.mid(1);
+    return k;
+}
+static QString presetKey(const QString &name, char prefix)
+{
+    if (!name.isEmpty() && name[0].isDigit())
+        return QString(prefix) + name;
+    return name;
+}
 
 Component* Mosfet::construct( QObject* parent, QString type, QString id )
 { return new Mosfet( parent, type, id ); }
@@ -85,14 +104,34 @@ void Mosfet::updateStep()
 }
 
 void Mosfet::setPchannel( bool pc )
-{ 
-    m_Pchannel = pc;
+{
+    eMosfet::setPchannel(pc);
     update();
 }
 
 void Mosfet::setDepletion( bool dep )
 {
-    m_depletion = dep;
+    eMosfet::setDepletion(dep);
+    update();
+}
+
+Mosfet::MosModel Mosfet::model()
+{
+    QMetaEnum me = staticMetaObject.enumerator(
+        staticMetaObject.indexOfEnumerator("MosModel"));
+    int v = me.keyToValue(presetKey(m_model, 'M').toLatin1().constData());
+    return (v < 0) ? Custom : (MosModel)v;
+}
+
+void Mosfet::setModel(MosModel model)
+{
+    QMetaEnum me = staticMetaObject.enumerator(
+        staticMetaObject.indexOfEnumerator("MosModel"));
+    const char *key = me.valueToKey(model);
+    if (!key || model == Custom)
+        setModelName("Custom");
+    else
+        setModelName(presetName(key));
     update();
 }
 

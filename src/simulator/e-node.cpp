@@ -60,6 +60,8 @@ void eNode::initialize()
     m_admitList.clear();
     m_currList.clear();
     m_nodeList.clear();
+    m_entries.clear();
+    m_cols.clear();
 
     m_volt = 0;
 
@@ -102,6 +104,38 @@ void eNode::stampAdmitance(ePin *epin, double data)
     }
 }
 
+void eNode::stampEntry(ePin *rowPin, ePin *colPin, double g)
+{
+    Entry *e = nullptr;
+    for (Entry &en : m_entries)
+        if ((en.row == rowPin) && (en.col == colPin)) {
+            e = &en;
+            break;
+        }
+    if (e) {
+        if (e->g == g)
+            return; // Nothing changed
+        e->g = g;
+    } else
+        m_entries.push_back({ rowPin, colPin, g });
+
+    m_admitChanged = true;
+
+    if (!m_changed) {
+        m_changed = true;
+        Simulator::self()->addToChangedNodeList(this);
+    }
+}
+
+eNode::Col &eNode::column(int node)
+{
+    for (Col &c : m_cols)
+        if (c.node == node)
+            return c;
+    m_cols.push_back({ node, 0, 0, 0, 0 });
+    return m_cols.back();
+}
+
 void eNode::setNodeNumber(int n)
 {
     m_nodeNum = n;
@@ -115,20 +149,29 @@ void eNode::stampMatrix()
     m_changed = false;
 
     if (m_admitChanged) {
-        m_admit.clear();
+        // Columns are kept in a small vector and reset in place: this runs
+        // on every Newton iteration
+        for (Col &c : m_cols) {
+            c.admit = 0;
+            c.entry = 0;
+        }
         m_totalAdmit = 0;
 
-        QHashIterator<ePin *, double> i(m_admitList); // ePin-Admit
-        while (i.hasNext()) {
-            i.next();
-
+        for (auto i = m_admitList.constBegin(); i != m_admitList.constEnd();
+             ++i) {
             double adm = i.value();
-
-            ePin *epin = i.key();
-            int enode  = m_nodeList[epin];
-
-            m_admit[enode] += adm;
+            column(m_nodeList.value(i.key())).admit += adm;
             m_totalAdmit += adm;
+        }
+        for (const Entry &e : m_entries) // Generic non-linear device entries
+        {
+            if (!e.col->isConnected())
+                continue; // Ground
+            int col = e.col->getEnode()->getNodeNumber();
+            if (col == m_nodeNum)
+                m_totalAdmit += e.g;
+            else if (col > 0)
+                column(col).entry += e.g;
         }
         if (!m_single || m_switched)
             stampAdmit();
@@ -138,8 +181,8 @@ void eNode::stampMatrix()
 
     if (m_currChanged) {
         m_totalCurr = 0;
-        for (double current : m_currList)
-            m_totalCurr += current;
+        for (auto i = m_currList.constBegin(); i != m_currList.constEnd(); ++i)
+            m_totalCurr += i.value();
 
         if (!m_single || m_switched)
             stampCurr();
@@ -152,32 +195,30 @@ void eNode::stampMatrix()
 
 void eNode::stampAdmit()
 {
-    int nonCero = 0;
-    QHashIterator<int, double> ai(
-        m_admit); // iterate admitance hash: eNode-Admit
-    while (ai.hasNext()) {
-        ai.next();
-        int enode    = ai.key();
-        double admit = ai.value();
-        if (enode > 0)
-            CircMatrix::self()->stampMatrix(m_nodeNum, enode, -admit);
+    int nonCero     = 0;
+    CircMatrix *mat = CircMatrix::self();
+
+    for (Col &c : m_cols) {
+        if (c.node > 0)
+            mat->stampMatrix(m_nodeNum, c.node, c.entry - c.admit);
 
         if (m_switched) // Find open/close events
         {
-            if (admit > 0)
+            if (c.admit > 0)
                 nonCero++;
-            double admitP = m_admitPrev[enode];
-
-            if ((admit != admitP) && ((admit == 0) || (admitP == 0)))
-                CircMatrix::self()->setCircChanged();
+            if ((c.admit != c.admitPrev) &&
+                ((c.admit == 0) || (c.admitPrev == 0)))
+                mat->setCircChanged();
+            c.admitPrev = c.admit;
         }
+        if ((c.entry != c.entryPrev) && ((c.entry == 0) || (c.entryPrev == 0)))
+            mat->setCircChanged();
+        c.entryPrev = c.entry;
     }
-    if (m_switched) {
-        m_admitPrev = m_admit;
-        if (nonCero < 2)
-            m_totalAdmit += 1e-12; // pnpBias example error
-    }
-    CircMatrix::self()->stampMatrix(m_nodeNum, m_nodeNum, m_totalAdmit);
+    if (m_switched && (nonCero < 2))
+        m_totalAdmit += 1e-12; // pnpBias example error
+
+    mat->stampMatrix(m_nodeNum, m_nodeNum, m_totalAdmit);
 }
 
 void eNode::stampCurr()
@@ -197,9 +238,9 @@ void eNode::solveSingle()
 QList<int> eNode::getConnections()
 {
     QList<int> cons;
-    for (int nodeNum : m_nodeList) {
-        if (m_admit[nodeNum] > 0)
-            cons.append(nodeNum);
+    for (const Col &c : m_cols) {
+        if ((c.node > 0) && ((c.admit > 0) || (c.entry != 0)))
+            cons.append(c.node);
     }
     return cons;
 }

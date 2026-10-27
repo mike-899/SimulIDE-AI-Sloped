@@ -61,6 +61,8 @@ class McpTools : public QObject
     QJsonObject selectMcu(const QJsonObject &a);
     QString xmlParentType(const QString &model);
     QJsonObject screenshotCircuit(const QJsonObject &a);
+    QJsonObject setAnalogEngine(const QJsonObject &a);
+    QJsonObject getSpiceNetlist(const QJsonObject &a);
 
     // helpers
     static QJsonObject ok(const QJsonValue &data);

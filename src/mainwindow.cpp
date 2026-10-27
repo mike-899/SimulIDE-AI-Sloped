@@ -34,6 +34,7 @@
 #include "propertieswidget.h"
 #include "serialmonitor.h"
 #include "simuapi_apppath.h"
+#include "spiceengine.h"
 #include "thememanager.h"
 #include "utils.h"
 
@@ -639,6 +640,28 @@ void MainWindow::createMenus()
     QMenu *simMenu = m_mainMenu->addMenu(tr("&Simulation"));
     simMenu->addAction(m_circuit->powerCircAct);
     simMenu->addAction(m_circuit->pauseSimAct);
+    simMenu->addSeparator();
+    QAction *spiceAct = simMenu->addAction(materialIcon("tune"),
+                                           tr("Accurate analog (ngspice)"));
+    spiceAct->setObjectName("spiceEngineAction");
+    spiceAct->setToolTip(tr("Solve purely analog circuits with ngspice "
+                            "(circuits with MCUs keep using the native "
+                            "engine). See docs/ANALOG_ENGINE.md"));
+    spiceAct->setCheckable(true);
+    spiceAct->setChecked(SpiceEngine::enabled());
+    connect(spiceAct, &QAction::toggled, [this](bool on) {
+        QString err;
+        if (on && !SpiceEngine::self()->available(&err)) {
+            QMessageBox::warning(this, tr("ngspice"), err);
+            on = false;
+        }
+        bool running = Simulator::self()->isRunning();
+        if (running)
+            m_circuit->powerCircOff();
+        SpiceEngine::setEnabled(on);
+        if (running)
+            m_circuit->powerCircOn();
+    });
 
     QMenu *toolsMenu = m_mainMenu->addMenu(tr("&Tools"));
     QAction *manageAct =
