@@ -26,6 +26,7 @@
 #include "mainwindow.h"
 #include "matrixsolver.h"
 #include "mcucomponent.h"
+#include "netlabel.h"
 #include "oscopewidget.h"
 #include "outpaneltext.h"
 #include "plotterwidget.h"
@@ -312,6 +313,9 @@ void Simulator::debug(bool run)
 void Simulator::startSim()
 {
     std::cout << "\nStarting Circuit Simulation...\n" << std::endl;
+
+    // Join same-name Net Labels into shared eNodes
+    NetLabel::updateNets(true);
 
     for (eNode *busNode : m_eNodeBusList)
         busNode->initialize(); // Clear Buses
