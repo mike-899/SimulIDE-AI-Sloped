@@ -99,6 +99,12 @@ void ePin::stampAdmitance(double data)
     }
 }
 
+void ePin::stampEntry(ePin *colPin, double g)
+{
+    if (m_connected)
+        m_enode->stampEntry(this, colPin, g);
+}
+
 double ePin::getVolt()
 {
     // std::cout << "\nePin::getVolt "<< m_id << m_connected ;

@@ -25,6 +25,10 @@ eLed::eLed( std::string id )
 {
     m_threshold  = 2.4;
     m_maxCurrent = 0.03;
+    m_emission    = 2.0;
+    m_ledColorIdx = Semi::yellow;
+    m_model       = "Auto"; // Colour specific model
+    refreshModel();
     resetState();
 }
 eLed::~eLed() {}
@@ -46,15 +50,30 @@ void eLed::resetState()
     eDiode::resetState();
 }
 
+Semi::DiodeParams eLed::autoParams()
+{
+    return Semi::ledModel(m_ledColorIdx);
+}
+
+void eLed::setLedColor(int color)
+{
+    m_ledColorIdx = color;
+    if (m_model == "Auto")
+        refreshModel();
+}
+
 void eLed::setVChanged()
 {
-    eDiode::setVChanged();
-    updateVI();
+    eDiode::setVChanged(); // Sets m_current at the Newton linearization point
+    integrateBright();
 }
 void eLed::updateVI()
 {
     eDiode::updateVI();
-    
+    integrateBright();
+}
+void eLed::integrateBright()
+{
     const uint64_t step = Simulator::self()->step();
     int period = step - m_prevStep;    
 

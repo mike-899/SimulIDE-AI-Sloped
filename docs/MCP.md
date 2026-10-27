@@ -65,6 +65,8 @@ read/write files with your user rights). Use `--no-mcp` if that is a concern.
 | `compile_code` | `mcu_id?` | Compile the current editor file (optionally binding it to an MCU); returns the compiler output |
 | `select_mcu` | `mcu_id?` | List MCUs in the circuit (id, device, firmware, active) and optionally make one the active target |
 | `screenshot_circuit` | `mode?` (`circuit`/`view`), `max_size?` | PNG of the circuit as MCP image content |
+| `set_analog_engine` | `engine?` (`native`/`ngspice`) | Select the analog engine, report ngspice availability (see ANALOG_ENGINE.md) |
+| `get_spice_netlist` | | SPICE netlist of the circuit as exported for ngspice |
 
 Tool failures are returned as normal results with `isError: true` and a text explanation.
 

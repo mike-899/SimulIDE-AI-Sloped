@@ -230,7 +230,7 @@ QDialogButtonBox { button-layout: 0; }
 
 /* ---- Top app bar ---- */
 #topBar { background: ${surfaceContainer}; border: none; }
-#topBar QLabel#appTitle { color: ${onSurface}; }
+#topBar QLabel#appTitle { color: ${onSurface}; font-size: 20px; font-weight: 700; }
 #topBar QLabel#projectName { color: ${onSurfaceVariant}; }
 QFrame#topBarSeparator { background: ${outlineVariant}; border: none; max-width: 1px; min-width: 1px; margin: 10px 4px; }
 #topBar QToolButton { padding: 8px; border-radius: 20px; min-width: 24px; min-height: 24px; }
@@ -266,7 +266,7 @@ QLabel#simSpeedLabel { color: ${onSurfaceVariant}; background: ${surfaceContaine
 QTabWidget#sidePanel::pane { background: ${surface}; }
 QTabWidget#sidePanel > QTabBar::tab { min-width: 24px; }
 #componentPanel, #ramTabWidget, #fileExplorer { background: ${surface}; }
-QLabel#componentPanelTitle { color: ${onSurface}; font-size: 15px; font-weight: 600; padding-left: 4px; }
+QLabel#componentPanelTitle { color: ${onSurface}; font-size: 18px; font-weight: 700; padding-left: 4px; }
 
 /* Search bar: pill, 56px, surface-container-high */
 QLineEdit#componentSearch {
@@ -285,7 +285,7 @@ QComboBox#componentCategoryBox {
 QComboBox#componentCategoryBox:hover { background: ${surfaceContainerHighest_hover}; }
 QComboBox#componentCategoryBox:on, QComboBox#componentCategoryBox:focus { border: none; border-bottom: 2px solid ${primary}; padding: 0px 8px 0px 12px; }
 
-QLabel#componentSection { color: ${primary}; font-weight: 600; font-size: 12px; padding: 12px 4px 4px 4px; }
+QLabel#componentSection { color: ${tertiary}; font-weight: 700; font-size: 12px; padding: 12px 4px 4px 4px; }
 QLabel#componentEmpty { color: ${onSurfaceVariant}; padding: 24px; }
 QScrollArea#componentScroll, QWidget#componentGrid { background: transparent; border: none; }
 
@@ -293,7 +293,7 @@ QScrollArea#componentScroll, QWidget#componentGrid { background: transparent; bo
 QFrame#componentCard {
     background: ${surfaceContainerLow}; border: 1px solid ${outlineVariant}; border-radius: 12px;
 }
-QFrame#componentCard:hover { background: ${surfaceContainerLow_hover}; border-color: ${outline}; }
+QFrame#componentCard:hover { background: ${surfaceContainerLow_hover}; border-color: ${tertiary}; }
 QLabel#componentCardIcon { background: transparent; border: none; }
 QLabel#componentCardLabel { background: transparent; color: ${onSurfaceVariant}; border: none; }
 
@@ -310,13 +310,13 @@ QFrame#propertyInspector QWidget { background: transparent; }
 QFrame#propertyInspector QLineEdit, QFrame#propertyInspector QAbstractSpinBox,
 QFrame#propertyInspector QComboBox { background: ${surfaceContainerLowest}; min-height: 30px; }
 QFrame#propertyInspector QAbstractItemView { background: ${surfaceContainer}; }
-QLabel#propertyInspectorTitle { color: ${onSurface}; font-size: 15px; font-weight: 600; padding: 2px 4px; }
+QLabel#propertyInspectorTitle { color: ${onSurface}; font-size: 18px; font-weight: 700; padding: 2px 4px; }
 QToolButton#propertyInspectorCollapse { padding: 6px; border-radius: 16px; }
 
 /* ---- Code panel / serial monitor ---- */
 QWidget#codePanel { background: ${surface}; }
 QWidget#codePanelHeader { background: ${surfaceContainer}; border-bottom: 1px solid ${outlineVariant}; }
-QLabel#codePanelTitle { color: ${onSurface}; font-size: 15px; font-weight: 600; padding-left: 8px; }
+QLabel#codePanelTitle { color: ${onSurface}; font-size: 18px; font-weight: 700; padding-left: 8px; }
 QToolButton#codePanelClose { padding: 8px; border-radius: 20px; }
 QToolBar#editorToolBar, QToolBar#debuggerToolBar { background: ${surfaceContainerLow}; border: none; border-bottom: 1px solid ${outlineVariant}; padding: 2px 4px; }
 QWidget#serialMonitorPanel { background: ${surfaceContainerLow}; border-top: 1px solid ${outlineVariant}; }

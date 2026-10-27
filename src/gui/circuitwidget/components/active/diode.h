@@ -28,16 +28,38 @@ class MAINMODULE_EXPORT Diode : public Component, public eDiode
     Q_OBJECT
     Q_PROPERTY( double Threshold  READ threshold WRITE setThreshold DESIGNABLE true USER true )
     Q_PROPERTY( double Zener_Volt READ zenerV    WRITE setZenerV    DESIGNABLE true USER true )
-    
+    Q_PROPERTY(
+        double Resistance READ res WRITE setRes DESIGNABLE true USER true)
+    Q_PROPERTY(
+        DiodeModel Model READ model WRITE setModel DESIGNABLE true USER true)
 
-    public:
-        Diode( QObject* parent, QString type, QString id );
-        ~Diode();
+  public:
+    Diode(QObject *parent, QString type, QString id);
+    ~Diode();
 
-        static Component* construct( QObject* parent, QString type, QString id );
-        static LibraryItem *libraryItem();
+    static Component *construct(QObject *parent, QString type, QString id);
+    static LibraryItem *libraryItem();
 
-        virtual void paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget );
+    // Custom uses Threshold (Vf at 10 mA), Resistance and Zener_Volt.
+    // Append new presets at the end (saved as an integer).
+    enum DiodeModel {
+        Custom = 0,
+        D1N4148,
+        D1N914,
+        D1N4001,
+        D1N4007,
+        D1N5819,
+        D1N4728A,
+        D1N4733A,
+        D1N4742A
+    };
+    Q_ENUMS(DiodeModel)
+
+    DiodeModel model();
+    void setModel(DiodeModel model);
+
+    virtual void paint(QPainter *p, const QStyleOptionGraphicsItem *option,
+                       QWidget *widget);
 };
 
 #endif

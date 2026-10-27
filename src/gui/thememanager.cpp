@@ -20,33 +20,38 @@
 #include <QStyleFactory>
 #include <QSvgRenderer>
 
-// ---- M3 tonal palettes (seed #1A73E8) ----------------------------------
+// ---- M3 Expressive tonal palettes (vibrant indigo seed #4355E8,
+// magenta tertiary for highlights) ----------------------------------
 // Roles follow the Material 3 colour system, including the surface
 // container levels introduced in 2023.
 static const QHash<QString, QString> &lightTokens()
 {
     static const QHash<QString, QString> t = {
-        { "primary", "#0B57D0" },
+        { "primary", "#3F4FE0" },
         { "onPrimary", "#FFFFFF" },
-        { "primaryContainer", "#D3E3FD" },
-        { "onPrimaryContainer", "#041E49" },
-        { "secondaryContainer", "#D9E2FB" },
-        { "onSecondaryContainer", "#131C2B" },
-        { "surface", "#FAF9FD" },
+        { "primaryContainer", "#DDE1FF" },
+        { "onPrimaryContainer", "#000C62" },
+        { "secondaryContainer", "#DCE0FF" },
+        { "onSecondaryContainer", "#151B3F" },
+        { "tertiary", "#9C2D8C" },
+        { "onTertiary", "#FFFFFF" },
+        { "tertiaryContainer", "#FFD7F1" },
+        { "onTertiaryContainer", "#3A0033" },
+        { "surface", "#FBF8FF" },
         { "surfaceContainerLowest", "#FFFFFF" },
-        { "surfaceContainerLow", "#F4F3F8" },
-        { "surfaceContainer", "#EEEDF3" },
-        { "surfaceContainerHigh", "#E8E7ED" },
-        { "surfaceContainerHighest", "#E2E2E8" },
-        { "onSurface", "#1A1B20" },
-        { "onSurfaceVariant", "#44474F" },
-        { "outline", "#74777F" },
-        { "outlineVariant", "#C4C6D0" },
-        { "inverseSurface", "#2F3036" },
-        { "inverseOnSurface", "#F1F0F7" },
-        { "success", "#1E8E3E" },
-        { "danger", "#C5221F" },
-        { "scrollHandle", "#C4C6D0" },
+        { "surfaceContainerLow", "#F5F2FD" },
+        { "surfaceContainer", "#EFECFA" },
+        { "surfaceContainerHigh", "#E9E6F6" },
+        { "surfaceContainerHighest", "#E3E0F1" },
+        { "onSurface", "#1A1B26" },
+        { "onSurfaceVariant", "#454659" },
+        { "outline", "#75768B" },
+        { "outlineVariant", "#C6C5DC" },
+        { "inverseSurface", "#2F303C" },
+        { "inverseOnSurface", "#F2EFFD" },
+        { "success", "#00855A" },
+        { "danger", "#BA1A1A" },
+        { "scrollHandle", "#C6C5DC" },
     };
     return t;
 }
@@ -54,27 +59,31 @@ static const QHash<QString, QString> &lightTokens()
 static const QHash<QString, QString> &darkTokens()
 {
     static const QHash<QString, QString> t = {
-        { "primary", "#A8C7FA" },
-        { "onPrimary", "#062E6F" },
-        { "primaryContainer", "#0842A0" },
-        { "onPrimaryContainer", "#D3E3FD" },
-        { "secondaryContainer", "#3D4759" },
-        { "onSecondaryContainer", "#D9E2FB" },
-        { "surface", "#121316" },
-        { "surfaceContainerLowest", "#0D0E11" },
-        { "surfaceContainerLow", "#1A1B1F" },
-        { "surfaceContainer", "#1E1F23" },
-        { "surfaceContainerHigh", "#292A2E" },
-        { "surfaceContainerHighest", "#333539" },
-        { "onSurface", "#E3E2E8" },
-        { "onSurfaceVariant", "#C4C6D0" },
-        { "outline", "#8E9099" },
-        { "outlineVariant", "#44474F" },
-        { "inverseSurface", "#E3E2E8" },
-        { "inverseOnSurface", "#2F3036" },
-        { "success", "#1E8E3E" },
-        { "danger", "#C5221F" },
-        { "scrollHandle", "#44474F" },
+        { "primary", "#BBC3FF" },
+        { "onPrimary", "#13208F" },
+        { "primaryContainer", "#2E3BC4" },
+        { "onPrimaryContainer", "#E0E3FF" },
+        { "secondaryContainer", "#3A4170" },
+        { "onSecondaryContainer", "#DFE1FF" },
+        { "tertiary", "#FFACE8" },
+        { "onTertiary", "#5C0053" },
+        { "tertiaryContainer", "#7E1772" },
+        { "onTertiaryContainer", "#FFD7F1" },
+        { "surface", "#11121C" },
+        { "surfaceContainerLowest", "#0C0D16" },
+        { "surfaceContainerLow", "#191A28" },
+        { "surfaceContainer", "#1E1F2E" },
+        { "surfaceContainerHigh", "#282A3B" },
+        { "surfaceContainerHighest", "#333547" },
+        { "onSurface", "#E4E1F4" },
+        { "onSurfaceVariant", "#C6C5DC" },
+        { "outline", "#9090A6" },
+        { "outlineVariant", "#454659" },
+        { "inverseSurface", "#E4E1F4" },
+        { "inverseOnSurface", "#2F303C" },
+        { "success", "#1F9D6C" },
+        { "danger", "#D93636" },
+        { "scrollHandle", "#454659" },
     };
     return t;
 }
@@ -130,7 +139,8 @@ void ThemeManager::init(QSettings *settings)
     // Bundled Inter (SIL OFL 1.1) so the UI looks the same everywhere
     const QStringList fonts = { ":/fonts/Inter-Regular.otf",
                                 ":/fonts/Inter-Medium.otf",
-                                ":/fonts/Inter-SemiBold.otf" };
+                                ":/fonts/Inter-SemiBold.otf",
+                                ":/fonts/Inter-Bold.otf" };
     for (const QString &f : fonts)
         QFontDatabase::addApplicationFont(f);
 
@@ -189,6 +199,9 @@ void ThemeManager::apply()
     const QList<QPair<QString, QString>> layered = {
         { "primary", "onPrimary" },
         { "secondaryContainer", "onSecondaryContainer" },
+        { "tertiary", "onTertiary" },
+        { "tertiaryContainer", "onTertiaryContainer" },
+        { "primaryContainer", "onPrimaryContainer" },
         { "surface", "onSurface" },
         { "surfaceContainerLow", "onSurface" },
         { "surfaceContainer", "onSurface" },

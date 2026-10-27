@@ -45,6 +45,10 @@ class MAINMODULE_EXPORT eElement
     virtual void setNumEpins(int n);
 
     virtual ePin *getEpin(int pin);
+    int numEpins()
+    {
+        return (int)m_ePin.size();
+    }
     virtual ePin *getEpin(QString pinName);
 
     virtual void setEpin(int num, ePin *pin);
