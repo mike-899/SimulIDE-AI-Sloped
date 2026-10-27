@@ -22,6 +22,10 @@
 
 #include "mainwindow.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 QString langFile( QString locale )
 {
     QString langF = "../share/simulide/translations/simulide_"+locale+".qm";
