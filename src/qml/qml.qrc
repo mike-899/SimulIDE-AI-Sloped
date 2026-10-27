@@ -1,0 +1,26 @@
+<RCC>
+    <qresource prefix="/qml">
+        <file>CodePanelHeader.qml</file>
+        <file>ComponentPanel.qml</file>
+        <file>EditToolbar.qml</file>
+        <file>PropertyInspector.qml</file>
+        <file>SidePanelHeader.qml</file>
+        <file>TopBar.qml</file>
+        <file>controls/ComponentCard.qml</file>
+        <file>controls/ConnectedButton.qml</file>
+        <file>controls/Elevation.qml</file>
+        <file>controls/Icon.qml</file>
+        <file>controls/IconButton.qml</file>
+        <file>controls/LoadingShape.qml</file>
+        <file>controls/M3Switch.qml</file>
+        <file>controls/M3TextField.qml</file>
+        <file>controls/PillDropdown.qml</file>
+        <file>controls/PlayStopIcon.qml</file>
+        <file>controls/RoundRect.qml</file>
+        <file>controls/SearchBar.qml</file>
+        <file>controls/SimFab.qml</file>
+        <file>controls/StateLayer.qml</file>
+        <file>controls/Tip.qml</file>
+        <file>controls/Txt.qml</file>
+    </qresource>
+</RCC>

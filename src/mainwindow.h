@@ -28,6 +28,7 @@ class CircuitWidget;
 class EditorWindow;
 class FileWidget;
 class SerialMonitor;
+class QQuickWidget;
 
 class MAINMODULE_EXPORT MainWindow : public QMainWindow
 {
@@ -81,6 +82,29 @@ class MAINMODULE_EXPORT MainWindow : public QMainWindow
         return m_themeToggleAct;
     }
 
+    // ---- Used by the QML shell (src/gui/qml) ----------------------------
+    bool qmlUi() const
+    {
+        return m_qml;
+    }
+    QMenu *mainMenu()
+    {
+        return m_mainMenu;
+    }
+    QAction *realisticPartsAction()
+    {
+        return m_realAct;
+    }
+    QAction *spiceAction()
+    {
+        return m_spiceAct;
+    }
+    bool isComponentPanelVisible() const;
+    bool isCodePanelVisible() const;
+    int sidePage() const;
+    void setSidePage(int page);
+    void selectMcu(const QString &id);
+
     QTabWidget *m_sidepanel;
     QWidget *m_ramTabWidget;
     QGridLayout *m_ramTabWidgetLayout;
@@ -97,6 +121,8 @@ class MAINMODULE_EXPORT MainWindow : public QMainWindow
   signals:
     // Emitted by the top bar theme toggle button.
     void themeToggleRequested();
+    // Component / code panel visibility or side panel page changed
+    void panelsChanged();
 
   private slots:
     void updateMcuSelector();
@@ -123,6 +149,8 @@ class MAINMODULE_EXPORT MainWindow : public QMainWindow
     void createCodePanel();
     void createMenus();
     void createInspector();
+    void createQmlChrome(QVBoxLayout *baseLayout);
+    void placeOverlays();
     void placeInspector();
     void updateInspector();
     void writeSettings();
@@ -176,6 +204,13 @@ class MAINMODULE_EXPORT MainWindow : public QMainWindow
     QPointer<QObject> m_inspectedComp;
 
     bool m_sideWasVisible; // Side panel state before the code panel opened
+
+    bool m_qml;          // QML (Qt Quick) shell instead of Widgets chrome
+    QWidget *m_sideHost; // Side panel (+ QML header in QML mode)
+    QQuickWidget *m_qmlInspector;
+    QQuickWidget *m_qmlToolbar;
+    QAction *m_realAct;
+    QAction *m_spiceAct;
 };
 
 #endif

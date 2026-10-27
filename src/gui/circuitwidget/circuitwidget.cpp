@@ -496,6 +496,7 @@ void CircuitWidget::setRate( int rate )
     if( rate < 0 ) m_rateLabel->setText( tr("Circuit ERROR!!!") );
     else
         m_rateLabel->setText(tr("Real Speed: ") + QString::number(rate) + " %");
+    emit rateChanged(rate);
 }
 
 #include "moc_circuitwidget.cpp"

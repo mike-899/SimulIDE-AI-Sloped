@@ -67,6 +67,15 @@ class MAINMODULE_EXPORT ComponentSelector : public QWidget
     Q_OBJECT
 
   public:
+    // One titled group of cards, as shown in the grid (title may be empty)
+    struct CardSection {
+        QString title;
+        QList<QTreeWidgetItem *> items;
+    };
+    static const int TypeRole = Qt::UserRole;     // component type
+    static const int NameRole = Qt::UserRole + 1; // display name
+    static const int InfoRole = Qt::UserRole + 2; // extra description
+
     ComponentSelector(QWidget *parent);
     ~ComponentSelector();
 
@@ -92,6 +101,33 @@ class MAINMODULE_EXPORT ComponentSelector : public QWidget
 
     void writeSettings();
 
+    // ---- Data API shared by the Widgets grid and the QML panel --------
+    // Category combo entries as (key, label); first two are Basic / All.
+    QList<QPair<QString, QString>> categories() const;
+    QString currentCategory() const;
+    void setCurrentCategory(const QString &key);
+    QString searchText() const;
+    void setSearchText(const QString &text);
+    // Sections shown for the current category / search text
+    QList<CardSection> sections() const;
+    QTreeWidgetItem *itemByName(const QString &name) const;
+
+    // When false, the widget grid is not built (QML panel in use)
+    void setGridEnabled(bool enabled)
+    {
+        m_gridEnabled = enabled;
+    }
+
+    // Drag a component into the circuit (mime text = dragId, html = type).
+    // The drag pixmap is empty: over the canvas the circuit shows the real
+    // component, elsewhere a small ghost with icon follows the cursor.
+    static void execDrag(QObject *source, const QString &dragId,
+                         const QString &type, const QPixmap &icon);
+
+  signals:
+    // Category list or visible cards changed
+    void contentChanged();
+
   public slots:
     void refresh();
     void slotManageComponents();
@@ -116,10 +152,8 @@ class MAINMODULE_EXPORT ComponentSelector : public QWidget
     void clearGrid();
     void addSection(const QString &title);
     void addCard(QTreeWidgetItem *item);
-    void addCategoryContent(QTreeWidgetItem *cat, const QString &title,
-                            bool showTitle);
-    void addSearchResults(QTreeWidgetItem *parent, const QString &text,
-                          const QString &title);
+    void collectCategory(QTreeWidgetItem *cat, const QString &title,
+                         QList<CardSection> *out) const;
     bool isEffectivelyHidden(QTreeWidgetItem *item) const;
 
     QStringList m_compSetUnique;
@@ -138,6 +172,7 @@ class MAINMODULE_EXPORT ComponentSelector : public QWidget
     int m_row;
     int m_col;
     bool m_refreshPending;
+    bool m_gridEnabled;
 
     CompPluginDialog m_pluginsdDialog;
 
