@@ -17,24 +17,25 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <QtGui>
-#include <QThread>
-#include <QtAlgorithms>
-#include <QRegExp>
-
-#include "utils.h"
 #include "codeeditor.h"
-#include "gcbdebugger.h"
-#include "inodebugger.h"
-#include "b16asmdebugger.h"
+
 #include "avrasmdebugger.h"
-#include "picasmdebugger.h"
-#include "mcucomponent.h"
-#include "mainwindow.h"
-#include "simulator.h"
+#include "b16asmdebugger.h"
 #include "circuitwidget.h"
 #include "editorwindow.h"
+#include "gcbdebugger.h"
+#include "inodebugger.h"
+#include "mainwindow.h"
+#include "mcucomponent.h"
+#include "picasmdebugger.h"
 #include "simuapi_apppath.h"
+#include "simulator.h"
+#include "utils.h"
+
+#include <QRegularExpression>
+#include <QThread>
+#include <QtAlgorithms>
+#include <QtGui>
 
 static const char* CodeEditor_properties[] = {
     QT_TRANSLATE_NOOP("App::Property","Font Size"),
@@ -237,7 +238,7 @@ int CodeEditor::getSintaxCoincidences( QString& fileName, QStringList& instructi
         
         for( QString instruction : instructions )
         {
-            if( line.contains( QRegExp( "\\b"+instruction+"\\b" ) ))
+            if (line.contains(QRegularExpression("\\b" + instruction + "\\b")))
                 coincidences++;
             
             if( coincidences > 50 ) break;
@@ -640,7 +641,8 @@ int CodeEditor::lineNumberAreaWidth()
     int digits = 1;
     int max = qMax( 1, blockCount() );
     while( max >= 10 ) { max /= 10; ++digits; }
-    return  fontMetrics().height() + fontMetrics().width( QLatin1Char( '9' ) ) * digits;
+    return fontMetrics().height() +
+           fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
 }
 
 void CodeEditor::updateLineNumberAreaWidth( int /* newBlockCount */ )
@@ -760,8 +762,8 @@ int CodeEditor::tabSize()
 void CodeEditor::setTabSize( int size )
 {
     m_tabSize = size;
-    setTabStopWidth( m_tabSize*m_fontSize*2/3 );
-    
+    setTabStopDistance(m_tabSize * m_fontSize * 2 / 3);
+
     MainWindow::self()->settings()->setValue( "Editor_tab_size", QString::number(m_tabSize) );
     
     if( m_spaceTabs ) setSpaceTabs( true );

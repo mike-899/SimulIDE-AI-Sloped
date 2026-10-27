@@ -350,7 +350,7 @@ QString LibraryItem::getHelpFile( QString name )
         if( file.open(QFile::ReadOnly | QFile::Text) ) // Get Text from Help File
         {
             QTextStream s1( &file );
-            s1.setCodec("UTF-8");
+            s1.setEncoding(QStringConverter::Utf8);
 
             help = s1.readAll();
 

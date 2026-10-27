@@ -47,7 +47,7 @@ int PicAsmDebugger::compile()
     QString command = m_compilerPath+"gpasm";
     
     QProcess checkComp( this );
-    checkComp.start( command  );
+    checkComp.startCommand(command);
     checkComp.waitForFinished(-1);
     
     QString p_stdo = checkComp.readAllStandardOutput();
@@ -70,7 +70,7 @@ int PicAsmDebugger::compile()
     m_outPane->writeText( "\n\n" );
     
     QProcess compAsm( this );
-    compAsm.start( command  );
+    compAsm.startCommand(command);
     compAsm.waitForFinished(-1);
     
     QString p_stdout = compAsm.readAllStandardOutput();

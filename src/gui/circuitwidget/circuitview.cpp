@@ -55,7 +55,8 @@ CircuitView::CircuitView( QWidget *parent )
     //setViewportUpdateMode( QGraphicsView::FullViewportUpdate );
     //setCacheMode( CacheBackground );
     //setRenderHint( QPainter::Antialiasing );
-    setRenderHints( QPainter::HighQualityAntialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
+    setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing |
+                   QPainter::SmoothPixmapTransform);
     //setRenderHint( QPainter::SmoothPixmapTransform );
     setTransformationAnchor( AnchorUnderMouse );
     setResizeAnchor( AnchorUnderMouse );
@@ -126,7 +127,7 @@ void CircuitView::clear()
         m_circuit->remove();
         m_circuit->deleteLater();
     }
-    resetMatrix();
+    resetTransform();
 
     m_enterItem = 0l;
     
@@ -137,8 +138,8 @@ void CircuitView::clear()
 }
 
 void CircuitView::wheelEvent( QWheelEvent *event ) 
-{ 
-    qreal scaleFactor = pow( 2.0, event->delta() / 700.0);
+{
+    qreal scaleFactor = pow(2.0, event->angleDelta().y() / 700.0);
     scale( scaleFactor, scaleFactor );
 }
 
@@ -250,8 +251,7 @@ void CircuitView::resizeEvent( QResizeEvent *event )
 
 void CircuitView::mousePressEvent( QMouseEvent* event )
 {
-    if( event->button() == Qt::MidButton )
-    {
+    if (event->button() == Qt::MiddleButton) {
         event->accept();
         setDragMode( QGraphicsView::ScrollHandDrag );
 
@@ -263,9 +263,7 @@ void CircuitView::mousePressEvent( QMouseEvent* event )
                 Qt::LeftButton, Qt::LeftButton, Qt::NoModifier   );
             QGraphicsView::mousePressEvent( &eve );
         }
-    }
-    else
-    {
+    } else {
         QGraphicsView::mousePressEvent( event );
         //viewport()->setCursor( Qt::ArrowCursor );
     }
@@ -273,16 +271,13 @@ void CircuitView::mousePressEvent( QMouseEvent* event )
 
 void CircuitView::mouseReleaseEvent( QMouseEvent* event )
 {
-    if( event->button() == Qt::MidButton )
-    {
+    if (event->button() == Qt::MiddleButton) {
         event->accept();
         QMouseEvent eve( QEvent::MouseButtonRelease, event->pos(),
             Qt::LeftButton, Qt::LeftButton, Qt::NoModifier   );
 
         QGraphicsView::mouseReleaseEvent( &eve );
-    }
-    else
-    {
+    } else {
         QGraphicsView::mouseReleaseEvent( event );
         //viewport()->setCursor( Qt::ArrowCursor );
     }

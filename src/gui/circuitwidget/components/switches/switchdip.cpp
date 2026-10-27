@@ -254,7 +254,7 @@ void SwitchDip::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWid
     
     //p->setBrush( QColor( 80, 80, 80) );
 
-    p->drawRoundRect( boundingRect(), 4, 4 );
+    p->drawRoundedRect(boundingRect(), 4, 4, Qt::RelativeSize);
 }
 
 #include "moc_switchdip.cpp"

@@ -225,7 +225,7 @@ void BaseProcessor::updateRamValue( QString name )
             for( int i=address; i<=address+value; i++ )
             {
                 QString str = "";
-                const QChar cha = getRamValue( i );
+                const QChar cha = QChar(getRamValue(i));
                 str.setRawData( &cha, 1 );
                 
                 strVal += str; //QByteArray::fromHex( getRamValue( i ) );

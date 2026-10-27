@@ -103,7 +103,7 @@ void Simulator::timerEvent(
     runGraphicStep1();
     // Run Circuit in parallel thread
     m_CircuitFuture = QtConcurrent::run(
-        this, &Simulator::runCircuit); // Run Circuit in a parallel thread
+        &Simulator::runCircuit, this); // Run Circuit in a parallel thread
 
     runGraphicStep2();
 }

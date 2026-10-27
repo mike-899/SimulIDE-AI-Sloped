@@ -58,7 +58,7 @@ void RenderOscope::paintEvent( QPaintEvent* /* event */ )
     p.setRenderHint( QPainter::Antialiasing, true );
     
     p.setBrush( QColor( 10, 15, 50 ) );
-    p.drawRoundRect(0, 0, m_width, m_height );
+    p.drawRoundedRect(0, 0, m_width, m_height, 25, 25, Qt::RelativeSize);
 
     QPen pen( QColor( 90, 90, 180 ), 1.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin );
     p.setPen( pen );

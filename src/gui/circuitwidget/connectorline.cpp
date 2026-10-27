@@ -232,7 +232,7 @@ void ConnectorLine::remove()
 
 void ConnectorLine::mousePressEvent( QGraphicsSceneMouseEvent* event )
 {
-    if( event->button() == Qt::MidButton )                      // Move Line
+    if (event->button() == Qt::MiddleButton) // Move Line
     {
         event->accept();
 
@@ -240,9 +240,7 @@ void ConnectorLine::mousePressEvent( QGraphicsSceneMouseEvent* event )
         else if( dx() == 0 ) CircuitView::self()->viewport()->setCursor( Qt::SplitHCursor );
         else                 CircuitView::self()->viewport()->setCursor( Qt::SizeAllCursor );
         m_moving = true;
-    }
-    else if( event->button() == Qt::LeftButton )
-    {
+    } else if (event->button() == Qt::LeftButton) {
         if( event->modifiers() == Qt::ControlModifier ) setSelected( !isSelected() ); // Select - Deselect
         
         else if( event->modifiers() & Qt::ShiftModifier ) // Move Corner

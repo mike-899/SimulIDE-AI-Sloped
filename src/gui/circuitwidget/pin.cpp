@@ -243,7 +243,7 @@ void Pin::setLabelPos()
     if( m_angle == 0 )   // Right side
     {
         m_label.setRotation( 0 );
-        xlabelpos -= fm.width(m_label.text())+m_length+1;
+        xlabelpos -= fm.horizontalAdvance(m_label.text()) + m_length + 1;
         ylabelpos -= fm.height()*2/3;
     }
     if( m_angle == 90 )   // Top

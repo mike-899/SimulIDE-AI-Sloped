@@ -69,7 +69,7 @@ int GcbDebugger::compile()
 
     QProcess compGcb( 0l );
     compGcb.setWorkingDirectory( m_fileDir );
-    compGcb.start( command );
+    compGcb.startCommand(command);
     compGcb.waitForFinished(-1);
     QString p_stdout = compGcb.readAllStandardOutput();
 

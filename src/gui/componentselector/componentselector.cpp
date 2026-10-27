@@ -141,13 +141,13 @@ void ComponentCard::mouseMoveEvent(QMouseEvent *event)
     QLabel *ghost   = 0l;
     QTimer *tracker = 0l;
     QLabel *icon    = findChild<QLabel *>("componentCardIcon");
-    if (icon && icon->pixmap()) {
+    if (icon && !icon->pixmap().isNull()) {
         ghost = new QLabel(0l, Qt::ToolTip | Qt::FramelessWindowHint |
                                    Qt::WindowStaysOnTopHint);
         ghost->setAttribute(Qt::WA_TransparentForMouseEvents);
         ghost->setAttribute(Qt::WA_ShowWithoutActivating);
         ghost->setAttribute(Qt::WA_TranslucentBackground);
-        ghost->setPixmap(*icon->pixmap());
+        ghost->setPixmap(icon->pixmap());
         ghost->setStyleSheet("background: transparent;");
         ghost->adjustSize();
 

@@ -484,9 +484,10 @@ void Circuit::objectToDom( QDomDocument* doc, QObject* object )
         {
             QStringList list= value.toStringList();
             elm.setAttribute( name, list.join(",") );
-        }
-        else if( (QString(name)=="Mem") || (QString(name)=="eeprom") )
+        } else if (metaproperty.isEnumType()) // Qt6 would save the key name
         {
+            elm.setAttribute(name, QString::number(value.toInt()));
+        } else if ((QString(name) == "Mem") || (QString(name) == "eeprom")) {
             QVector<int> vmem = value.value<QVector<int>>();
 
             QStringList list;
@@ -499,15 +500,12 @@ void Circuit::objectToDom( QDomDocument* doc, QObject* object )
             //qDebug() << "Data:\n" << list;
             //qDebug() << "type" << value.type()<< "typename" << value.typeName()<< "name " << name
             //     << "   value " << value << "saved" << value.toString();
-        }
-        else
-        {
+        } else {
             elm.setAttribute( name, value.toString() );
             if( QString(name)=="Text" )
             qDebug() << "type:" << value.type()<< "typename:" << value.typeName()<< "name:" << name
                  << "   value:" << value << "saved:" << value.toString();
         }
-
     }
     QDomText blank = m_domDoc.createTextNode( "\n \n" );
     QDomText objNme = m_domDoc.createTextNode( object->objectName() );
@@ -530,7 +528,7 @@ bool Circuit::saveDom( QString &fileName, QDomDocument* doc )
         return false;
     }
     QTextStream out(&file);
-    out.setCodec("UTF-8");
+    out.setEncoding(QStringConverter::Utf8);
     out << doc->toString();
     file.close();
 
@@ -657,6 +655,8 @@ void Circuit::loadObjectProperties( QDomElement element, QObject* Item )
         else if( metaproperty.type() == QVariant::Double ) Item->setProperty( chName, value.toDouble() );
         else if( metaproperty.type() == QVariant::PointF ) Item->setProperty( chName, value.toPointF() );
         else if( metaproperty.type() == QVariant::Bool   ) Item->setProperty( chName, value.toBool() );
+        else if (metaproperty.isEnumType())
+            Item->setProperty(chName, value.toInt()); // Qt6: enums are not Int
         else if( metaproperty.type() == QVariant::StringList )
         {
             QStringList list= value.toString().split(",");
@@ -1100,7 +1100,7 @@ void Circuit::convertSubCircs() // Convert old subcircuits:
               continue;
         }
         QTextStream out(&fileS);
-        out.setCodec("UTF-8");
+        out.setEncoding(QStringConverter::Utf8);
         out << text;
         fileS.close();
 
@@ -1330,7 +1330,7 @@ void Circuit::createSubcircuit()
           tr("Cannot write file %1:\n%2.").arg(fileName).arg(file.errorString()));
     }
     QTextStream out( &file );
-    out.setCodec("UTF-8");
+    out.setEncoding(QStringConverter::Utf8);
     out << subcircuit;
     file.close();
     //qDebug() <<"Circuit::createSubcircuit\n" << subcircuit;
@@ -1371,7 +1371,7 @@ void Circuit::bom()
     bom.sort();
 
     QTextStream out(&file);
-    out.setCodec("UTF-8");
+    out.setEncoding(QStringConverter::Utf8);
     out <<  "\nCircuit: ";
     out <<  QFileInfo( m_filePath ).fileName();
     out <<  "\n\n";
@@ -1400,9 +1400,7 @@ void Circuit::mousePressEvent( QGraphicsSceneMouseEvent* event )
     {
         if( m_con_started ) event->accept();
         else                QGraphicsScene::mousePressEvent( event );
-    }
-    else if( event->button() == Qt::MidButton )
-    {
+    } else if (event->button() == Qt::MiddleButton) {
         QGraphicsScene::mousePressEvent( event );
     }
 }

@@ -54,12 +54,12 @@ void PICComponentPin::attach( pic_processor *PicProcessor )
 
         if( !iopin )
         {
-            qDebug() << "PICComponentPin::attach : iopin is NULL: "<< m_id << endl;
+            qDebug() << "PICComponentPin::attach : iopin is NULL: " << m_id;
             return;
         }
         if( m_pIOPIN )
         {
-            qDebug() << "PICComponentPin::attach :Already have an iopin" << endl;
+            qDebug() << "PICComponentPin::attach :Already have an iopin";
             return;
         }
         m_pIOPIN = iopin;

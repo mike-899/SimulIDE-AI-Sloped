@@ -112,8 +112,8 @@ int InoDebugger::compile()
           return -1;
     }
     QTextStream out(&file);
-    out.setCodec("UTF-8");
-    
+    out.setEncoding(QStringConverter::Utf8);
+
     QStringList inoLines = fileToStringList( filePath, "InoDebugger::compile" );
     QString line;
     int inoLineNumber = 0;
@@ -172,8 +172,8 @@ int InoDebugger::compile()
     
     m_outPane->appendText( command );
     m_outPane->writeText( "\n\n" );
-    
-    m_compProcess.start( command );
+
+    m_compProcess.startCommand(command);
     m_compProcess.waitForFinished(-1);
     
     QString p_stderr = m_compProcess.readAllStandardError();
@@ -225,12 +225,12 @@ void InoDebugger::getVariables()
     QString command  = objdump+" -S -j .text "+elfPath;
     QProcess compIno( 0l );
     compIno.setStandardOutputFile( buildPath+"/"+m_fileName+".ino.lst" );
-    compIno.start( command );
+    compIno.startCommand(command);
     compIno.waitForFinished(-1);
                          
     QProcess getBss( 0l );      // Get var address from .bss section
     command  = objdump+" -t -j.bss "+elfPath;
-    getBss.start( command );
+    getBss.startCommand(command);
     getBss.waitForFinished(-1);
 
     QString  p_stdout = getBss.readAllStandardOutput();
@@ -274,20 +274,20 @@ void InoDebugger::mapFlashToSource()
     m_flashToSource.clear();
     m_sourceToFlash.clear();
     QString buildPath = SIMUAPI_AppPath::self()->RWDataFolder().absoluteFilePath("codeeditor/buildIno");
-    
+
     /*QString elfFileName = buildPath+"/"+ m_fileName + ".ino.elf";
     QProcess flashToLine( 0l );
     for( int i=0; i<10000; i++ )
     {
         QString addr = val2hex( i );
-        QString command  = m_compilerPath+"hardware/tools/avr/bin/avr-addr2line -e "+ elfFileName+" "+addr;
-        flashToLine.start( command );
+        QString command  = m_compilerPath+"hardware/tools/avr/bin/avr-addr2line
+    -e "+ elfFileName+" "+addr; flashToLine.startCommand( command );
         flashToLine.waitForFinished(-1);
-        
+
         QString p_stdout = flashToLine.readAllStandardOutput();
         if( p_stdout.contains(".ino") ) qDebug() << p_stdout;
     }*/
-    
+
     QString lstFileName = buildPath+"/"+ m_fileName + ".ino.lst";
     QStringList lstLines = fileToStringList( lstFileName, "InoDebugger::mapInoToFlash" );
 

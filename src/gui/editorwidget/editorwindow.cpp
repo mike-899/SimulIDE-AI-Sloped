@@ -172,7 +172,7 @@ bool EditorWindow::saveFile(const QString &fileName)
         return false;
     }
     QTextStream out(&file);
-    out.setCodec("UTF-8");
+    out.setEncoding(QStringConverter::Utf8);
     QApplication::setOverrideCursor(Qt::WaitCursor);
     CodeEditor *ce = getCodeEditor();
     out << ce->toPlainText();

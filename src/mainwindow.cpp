@@ -39,15 +39,16 @@
 
 #include <QGraphicsDropShadowEffect>
 #include <QMenuBar>
+#include <QScreen>
 
 MainWindow *MainWindow::m_pSelf = 0l;
 
 MainWindow::MainWindow() :
-    QMainWindow(),
-    m_settings(QStandardPaths::standardLocations(QStandardPaths::DataLocation)
-                       .first() +
-                   "/simulide.ini",
-               QSettings::IniFormat, this)
+    QMainWindow(), m_settings(QStandardPaths::standardLocations(
+                                  QStandardPaths::AppLocalDataLocation)
+                                      .first() +
+                                  "/simulide.ini",
+                              QSettings::IniFormat, this)
 {
     setWindowIcon(QIcon(":/simulide.png"));
     m_pSelf   = this;
@@ -72,7 +73,7 @@ MainWindow::MainWindow() :
         if (m_fontScale == 0)
             m_fontScale = 1;
     } else {
-        double dpiX = qApp->desktop()->logicalDpiX();
+        double dpiX = qApp->primaryScreen()->logicalDotsPerInchX();
         m_fontScale = dpiX / 96.0;
     }
     // qDebug()<<dpiX;
@@ -929,7 +930,7 @@ void MainWindow::loadCircHelp()
         if (file.open(QFile::ReadOnly | QFile::Text)) // Get Text from Help File
         {
             QTextStream s1(&file);
-            s1.setCodec("UTF-8");
+            s1.setEncoding(QStringConverter::Utf8);
 
             m_circHelp = "";
             m_circHelp.append(s1.readAll());

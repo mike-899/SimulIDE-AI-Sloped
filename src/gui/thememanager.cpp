@@ -337,7 +337,7 @@ class MaterialIconEngine : public QIconEngine
         return QSize(side, side);
     }
 
-    QList<QSize> availableSizes(QIcon::Mode, QIcon::State) const override
+    QList<QSize> availableSizes(QIcon::Mode, QIcon::State) override
     {
         return { QSize(16, 16), QSize(18, 18), QSize(20, 20),
                  QSize(24, 24), QSize(32, 32), QSize(48, 48) };
