@@ -79,7 +79,11 @@ AudioOut::AudioOut( QObject* parent, QString type, QString id )
     int sampleRate    = 40000; // samples/S
 
     m_dataBuffer = 0l; // Fix: deleted in destructor even without audio device
-    m_deviceinfo = QAudioDeviceInfo::defaultOutputDevice(); 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    m_deviceinfo = QMediaDevices::defaultAudioOutput();
+#else
+    m_deviceinfo = QAudioDeviceInfo::defaultOutputDevice();
+#endif
     if( m_deviceinfo.isNull() ) 
     {
         qDebug() <<"No defaulf Audio Output Device Found" ;
@@ -87,6 +91,17 @@ AudioOut::AudioOut( QObject* parent, QString type, QString id )
     }
     m_format.setSampleRate( sampleRate );  
     m_format.setChannelCount(1);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    m_format.setSampleFormat(QAudioFormat::UInt8);
+
+    if (!m_deviceinfo.isFormatSupported(m_format)) {
+        qDebug() << "Default format not supported - trying to use preferred";
+        m_format = m_deviceinfo.preferredFormat();
+
+        qDebug() << m_format.sampleRate() << m_format.channelCount()
+                 << m_format.bytesPerSample() * 8;
+    }
+#else
     m_format.setSampleSize(8);
     m_format.setCodec( "audio/pcm" );  
     m_format.setByteOrder( QAudioFormat::LittleEndian );  
@@ -98,9 +113,10 @@ AudioOut::AudioOut( QObject* parent, QString type, QString id )
         m_format = m_deviceinfo.nearestFormat( m_format );  
         
         qDebug() << m_format.sampleRate() << m_format.channelCount()<<m_format.sampleSize();
-    }  
-    m_audioOutput = new QAudioOutput( m_deviceinfo, m_format );   
-    
+    }
+#endif
+    m_audioOutput = new AudioOutputDev(m_deviceinfo, m_format);
+
     m_dataSize = 2*refreshPeriod*sampleRate/1000;
     
     m_dataBuffer = new char[ m_dataSize ];

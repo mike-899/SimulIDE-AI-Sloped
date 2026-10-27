@@ -22,9 +22,11 @@ RELEASE = "-SR5-CE"
 
 TEMPLATE = app
 
+lessThan(QT_MAJOR_VERSION, 6): error("SimulIDE requires Qt 6 (use qmake6)")
+
 TARGET = simulide
 
-QT += core gui multimedia widgets serialport concurrent script xml svg network
+QT += core gui multimedia widgets serialport concurrent qml xml svg network
 
 win32-g++{
     OS = Windows
@@ -74,7 +76,7 @@ QMAKE_LIBS += -lelf
 CONFIG += qt 
 CONFIG += warn_on
 CONFIG += no_qml_debug
-CONFIG *= c++11
+CONFIG *= c++17
 
 
 DEFINES += MAINMODULE_EXPORT=
@@ -97,7 +99,8 @@ MOC_DIR     *= $$OUT_PWD/build
 INCLUDEPATH += $$MOC_DIR
 
 LRELEASE = lrelease
-exists($$[QT_INSTALL_BINS]/lrelease-qt5*): LRELEASE = $$[QT_INSTALL_BINS]/lrelease-qt5
+exists($$[QT_INSTALL_BINS]/lrelease-qt6*): LRELEASE = $$[QT_INSTALL_BINS]/lrelease-qt6
+else: exists($$[QT_INSTALL_BINS]/lrelease-qt5*): LRELEASE = $$[QT_INSTALL_BINS]/lrelease-qt5
 else: exists($$[QT_INSTALL_BINS]/lrelease*): LRELEASE = $$[QT_INSTALL_BINS]/lrelease
 
 runLrelease.commands = $$LRELEASE $$PWD/resources/translations/simulide.ts \

@@ -164,16 +164,15 @@ void Property::setValue(int value)
     setValue(QVariant(value));
 }
 
-
 /*SpinBox::SpinBox( QWidget *parent )
        : QSpinBox( parent )
 {
 }
-    
+
 int SpinBox::valueFromText( const QString &text ) const
 {
     qDebug()<<"SpinBox::valueFromText" << text;
-    QScriptEngine engine;
+    QJSEngine engine;
     int value = engine.evaluate( text ).toNumber();
     //m_sEngine.evaluate( text ).toNumber();
     return value;

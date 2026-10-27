@@ -47,17 +47,24 @@ void eFunction::setVChanged()
     //qDebug() <<"\n" << m_functions;
     
     for( int i=0; i<m_numInputs; i++ )
-        m_engine.globalObject().setProperty( "i"+QString::number(i), QScriptValue( eLogicDevice::getInputState( i )) );
+        m_engine.globalObject().setProperty(
+            "i" + QString::number(i), QJSValue(eLogicDevice::getInputState(i)));
 
     for( int i=0; i<m_numOutputs; i++ )
-        m_engine.globalObject().setProperty( "o"+QString::number(i), QScriptValue( eLogicDevice::getOutputState( i )) );
-        
+        m_engine.globalObject().setProperty(
+            "o" + QString::number(i),
+            QJSValue(eLogicDevice::getOutputState(i)));
+
     for( int i=0; i<m_numInputs; i++ )
-        m_engine.globalObject().setProperty( "vi"+QString::number(i), QScriptValue( m_input[i]->getEpin()->getVolt()) );
+        m_engine.globalObject().setProperty(
+            "vi" + QString::number(i),
+            QJSValue(m_input[i]->getEpin()->getVolt()));
 
     for( int i=0; i<m_numOutputs; i++ )
-        m_engine.globalObject().setProperty( "vo"+QString::number(i), QScriptValue( m_output[i]->getEpin()->getVolt()) );
-        
+        m_engine.globalObject().setProperty(
+            "vo" + QString::number(i),
+            QJSValue(m_output[i]->getEpin()->getVolt()));
+
     for( int i=0; i<m_numOutputs; i++ )
     {
         if( i >= m_numOutputs ) break;
