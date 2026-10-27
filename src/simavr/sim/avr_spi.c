@@ -143,7 +143,7 @@ static void avr_spi_write( struct avr_t* avr, avr_io_addr_t addr, uint8_t v, voi
 
             if( avr_regbit_get( avr, p->mstr ))
             {
-				int clock_divider_ix = (avr_regbit_get(avr, p->spr[0]) | avr_regbit_get(avr, p->spr[1]));
+				int clock_divider_ix = avr_regbit_get(avr, p->spr[0]) | (avr_regbit_get(avr, p->spr[1]) << 1);
 				int clock_divider = 1;
                 switch( clock_divider_ix )
                 {
