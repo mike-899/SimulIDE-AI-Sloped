@@ -7,6 +7,8 @@ Contenido:
 - `packaging/linux/simulide.desktop`: lanzador de escritorio (AppImage y Arch).
 - `packaging/arch/PKGBUILD` y `.SRCINFO`: paquete `simulide-ai-sloped-git` para Arch Linux.
 
+Todo se compila con **Qt 6** (`qmake6`): Ubuntu 24.04 con los paquetes `qt6-*-dev`, MSYS2 con `mingw-w64-x86_64-qt6-*` (y `windeployqt6`) y Arch con `qt6-base qt6-multimedia qt6-serialport qt6-svg qt6-declarative`.
+
 ## Windows: obtener el instalador
 
 ### Desde GitHub Actions (cualquier commit)

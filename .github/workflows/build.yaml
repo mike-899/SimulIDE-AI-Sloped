@@ -25,8 +25,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            build-essential qtbase5-dev qtbase5-dev-tools qttools5-dev-tools \
-            qtmultimedia5-dev libqt5serialport5-dev libqt5svg5-dev qtscript5-dev \
+            build-essential qt6-base-dev qt6-base-dev-tools qt6-tools-dev \
+            qt6-tools-dev-tools qt6-l10n-tools qt6-multimedia-dev \
+            qt6-serialport-dev qt6-svg-dev qt6-declarative-dev \
+            qt6-declarative-dev-tools qt6-qpa-plugins \
             libelf-dev libgl-dev libx11-dev libxkbcommon-x11-dev libpulse-dev \
             libfuse2t64 file desktop-file-utils
 
@@ -41,7 +43,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          qmake ..
+          qmake6 ..
           make -j"$(nproc)"
 
       - name: Locate build output
@@ -54,7 +56,7 @@ jobs:
         env:
           APPIMAGE_EXTRACT_AND_RUN: '1'
           NO_STRIP: '1'
-          QMAKE: /usr/lib/qt5/bin/qmake
+          QMAKE: /usr/lib/qt6/bin/qmake6
           EXTRA_QT_PLUGINS: svg;multimedia
         run: |
           set -e
@@ -106,12 +108,12 @@ jobs:
             make
             zip
             mingw-w64-x86_64-toolchain
-            mingw-w64-x86_64-qt5-base
-            mingw-w64-x86_64-qt5-multimedia
-            mingw-w64-x86_64-qt5-serialport
-            mingw-w64-x86_64-qt5-svg
-            mingw-w64-x86_64-qt5-script
-            mingw-w64-x86_64-qt5-tools
+            mingw-w64-x86_64-qt6-base
+            mingw-w64-x86_64-qt6-multimedia
+            mingw-w64-x86_64-qt6-serialport
+            mingw-w64-x86_64-qt6-svg
+            mingw-w64-x86_64-qt6-declarative
+            mingw-w64-x86_64-qt6-tools
             mingw-w64-x86_64-libelf
             mingw-w64-x86_64-nsis
 
@@ -125,8 +127,7 @@ jobs:
 
       - name: Build
         run: |
-          export PATH="/mingw64/qt5/bin:$PATH"
-          QMAKE=$(command -v qmake-qt5 || command -v qmake)
+          QMAKE=$(command -v qmake6 || command -v qmake-qt6 || command -v qmake)
           echo "Using $QMAKE"
           mkdir build
           cd build
@@ -136,7 +137,6 @@ jobs:
       - name: Assemble distribution
         run: |
           set -e
-          export PATH="/mingw64/qt5/bin:$PATH"
           OUT=$(ls -d build/release/SimulIDE_*/ | head -n1)
           OUT=${OUT%/}
           rm -rf dist-root && mkdir -p dist-root/SimulIDE dist
@@ -144,11 +144,11 @@ jobs:
           cp -a "$OUT/share" dist-root/SimulIDE/share
           cp LICENSE dist-root/SimulIDE/
           cd dist-root/SimulIDE
-          WDQ=$(command -v windeployqt-qt5 || command -v windeployqt)
-          # MSYS2's Qt5 is built without ANGLE, so windeployqt exits 1 on the
-          # missing libGLESv2.dll after deploying everything else; the ldd
-          # loop below copies any DLL it still misses.
-          "$WDQ" --release --no-translations --no-opengl-sw --no-angle \
+          WDQ=$(command -v windeployqt6 || command -v windeployqt-qt6 || command -v windeployqt)
+          # windeployqt may exit non-zero on optional pieces it cannot find
+          # after deploying everything else; the ldd loop below copies any
+          # DLL it still misses.
+          "$WDQ" --release --no-translations --no-opengl-sw \
             bin/simulide.exe || echo "windeployqt exited $?, continuing"
           # Copy remaining MinGW runtime DLLs (a DLL can pull in more DLLs)
           for pass in 1 2 3; do

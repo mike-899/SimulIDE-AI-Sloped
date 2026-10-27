@@ -7,8 +7,8 @@ pkgdesc='SimulIDE electronic circuit simulator fork (AI/MCP integration, themes,
 arch=('x86_64')
 url='https://github.com/mike-899/SimulIDE-AI-Sloped'
 license=('GPL3')
-depends=('qt5-base' 'qt5-multimedia' 'qt5-serialport' 'qt5-svg' 'qt5-script' 'libelf')
-makedepends=('git' 'qt5-tools')
+depends=('qt6-base' 'qt6-multimedia' 'qt6-serialport' 'qt6-svg' 'qt6-declarative' 'libelf')
+makedepends=('git' 'qt6-tools')
 provides=('simulide')
 conflicts=('simulide')
 source=("git+${url}.git")
@@ -32,7 +32,7 @@ build() {
   rm -rf build
   mkdir build
   cd build
-  qmake-qt5 ..
+  qmake6 ..
   make
 }
 
