@@ -16,6 +16,7 @@
 #include <QFile>
 #include <QHash>
 #include <QPainter>
+#include <QPainterPath>
 #include <QPixmap>
 #include <QRegularExpression>
 #include <QSettings>
@@ -26,7 +27,8 @@ static QHash<QString, QSvgRenderer *> s_renderers;
 static int s_enabled = -1; // -1 = not read from settings yet
 
 static void add(const QString &type, const QString &res, QRectF rect,
-                int rot = 0, QList<QLineF> leads = QList<QLineF>())
+                int rot = 0, QList<QLineF> leads = QList<QLineF>(),
+                QList<PartArtWarp> warps = QList<PartArtWarp>())
 {
     PartArtInfo info;
     info.res     = ":/parts/" + res;
@@ -34,8 +36,21 @@ static void add(const QString &type, const QString &res, QRectF rect,
     info.rot     = rot;
     info.leads   = leads;
     info.canvas  = true;
+    info.warps   = warps;
+    info.leadW   = 1.6;
     info.noLegs  = false;
     s_arts[type] = info;
+}
+
+// Arduino boards (Fritzing art). The art is rotated and scaled (pitch 7.2 ->
+// 8 px) so the header holes sit on the package pins. Where the real board has a
+// different hole layout than the SimulIDE package a header strip is moved.
+static void addBoard(const QString &name, const QString &res, QRectF rect,
+                     QList<QLineF> leads, QList<PartArtWarp> warps,
+                     int rot = 270)
+{
+    add("board:" + name, res, rect, rot, leads, warps);
+    s_arts["board:" + name].canvas = false;
 }
 
 void PartArt::init()
@@ -46,20 +61,22 @@ void PartArt::init()
     // Two terminal parts, pins at x=+-16 (inner end at +-8)
     add("Resistor", "mit/resistor.svg", QRectF(-16, -4, 32, 8));
     add("Diode", "fritzing/diode.svg", QRectF(-16, -5, 32, 10));
-    add("Led", "mit/led_red.svg", QRectF(-6.6, -26, 13.2, 26), 0,
-        { QLineF(-8, 0, -2.6, 0), QLineF(8, 0, 3.3, 0) });
+    // Dome only: the legs are drawn as straight leads from the pins
+    add("Led", "mit/led_red.svg", QRectF(-6.6, -26.4, 13.2, 20.76), 0,
+        { QLineF(-8, 0, -2.8, -8), QLineF(8, 0, 2.8, -8) });
 
     // Capacitors / inductor, pins at x=+-24 (inner end at +-16)
     add("Capacitor", "fritzing/capacitor.svg", QRectF(-5.3, -26, 10.6, 26), 0,
-        { QLineF(-16, 0, -2.6, 0), QLineF(16, 0, 2.3, 0) });
+        { QLineF(-16, 0, -2.6, -5), QLineF(16, 0, 2.3, -5) });
     add("elCapacitor", "fritzing/elcapacitor.svg", QRectF(-4.65, -30, 9.3, 30),
-        0, { QLineF(-16, 0, -1.4, 0), QLineF(16, 0, 1.1, 0) });
+        0, { QLineF(-16, 0, -1.4, -5), QLineF(16, 0, 1.1, -5) });
     add("Inductor", "fritzing/inductor.svg", QRectF(-24, -7, 48, 14));
 
     // Switches, pins at (+-16,0)
-    add("Push", "mit/push_button.svg", QRectF(-16, -14.6, 32, 21.55));
+    // Body only; the pins end on its sides (the click button covers it)
+    add("Push", "mit/push_button.svg", QRectF(-8, -8, 16, 16));
     add("Switch", "mit/switch.svg", QRectF(-8.3, -17, 16.6, 18), 0,
-        { QLineF(-8, 0, -3.8, 0), QLineF(8, 0, 3.8, 0) });
+        { QLineF(-8, 0, -3.8, -4), QLineF(8, 0, 3.8, -4) });
 
     // Potentiometer: pins A(-16,0) M(0,16) B(16,0)
     add("Potentiometer", "mit/potentiometer.svg", QRectF(-10, -6, 20, 20), 0,
@@ -71,22 +88,71 @@ void PartArt::init()
 
     // Active (TO-92 / TO-220 upright), pins B/G(-16,0) C/D(8,-16) E/S(8,16)
     add("BJT", "fritzing/bjt.svg", QRectF(-7, -22, 12.3, 24), 0,
-        { QLineF(-8, 0, -5.2, 0), QLineF(8, -8, 8, 1), QLineF(8, 1, 3.45, 1),
-          QLineF(8, 8, -0.85, 8), QLineF(-0.85, 8, -0.85, 1.5) });
+        { QLineF(-8, 0, -5.2, 0), QLineF(8, -8, 3.45, 1),
+          QLineF(8, 8, -0.85, 1.5) });
     add("Mosfet", "fritzing/mosfet.svg", QRectF(-6, -22, 12.1, 24), 0,
-        { QLineF(-8, 0, -2.4, 0), QLineF(8, -8, 8, 1), QLineF(8, 1, 2.5, 1),
-          QLineF(8, 8, 0.05, 8), QLineF(0.05, 8, 0.05, 1.5) });
+        { QLineF(-8, 0, -2.4, 0), QLineF(8, -8, 2.5, 1),
+          QLineF(8, 8, 0.05, 1.5) });
 
     // Parts fitted into their own m_area (null rect) or painting themselves
     add("AudioOut", "mit/buzzer.svg", QRectF());
-    add("Servo", "mit/servo.svg", QRectF());
+    add("Servo", "fritzing/servo.svg", QRectF(-40, -18, 93.6, 36));
     add("RelaySPST", "fritzing/relay.svg", QRectF());
     add("WS2812", "mit/ws2812.svg", QRectF());
 
+    // Arduino boards
+    {
+        const QColor pcb(0x0f, 0x73, 0x91);
+        const QPointF d8(-2.88, 0); // Digital 8..13 header: 0.16" gap
+        const QList<PartArtWarp> unoWarps = {
+            { QRectF(67.0, 3.0, 74.6, 8.5), d8, pcb },
+            { QRectF(84.0, 11.5, 57.6, 13.0), d8, pcb }
+        };
+        addBoard("arduino_uno", "fritzing/arduino_uno.svg",
+                 QRectF(-4, 0, 168, 235.969), QList<QLineF>(), unoWarps);
+        addBoard("arduino_duemilanove", "fritzing/arduino_uno.svg",
+                 QRectF(-4, 0, 168, 235.969), QList<QLineF>(), unoWarps);
+        addBoard("arduino_leonardo", "fritzing/arduino_leonardo.svg",
+                 QRectF(-4, 0, 168, 221.68), QList<QLineF>(),
+                 { { QRectF(54.0, 3.0, 74.4, 8.5), d8, pcb },
+                   { QRectF(55.0, 11.5, 73.4, 13.0), d8, pcb } });
+
+        // Mega: the analog and power headers sit one pitch off the package
+        const QPointF one(-7.2, 0);
+        addBoard("arduino_mega", "fritzing/arduino_mega.svg",
+                 QRectF(-4, 0, 168, 339.97), QList<QLineF>(),
+                 { { QRectF(67.0, 3.0, 74.5, 8.5), d8, pcb },
+                   { QRectF(83.9, 11.5, 57.6, 16.3), d8, pcb },
+                   { QRectF(108.0, 121.0, 45.0, 28.5), one, pcb },
+                   { QRectF(157.5, 133.9, 60.5, 15.6), one, pcb },
+                   { QRectF(221.5, 133.9, 59.5, 15.6), one, pcb } });
+
+        // Nano: pin ends are 8 px from the holes
+        QList<QLineF> nano;
+        for (int pos = 2; pos <= 16; pos++) {
+            nano << QLineF(0, 8 * pos, 8, 8 * pos);
+            nano << QLineF(64, 8 * pos, 56, 8 * pos);
+        }
+        addBoard("arduino_nano", "fritzing/arduino_nano.svg",
+                 QRectF(4, 4, 56, 141.76), nano, {}, 0);
+    }
+
     // Motors / drivers (pins line up with the art edges)
-    add("DcMotor", "mit/dcmotor.svg", QRectF(-32, -20, 72, 40));
+    add("DcMotor", "fritzing/dcmotor.svg",
+        QRectF(-34.72, -14.615, 61.42, 29.59));
     add("L298N", "mit/l298n.svg", QRectF(-48, -48, 96, 96));
-    add("L293D", "mit/l293d.svg", QRectF(-20, -36, 40, 72));
+    {
+        // DIP-16 turned 90 degrees: legs (pitch 8 px) end 7 px short of the
+        // pins
+        QList<QLineF> legs;
+        for (int i = 0; i < 8; i++) {
+            double y = -28 + 8 * i;
+            legs << QLineF(-20, y, -12, y) << QLineF(20, y, 12, y);
+        }
+        add("L293D", "fritzing/l293d.svg", QRectF(-13.2, -32, 26.4, 64), 90,
+            legs);
+        s_arts["L293D"].leadW = 2.4;
+    }
 
     // ---- Modules, sensors, power parts and named presets ------------------
     // (original art generated by resources/parts/tools/modules.py; to use
@@ -146,23 +212,24 @@ void PartArt::init()
     mod("Lm317", "lm317", QRectF(-10, -24, 20, 26), false, regLeads);
 
     // Icon-only art (component keeps its own drawing on canvas)
-    add("Seven Segment", "mit/sevensegment.svg", QRectF());
-    add("KeyPad", "mit/keypad_4x3.svg", QRectF());
+    add("Seven Segment", "fritzing/sevensegment.svg", QRectF());
+    add("KeyPad", "fritzing/keypad.svg", QRectF());
     add("LedBar", "fritzing/ledbar.svg", QRectF());
-    add("Hd44780", "mit/hd44780.svg", QRectF());
+    add("Hd44780", "fritzing/hd44780.svg", QRectF());
     add("Lm555", "fritzing/lm555.svg", QRectF());
     add("VoltReg", "fritzing/voltreg.svg", QRectF());
     add("Pcd8544", "mit/pcd8544.svg", QRectF());
     add("Frequencimeter", "mit/frequencimeter.svg", QRectF());
     add("Current Source", "mit/currsource.svg", QRectF());
     add("SwitchDip", "mit/switchdip.svg", QRectF());
-    add("Memory", "mit/memory.svg", QRectF());
+    add("Memory", "fritzing/memory.svg", QRectF());
+    add("Ks0108", "fritzing/glcd_128x64.svg", QRectF());
     add("Voltage Source", "mit/psu.svg", QRectF());
 
     for (const QString &t :
          { "Seven Segment", "KeyPad", "LedBar", "Hd44780", "Lm555", "VoltReg",
            "Pcd8544", "Frequencimeter", "Current Source", "SwitchDip", "Memory",
-           "Voltage Source" })
+           "Ks0108", "Voltage Source" })
         s_arts[t].canvas = false;
 }
 
@@ -270,7 +337,7 @@ QRectF PartArt::artRect(const QString &type)
 }
 
 QRectF PartArt::paintRes(QPainter *p, const QString &res, const QRectF &rect,
-                         int rot)
+                         int rot, const QList<PartArtWarp> &warps)
 {
     QSvgRenderer *r = renderer(res);
     if (!r)
@@ -281,13 +348,44 @@ QRectF PartArt::paintRes(QPainter *p, const QString &res, const QRectF &rect,
     if (rot) {
         p->translate(fr.center());
         p->rotate(rot);
-        QSizeF s = fr.size();
-        if ((rot / 90) % 2)
-            s.transpose();
-        r->render(
-            p, QRectF(-s.width() / 2, -s.height() / 2, s.width(), s.height()));
-    } else
-        r->render(p, fr);
+    }
+    QSizeF s = fr.size();
+    if ((rot / 90) % 2)
+        s.transpose();
+    QRectF box =
+        rot ? QRectF(-s.width() / 2, -s.height() / 2, s.width(), s.height())
+            : fr;
+
+    if (warps.isEmpty())
+        r->render(p, box);
+    else {
+        // Work in art (viewBox) units, draw the art without the moved regions,
+        // then draw those regions again at their new place
+        QRectF vb = r->viewBoxF();
+        double sc = box.width() / vb.width();
+        p->translate(box.center());
+        p->scale(sc, sc);
+        p->translate(-vb.center());
+
+        QPainterPath keep;
+        keep.addRect(vb);
+        QPainterPath moved;
+        for (const PartArtWarp &w : warps) {
+            moved.addRect(w.src);
+            moved.addRect(w.src.translated(w.shift));
+        }
+        p->setClipPath(keep.subtracted(moved));
+        r->render(p, vb);
+        for (const PartArtWarp &w : warps) {
+            p->setClipRect(w.src);
+            p->fillRect(w.src, w.fill);
+            p->setClipRect(w.src.translated(w.shift));
+            p->save();
+            p->translate(w.shift);
+            r->render(p, vb);
+            p->restore();
+        }
+    }
     p->restore();
     return fr;
 }
@@ -300,13 +398,14 @@ QRectF PartArt::paint(QPainter *p, const QString &type, const QString &res)
 
     if (!inf->leads.isEmpty()) {
         p->save();
-        p->setPen(
-            QPen(QColor(150, 150, 150), 1.6, Qt::SolidLine, Qt::RoundCap));
+        p->setPen(QPen(QColor(150, 150, 150), inf->leadW, Qt::SolidLine,
+                       Qt::FlatCap));
         for (const QLineF &l : inf->leads)
             p->drawLine(l);
         p->restore();
     }
-    return paintRes(p, res.isEmpty() ? inf->res : res, inf->rect, inf->rot);
+    return paintRes(p, res.isEmpty() ? inf->res : res, inf->rect, inf->rot,
+                    inf->warps);
 }
 
 QIcon PartArt::icon(const QString &type)
@@ -441,6 +540,20 @@ QIcon PartArt::cardIcon(const QString &type, const QString &name,
 {
     if (hasIcon(type))
         return icon(type); // Realistic art
+
+    if (type == "Arduino") // One card per board
+    {
+        static const QHash<QString, QString> boards = {
+            { "Arduino Uno", "board:arduino_uno" },
+            { "Arduino Mega", "board:arduino_mega" },
+            { "Arduino Nano", "board:arduino_nano" },
+            { "Arduino Leonardo", "board:arduino_leonardo" },
+            { "Duemilanove (m168)", "board:arduino_duemilanove" }
+        };
+        QString key = boards.value(name);
+        if (hasIcon(key))
+            return icon(key);
+    }
 
     if (!iconFile.isEmpty() && QFile::exists(iconFile)) {
         QIcon ic(iconFile);

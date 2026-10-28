@@ -194,25 +194,31 @@ void Servo::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget 
 {
     Component::paint( p, option, widget );
 
-    if (artActive()) // Realistic part art
+    if (paintArt(p)) // Realistic part art (Dagu 9g servo, body only)
     {
-        QRectF body(-(m_width / 2) * 8 - 8, -(m_height / 2) * 8,
-                    m_width * 8 + 8, m_height * 8);
+        QRectF ar = PartArt::artRect(m_type);
+        double k  = ar.width() / 117.0; // art units -> px
         p->save();
         p->setRenderHint(QPainter::Antialiasing);
-        QRectF fr = PartArt::paintRes(p, ":/parts/mit/servo.svg", body);
-        double s  = fr.width() / 170.08; // svg viewBox width
-        QPointF hub(fr.x() + 91.467 * s, fr.y() + 59.773 * s);
+
+        // Wires from the pins into the body: V+ red, Gnd brown, Sig orange
+        static const QColor wire[3] = { QColor(204, 20, 20), QColor(140, 59, 0),
+                                        QColor(239, 97, 0) };
+        for (int i = 0; i < 3; i++) {
+            p->setPen(QPen(wire[i], 2.4, Qt::SolidLine, Qt::FlatCap));
+            p->drawLine(QPointF(-48, -16 + 16 * i),
+                        QPointF(ar.x(), -16 + 16 * i));
+        }
+        // Horn on the output gear, turning with the servo position
+        QPointF hub(ar.x() + 40 * k, ar.y() + 21.8 * k);
+        const double hk = 0.36; // horn art units -> px
         p->translate(hub);
         p->rotate(m_pos);
         p->translate(-hub);
-        PartArt::paintRes(p, ":/parts/mit/servo_horn.svg", body);
+        PartArt::paintRes(p, ":/parts/mit/servo_horn.svg",
+                          QRectF(hub.x() - 91.467 * hk, hub.y() - 59.773 * hk,
+                                 170.08 * hk, 119.55 * hk));
         p->restore();
-        if (isSelected()) {
-            p->setPen(QPen(QColor(60, 130, 230), 1, Qt::DashLine));
-            p->setBrush(QColor(60, 130, 230, 50));
-            p->drawRoundedRect(fr, 2, 2);
-        }
         return;
     }
     //p->drawPath( shape() );

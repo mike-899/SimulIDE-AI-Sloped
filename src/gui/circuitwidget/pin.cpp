@@ -18,11 +18,12 @@
  ***************************************************************************/
 
 #include "pin.h"
-#include "bus.h"
-#include "node.h"
-#include "connector.h"
-#include "circuit.h"
 
+#include "bus.h"
+#include "circuit.h"
+#include "connector.h"
+#include "netlabel.h"
+#include "node.h"
 
 Pin::Pin( int angle, const QPoint &pos, QString id, int index, Component* parent )
    : QObject()
@@ -124,6 +125,8 @@ void Pin::registerPins( eNode* enode )     // Called by connector closing or oth
     {
         Bus* bus = dynamic_cast<Bus*>(m_component);
         bus->registerPins( enode );
+    } else if (NetLabel *label = dynamic_cast<NetLabel *>(m_component)) {
+        label->registerPins(enode); // Join same-name labels
     }
     m_blocked = false;
 }

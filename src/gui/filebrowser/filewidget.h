@@ -45,9 +45,10 @@ class MAINMODULE_EXPORT FileWidget : public QWidget
 
     protected:
         void contextMenuEvent( QContextMenuEvent* event );
+        void showEvent(QShowEvent *event) override;
 
-    private:
- static FileWidget* m_pSelf;
+      private:
+        static FileWidget *m_pSelf;
 
         void resizeToItems();
         void addEntry( QString name, QString path );

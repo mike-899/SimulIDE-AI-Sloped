@@ -181,10 +181,21 @@ void FileWidget::pathChanged()
     FileBrowser::self()->setPath( path );
 }
 
+void FileWidget::showEvent(QShowEvent *event)
+{
+    QWidget::showEvent(event);
+    resizeToItems(); // Row height is only known once styled
+}
+
 void FileWidget::resizeToItems()
 {
-    int size = m_bookmarks->count()*22+17;
+    // Row height follows the (styled) delegate
+    int rowH = m_bookmarks->count() > 0 ? m_bookmarks->sizeHintForRow(0) : 22;
+    if (rowH < 22)
+        rowH = 22;
+    int size = m_bookmarks->count() * rowH + 2 * m_bookmarks->frameWidth() + 6;
     m_bookmarks->setFixedHeight( size );
+    m_bookmarks->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 }
 
 void FileWidget::contextMenuEvent( QContextMenuEvent* event )

@@ -26,7 +26,7 @@ lessThan(QT_MAJOR_VERSION, 6): error("SimulIDE requires Qt 6 (use qmake6)")
 
 TARGET = simulide
 
-QT += core gui multimedia widgets serialport concurrent qml xml svg network
+QT += core gui multimedia widgets serialport concurrent qml quick quickwidgets xml svg network
 
 win32-g++{
     OS = Windows
@@ -52,6 +52,15 @@ include(./SimulIDE.pri)
 INCLUDEPATH += ./src/mcp
 HEADERS += ./src/mcp/mcpserver.h ./src/mcp/mcptools.h
 SOURCES += ./src/mcp/mcpserver.cpp ./src/mcp/mcptools.cpp
+
+# QML (Qt Quick) application shell, see docs/QML_UI.md
+INCLUDEPATH += ./src/gui/qml
+HEADERS += ./src/gui/qml/qmlui.h ./src/gui/qml/themetokens.h \
+    ./src/gui/qml/componentmodel.h ./src/gui/qml/qmlcontrollers.h \
+    ./src/gui/qml/inspector.h
+SOURCES += ./src/gui/qml/qmlui.cpp ./src/gui/qml/themetokens.cpp \
+    ./src/gui/qml/componentmodel.cpp ./src/gui/qml/qmlcontrollers.cpp \
+    ./src/gui/qml/inspector.cpp
 
 QMAKE_CXXFLAGS += -Wno-unused-parameter
 QMAKE_CXXFLAGS += -Wno-missing-field-initializers
@@ -119,6 +128,7 @@ RESOURCES += ./resources/themes/themes.qrc
 RESOURCES += ./resources/fonts/fonts.qrc
 RESOURCES += ./resources/parts/parts.qrc
 RESOURCES += ./resources/parts/modules.qrc
+RESOURCES += ./src/qml/qml.qrc
 HEADERS += ./src/gui/thememanager.h
 HEADERS += ./src/gui/circuitwidget/partart.h
 SOURCES += ./src/gui/circuitwidget/partart.cpp

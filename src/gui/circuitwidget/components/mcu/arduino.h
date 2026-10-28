@@ -41,6 +41,7 @@ class Arduino : public AvrCompBase
  
         void attach();
 
+        QRectF boundingRect() const;
         void paint( QPainter* p, const QStyleOptionGraphicsItem* option, QWidget* widget );
         
     public slots:

@@ -116,6 +116,7 @@ class MAINMODULE_EXPORT CircuitWidget : public QWidget
       signals:
         void dataAvailable( int uart, const QByteArray &data );
         void simStateChanged(const QString &state);
+        void rateChanged(int rate); // Real speed %, < 0 on error
 
       private:
         static CircuitWidget *m_pSelf;

@@ -188,7 +188,9 @@ void DcMotor::paint(QPainter *p, const QStyleOptionGraphicsItem *option,
     Component::paint(p, option, widget);
 
     QPointF hub(20, 0);
-    if (!paintArt(p)) {
+    if (paintArt(p)) // Hub on the wheel of the gear motor art
+        hub = QPointF(14.6, 0);
+    else {
         p->setBrush(QColor(230, 190, 40));
         p->drawRoundedRect(QRectF(-4, -18, 42, 36), 3, 3);
         p->setBrush(QColor(180, 180, 185));
