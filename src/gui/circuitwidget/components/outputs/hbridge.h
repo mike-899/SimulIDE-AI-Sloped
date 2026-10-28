@@ -23,6 +23,9 @@ struct HBridgeChannel {
     Pin *in;
     Pin *out;
     int en; // Index in m_enPins
+    Pin *in2;  // TB6612: second input (IN2) and PWM, null otherwise
+    Pin *pwm;
+    bool second; // TB6612: this is the OUT2 half of the bridge
     int state;
     eResistor *hi;
     eResistor *lo;
@@ -66,6 +69,7 @@ class MAINMODULE_EXPORT HBridge
     void addChannel(Pin *in, int en, Pin *out);
     eNode *gndNode();
     bool isHigh(Pin *pin, double gnd);
+    virtual int channelState(HBridgeChannel &ch, double gndV, bool power);
     void setState(HBridgeChannel &ch, int state);
 
     double m_ron;
@@ -87,6 +91,23 @@ class MAINMODULE_EXPORT L298N : public HBridge
 
     static Component *construct(QObject *parent, QString type, QString id);
     static LibraryItem *libraryItem();
+};
+
+// TB6612FNG dual driver breakout: IN1/IN2/PWM/STBY truth table
+// (IN1=IN2=H or PWM low in a drive mode: short brake, IN1=IN2=L: stop)
+class MAINMODULE_EXPORT TB6612 : public HBridge
+{
+    Q_OBJECT
+  public:
+    TB6612(QObject *parent, QString type, QString id);
+    ~TB6612();
+
+    static Component *construct(QObject *parent, QString type, QString id);
+    static LibraryItem *libraryItem();
+
+  protected:
+    virtual int channelState(HBridgeChannel &ch, double gndV, bool power);
+    Pin *m_stby;
 };
 
 class MAINMODULE_EXPORT L293D : public HBridge

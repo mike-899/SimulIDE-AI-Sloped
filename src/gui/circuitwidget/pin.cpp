@@ -359,6 +359,8 @@ void Pin::paint( QPainter* painter, const QStyleOptionGraphicsItem* option, QWid
     if( isSelected() ) pen.setColor( Qt::darkGray);
 
     painter->setPen(pen);
+    if (m_component && m_component->artNoLegs())
+        return; // Module / chip art: the pin sits on a hole or terminal
     painter->drawLine( 0, 0, m_length-1, 0);
     
     if( m_inverted )

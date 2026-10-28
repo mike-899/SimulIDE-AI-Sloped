@@ -101,6 +101,7 @@
 #include "switchdip.h"
 #include "textcomponent.h"
 #include "volt_reg.h"
+#include "moduleitems.h"
 #include "voltimeter.h"
 #include "voltsource.h"
 #include "wavegen.h"
@@ -177,6 +178,11 @@ void ItemLibrary::loadItems()
     addItem(L298N::libraryItem());
     addItem(L293D::libraryItem());
     addItem( AudioOut::libraryItem() );
+    // Sensors, power parts, modules and named presets
+    addItem(new LibraryItem(tr("Power"), tr("Sources"), "voltsource.png", "", 0l));
+    addItem(new LibraryItem(tr("Semiconductors"), tr("Active"), "bjt.png", "", 0l));
+    addItem(new LibraryItem(tr("Modules"), tr("Micro"), "subc.png", "", 0l));
+    addModuleItems(this);
     // Micro
     addItem( PICComponent::libraryItem() );
     addItem( AVRComponent::libraryItem() );

@@ -569,6 +569,11 @@ bool Component::artActive() const
     return PartArt::enabled() && PartArt::has(m_type);
 }
 
+bool Component::artNoLegs() const
+{
+    return artActive() && PartArt::noLegs(m_type);
+}
+
 bool Component::paintArt(QPainter *p)
 {
     if (!artActive())

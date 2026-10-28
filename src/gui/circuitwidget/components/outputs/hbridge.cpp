@@ -15,6 +15,8 @@
 #include "e-node.h"
 #include "simulator.h"
 
+#include <QRegularExpression>
+
 static const char *HBridge_properties[] = { QT_TRANSLATE_NOOP(
     "App::Property", "On Resistance") };
 
@@ -57,8 +59,11 @@ void HBridge::addChannel(Pin *in, int en, Pin *out)
     HBridgeChannel ch;
     ch.in    = in;
     ch.out   = out;
-    ch.en    = en;
-    ch.state = -1;
+    ch.en     = en;
+    ch.in2    = 0l;
+    ch.pwm    = 0l;
+    ch.second = false;
+    ch.state  = -1;
 
     std::string id =
         (m_id + "-ch" + QString::number(m_chan.size())).toStdString();
@@ -161,15 +166,19 @@ void HBridge::setVChanged()
     double gndV = gnd ? gnd->getVolt() : 0;
     bool power  = m_vsPin && m_vsPin->isConnected() && gnd;
 
-    for (HBridgeChannel &ch : m_chan) {
-        int state = stOff;
-        Pin *en   = m_enPins.value(ch.en);
-        // Unconnected EN = enabled (module jumper / TTL input floats high)
-        bool enabled = !en || !en->isConnected() || isHigh(en, gndV);
-        if (power && enabled && ch.out->isConnected())
-            state = isHigh(ch.in, gndV) ? stHigh : stLow;
-        setState(ch, state);
-    }
+    for (HBridgeChannel &ch : m_chan)
+        setState(ch, channelState(ch, gndV, power));
+}
+
+int HBridge::channelState(HBridgeChannel &ch, double gndV, bool power)
+{
+    int state = stOff;
+    Pin *en   = m_enPins.value(ch.en);
+    // Unconnected EN = enabled (module jumper / TTL input floats high)
+    bool enabled = !en || !en->isConnected() || isHigh(en, gndV);
+    if (power && enabled && ch.out->isConnected())
+        state = isHigh(ch.in, gndV) ? stHigh : stLow;
+    return state;
 }
 
 void HBridge::remove()
@@ -210,19 +219,20 @@ L298N::L298N(QObject *parent, QString type, QString id) :
     m_area = QRectF(-48, -48, 96, 96);
     m_ron  = 1.5;
 
-    Pin *out1 = addPin("OUT1", 180, QPoint(-56, -16), "OUT1");
-    Pin *out2 = addPin("OUT2", 180, QPoint(-56, 0), "OUT2");
-    Pin *out3 = addPin("OUT3", 0, QPoint(56, -16), "OUT3");
-    Pin *out4 = addPin("OUT4", 0, QPoint(56, 0), "OUT4");
-    m_vsPin   = addPin("VS", 270, QPoint(-40, 56), "12V");
-    m_gndPins.append(addPin("GND", 270, QPoint(-32, 56), "GND"));
-    addPin("5V", 270, QPoint(-24, 56), "5V");
-    m_enPins.append(addPin("ENA", 270, QPoint(0, 56), "ENA"));
-    Pin *in1 = addPin("IN1", 270, QPoint(8, 56), "IN1");
-    Pin *in2 = addPin("IN2", 270, QPoint(16, 56), "IN2");
-    Pin *in3 = addPin("IN3", 270, QPoint(24, 56), "IN3");
-    Pin *in4 = addPin("IN4", 270, QPoint(32, 56), "IN4");
-    m_enPins.append(addPin("ENB", 270, QPoint(40, 56), "ENB"));
+    // Pins sit on the screw terminals / header holes of the module art
+    Pin *out1 = addPin("OUT1", 180, QPoint(-40, -16), "OUT1");
+    Pin *out2 = addPin("OUT2", 180, QPoint(-40, 0), "OUT2");
+    Pin *out3 = addPin("OUT3", 0, QPoint(40, -16), "OUT3");
+    Pin *out4 = addPin("OUT4", 0, QPoint(40, 0), "OUT4");
+    m_vsPin   = addPin("VS", 270, QPoint(-40, 40), "12V");
+    m_gndPins.append(addPin("GND", 270, QPoint(-32, 40), "GND"));
+    addPin("5V", 270, QPoint(-24, 40), "5V");
+    m_enPins.append(addPin("ENA", 270, QPoint(0, 40), "ENA"));
+    Pin *in1 = addPin("IN1", 270, QPoint(8, 40), "IN1");
+    Pin *in2 = addPin("IN2", 270, QPoint(16, 40), "IN2");
+    Pin *in3 = addPin("IN3", 270, QPoint(24, 40), "IN3");
+    Pin *in4 = addPin("IN4", 270, QPoint(32, 40), "IN4");
+    m_enPins.append(addPin("ENB", 270, QPoint(40, 40), "ENB"));
 
     for (Pin *pin : m_pins) {
         pin->setLabelColor(QColor(250, 250, 250));
@@ -238,6 +248,79 @@ L298N::L298N(QObject *parent, QString type, QString id) :
     setShowId(true);
 }
 L298N::~L298N() {}
+
+//---------------------------------------------------------------------------
+// TB6612FNG dual motor driver breakout (2 x 8 header holes)
+
+Component *TB6612::construct(QObject *parent, QString type, QString id)
+{
+    return new TB6612(parent, type, id);
+}
+
+LibraryItem *TB6612::libraryItem()
+{
+    return new LibraryItem(tr("TB6612FNG Module"), tr("Motors"), "subc.png",
+                           "TB6612", TB6612::construct);
+}
+
+TB6612::TB6612(QObject *parent, QString type, QString id) :
+    HBridge(parent, type, id)
+{
+    m_area = QRectF(-28, -36, 56, 72);
+    m_ron  = 0.5; // 0.5 ohm total per half bridge (1.2 ohm bridge)
+
+    // Left header top to bottom, then right header
+    const char *names[16] = { "VM",  "VCC",  "GND",  "AO1",  "AO2", "BO2",
+                              "BO1", "GND2", "PWMA", "AIN2", "AIN1", "STBY",
+                              "BIN1", "BIN2", "PWMB", "GND3" };
+    Pin *pins[16];
+    for (int i = 0; i < 16; i++) {
+        QPoint pos = (i < 8) ? QPoint(-24, -28 + 8 * i)
+                             : QPoint(24, -28 + 8 * (i - 8));
+        QString label(names[i]);
+        label.remove(QRegularExpression("[23]$"));
+        if (label == "GND2" || label == "GND3")
+            label = "GND";
+        pins[i] = addPin(names[i], (i < 8) ? 180 : 0, pos, label);
+        pins[i]->setLabelColor(QColor(250, 250, 220));
+        pins[i]->setFontSize(4);
+        pins[i]->setLength(3);
+    }
+    m_vsPin = pins[0];
+    m_gndPins << pins[2] << pins[7] << pins[15];
+    m_stby = pins[11];
+
+    addChannel(pins[10], 0, pins[3]); // AIN1 -> AO1
+    addChannel(pins[10], 0, pins[4]); // AIN1/AIN2 -> AO2
+    addChannel(pins[12], 0, pins[6]); // BIN1 -> BO1
+    addChannel(pins[12], 0, pins[5]); // BO2
+    m_chan[0].in2 = m_chan[1].in2 = pins[9];
+    m_chan[0].pwm = m_chan[1].pwm = pins[8];
+    m_chan[2].in2 = m_chan[3].in2 = pins[13];
+    m_chan[2].pwm = m_chan[3].pwm = pins[14];
+    m_chan[1].second = m_chan[3].second = true;
+
+    setLabelPos(-28, -52, 0);
+    setShowId(true);
+}
+TB6612::~TB6612() {}
+
+int TB6612::channelState(HBridgeChannel &ch, double gndV, bool power)
+{
+    // STBY, PWM and unconnected inputs float low
+    auto hi = [&](Pin *pin) { return pin->isConnected() && isHigh(pin, gndV); };
+    if (!power || !ch.out->isConnected() || !hi(m_stby))
+        return stOff;
+    bool i1 = hi(ch.in), i2 = hi(ch.in2);
+    if (!i1 && !i2)
+        return stOff; // Stop (high impedance)
+    if (i1 && i2)
+        return stLow; // Short brake
+    if (!hi(ch.pwm))
+        return stLow; // PWM low: short brake
+    bool outHigh = ch.second ? i2 : i1;
+    return outHigh ? stHigh : stLow;
+}
 
 //---------------------------------------------------------------------------
 // L293D quadruple half-H driver, DIP-16
@@ -269,11 +352,13 @@ L293D::L293D(QObject *parent, QString type, QString id) :
     };
     Pin *pins[16];
     for (int i = 0; i < 16; i++) {
+        // Pins at the tips of the chip legs of the art (no protruding legs)
         QPoint pos =
-            (i < 8) ? QPoint(-28, -28 + 8 * i) : QPoint(28, 28 - 8 * (i - 8));
+            (i < 8) ? QPoint(-20, -28 + 8 * i) : QPoint(20, 28 - 8 * (i - 8));
         pins[i] = addPin(names[i], (i < 8) ? 180 : 0, pos, labels[i]);
         pins[i]->setLabelColor(QColor(250, 250, 200));
         pins[i]->setFontSize(4);
+        pins[i]->setLength(3);
     }
     m_vsPin = pins[7];
     m_gndPins << pins[3] << pins[4] << pins[11] << pins[12];

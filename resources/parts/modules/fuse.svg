@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 5x20 mm glass fuse. Original art, MIT License (SimulIDE-AI-Sloped contributors) -->
+<svg xmlns="http://www.w3.org/2000/svg" version="1.2" baseProfile="tiny" width="32" height="10" viewBox="0 0 32 10"><title>5x20 mm glass fuse</title>
+<defs>
+<linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f5f7"/><stop offset="0.5" stop-color="#b9bdc2"/><stop offset="1" stop-color="#7d8186"/></linearGradient>
+<linearGradient id="metalh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8d9196"/><stop offset="0.45" stop-color="#eceff1"/><stop offset="1" stop-color="#7a7e83"/></linearGradient>
+<linearGradient id="blk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a4a50"/><stop offset="1" stop-color="#1b1b1e"/></linearGradient>
+<linearGradient id="blkh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2a2a2d"/><stop offset="0.4" stop-color="#4b4b51"/><stop offset="1" stop-color="#1a1a1c"/></linearGradient>
+<radialGradient id="dome" cx="0.4" cy="0.35" r="0.75"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#cfd6d8"/></radialGradient>
+<radialGradient id="knob" cx="0.4" cy="0.35" r="0.8"><stop offset="0" stop-color="#6a6a70"/><stop offset="1" stop-color="#18181a"/></radialGradient>
+<linearGradient id="screw" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2f2f2"/><stop offset="1" stop-color="#8e9296"/></linearGradient>
+</defs>
+<line x1="0" y1="5" x2="32" y2="5" stroke="#9aa0a6" stroke-width="1.6" stroke-linecap="butt"/>
+<rect x="6" y="1.2" width="20" height="7.6" rx="1.5" fill="#dfeaee" stroke="#8aa0a8" stroke-width="0.5"/>
+<rect x="6" y="1.2" width="20" height="7.6" rx="1.5" fill="#ffffff" fill-opacity="0.35"/>
+<path d="M9,5 L12,3.4 L15,6.6 L18,3.4 L21,5" fill="none" stroke="#555" stroke-width="0.6"/>
+<rect x="4" y="0.8" width="5" height="8.4" rx="1" fill="url(#metalh)" stroke="#666" stroke-width="0.5"/>
+<rect x="23" y="0.8" width="5" height="8.4" rx="1" fill="url(#metalh)" stroke="#666" stroke-width="0.5"/>
+</svg>

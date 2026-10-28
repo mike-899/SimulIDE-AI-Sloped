@@ -18,6 +18,7 @@
  ***************************************************************************/
 
 #include "volt_reg.h"
+#include "partart.h"
 #include "connector.h"
 #include "simulator.h"
 #include "pin.h"
@@ -97,6 +98,9 @@ void VoltReg::setVRef( double vref )
 void VoltReg::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget )
 {
     Component::paint( p, option, widget );
+
+    if (paintArt(p)) // Realistic part art (7805 / LM317 presets)
+        return;
 
     p->drawRect( m_area );
 }

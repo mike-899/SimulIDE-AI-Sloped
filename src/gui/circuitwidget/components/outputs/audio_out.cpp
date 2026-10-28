@@ -74,6 +74,7 @@ AudioOut::AudioOut( QObject* parent, QString type, QString id )
     
     m_resist = 8;
     m_buzzer = false;
+    m_buzzFreq = 600;
     
     int refreshPeriod = 10; // mS
     int sampleRate    = 40000; // samples/S
@@ -174,7 +175,7 @@ void AudioOut::simuClockStep()
         {
             if( voltPN> 2.5 )
             {
-                int stepsPC = stepsPerUs*1e6/600;
+                int stepsPC = stepsPerUs*1e6/m_buzzFreq;
                 double time = Simulator::self()->step();
                 time = remainder( time, stepsPC );
                 time = qDegreesToRadians( time*360/stepsPC );

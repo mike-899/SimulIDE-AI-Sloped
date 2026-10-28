@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 9V battery (PP3). Original art, MIT License (SimulIDE-AI-Sloped contributors) -->
+<svg xmlns="http://www.w3.org/2000/svg" version="1.2" baseProfile="tiny" width="28" height="48" viewBox="0 0 28 48"><title>9V battery (PP3)</title>
+<defs>
+<linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f5f7"/><stop offset="0.5" stop-color="#b9bdc2"/><stop offset="1" stop-color="#7d8186"/></linearGradient>
+<linearGradient id="metalh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8d9196"/><stop offset="0.45" stop-color="#eceff1"/><stop offset="1" stop-color="#7a7e83"/></linearGradient>
+<linearGradient id="blk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a4a50"/><stop offset="1" stop-color="#1b1b1e"/></linearGradient>
+<linearGradient id="blkh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2a2a2d"/><stop offset="0.4" stop-color="#4b4b51"/><stop offset="1" stop-color="#1a1a1c"/></linearGradient>
+<radialGradient id="dome" cx="0.4" cy="0.35" r="0.75"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#cfd6d8"/></radialGradient>
+<radialGradient id="knob" cx="0.4" cy="0.35" r="0.8"><stop offset="0" stop-color="#6a6a70"/><stop offset="1" stop-color="#18181a"/></radialGradient>
+<linearGradient id="screw" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2f2f2"/><stop offset="1" stop-color="#8e9296"/></linearGradient>
+</defs>
+<rect x="1" y="4" width="26" height="43.5" rx="2.5" fill="#1c1c20" stroke="#000" stroke-width="1"/>
+<rect x="1" y="4" width="26" height="15" rx="2" fill="#c9ccd0" stroke="#7d8186" stroke-width="0.6"/>
+<rect x="1" y="18" width="26" height="29.5" rx="2" fill="url(#blk)" stroke="#000" stroke-width="0.6"/>
+<rect x="1" y="20" width="26" height="8" rx="0" fill="#d9a621" stroke="none" stroke-width="0"/>
+<text x="14" y="26.5" font-family="sans-serif" font-size="6" font-weight="bold" fill="#222" text-anchor="middle">9V</text>
+<text x="14" y="38" font-family="sans-serif" font-size="3.8" font-weight="normal" fill="#e0e0e0" text-anchor="middle">Alkaline</text>
+<rect x="2.2" y="0.5" width="7.6" height="5" rx="1" fill="url(#metalh)" stroke="#666" stroke-width="0.5"/>
+<circle cx="6" cy="3" r="1.8" fill="#222" stroke="none" stroke-width="0.5"/>
+<rect x="17.5" y="0.5" width="8.5" height="5" rx="1" fill="url(#metalh)" stroke="#666" stroke-width="0.5"/>
+<circle cx="22" cy="3" r="2.1" fill="#d0d0d0" stroke="#666" stroke-width="0.4"/>
+<text x="6" y="15" font-family="sans-serif" font-size="5" font-weight="bold" fill="#c01010" text-anchor="middle">+</text>
+<text x="21" y="15" font-family="sans-serif" font-size="5" font-weight="bold" fill="#222" text-anchor="middle">-</text>
+</svg>

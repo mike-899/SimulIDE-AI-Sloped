@@ -24,6 +24,8 @@ struct PartArtInfo {
     int rot;     // Rotation of the art (degrees, multiple of 90)
     QList<QLineF> leads; // Metal wires drawn under the art (leg -> pin)
     bool canvas;         // false: art used only as selector icon
+    bool noLegs; // Module / chip: no protruding pin legs, pins sit on the art
+                 // (header holes, terminals, leg tips)
 };
 
 class PartArt
@@ -34,6 +36,7 @@ class PartArt
 
     static bool has(const QString &type);     // Has canvas art
     static bool hasIcon(const QString &type); // Has any art
+    static bool noLegs(const QString &type);  // Pin legs hidden (see noLegs)
     static const PartArtInfo *info(const QString &type);
 
     // Rect actually covered by the art (component coords)

@@ -1,0 +1,38 @@
+<RCC>
+  <qresource prefix="/parts">
+    <file>modules/aa2.svg</file>
+    <file>modules/aa4.svg</file>
+    <file>modules/battery9v.svg</file>
+    <file>modules/bc547.svg</file>
+    <file>modules/buzzer_active.svg</file>
+    <file>modules/buzzer_passive.svg</file>
+    <file>modules/cr2032.svg</file>
+    <file>modules/d1n4007.svg</file>
+    <file>modules/d1n4148.svg</file>
+    <file>modules/encoder.svg</file>
+    <file>modules/fuse.svg</file>
+    <file>modules/irf520.svg</file>
+    <file>modules/irsensor.svg</file>
+    <file>modules/joystick.svg</file>
+    <file>modules/ldr.svg</file>
+    <file>modules/lm317.svg</file>
+    <file>modules/ntc.svg</file>
+    <file>modules/pc817.svg</file>
+    <file>modules/pir.svg</file>
+    <file>modules/reed.svg</file>
+    <file>modules/reg7805.svg</file>
+    <file>modules/relaymod.svg</file>
+    <file>modules/slidepot.svg</file>
+    <file>modules/slideswitch.svg</file>
+    <file>modules/soil.svg</file>
+    <file>modules/sound.svg</file>
+    <file>modules/stepper28byj.svg</file>
+    <file>modules/t2n2222.svg</file>
+    <file>modules/tactile.svg</file>
+    <file>modules/tb6612.svg</file>
+    <file>modules/tip120.svg</file>
+    <file>modules/toggle.svg</file>
+    <file>modules/uln2003.svg</file>
+    <file>modules/zener.svg</file>
+  </qresource>
+</RCC>

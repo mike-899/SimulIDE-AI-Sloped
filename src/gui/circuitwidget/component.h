@@ -57,6 +57,7 @@ class MAINMODULE_EXPORT Component : public QObject, public QGraphicsItem
       // Realistic part art (see PartArt)
       virtual bool artActive() const; // Art exists for this type and is enabled
       void applyThemeColors(); // Id/value label colours from ThemeManager
+      bool artNoLegs() const; // Art active and pins sit on it (no legs)
       virtual QString artRes() const
       {
           return QString();

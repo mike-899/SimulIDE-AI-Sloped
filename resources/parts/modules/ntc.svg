@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- NTC thermistor, epoxy bead. Original art, MIT License (SimulIDE-AI-Sloped contributors) -->
+<svg xmlns="http://www.w3.org/2000/svg" version="1.2" baseProfile="tiny" width="32" height="16" viewBox="0 0 32 16"><title>NTC thermistor, epoxy bead</title>
+<defs>
+<linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f5f7"/><stop offset="0.5" stop-color="#b9bdc2"/><stop offset="1" stop-color="#7d8186"/></linearGradient>
+<linearGradient id="metalh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8d9196"/><stop offset="0.45" stop-color="#eceff1"/><stop offset="1" stop-color="#7a7e83"/></linearGradient>
+<linearGradient id="blk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a4a50"/><stop offset="1" stop-color="#1b1b1e"/></linearGradient>
+<linearGradient id="blkh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2a2a2d"/><stop offset="0.4" stop-color="#4b4b51"/><stop offset="1" stop-color="#1a1a1c"/></linearGradient>
+<radialGradient id="dome" cx="0.4" cy="0.35" r="0.75"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#cfd6d8"/></radialGradient>
+<radialGradient id="knob" cx="0.4" cy="0.35" r="0.8"><stop offset="0" stop-color="#6a6a70"/><stop offset="1" stop-color="#18181a"/></radialGradient>
+<linearGradient id="screw" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2f2f2"/><stop offset="1" stop-color="#8e9296"/></linearGradient>
+</defs>
+<line x1="0" y1="8" x2="11" y2="8" stroke="#9aa0a6" stroke-width="1.6" stroke-linecap="butt"/>
+<line x1="21" y1="8" x2="32" y2="8" stroke="#9aa0a6" stroke-width="1.6" stroke-linecap="butt"/>
+<ellipse cx="16" cy="8" rx="7" ry="6.5" fill="#2b5aa8" stroke="#16356a" stroke-width="0.7"/>
+<ellipse cx="14.5" cy="5.5" rx="3.5" ry="2.2" fill="#6f97d8" stroke="none" stroke-width="0.5"/>
+<text x="16" y="10.5" font-family="sans-serif" font-size="3.6" font-weight="bold" fill="#e8eefc" text-anchor="middle">10K</text>
+</svg>

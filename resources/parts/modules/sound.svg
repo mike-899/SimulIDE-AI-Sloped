@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Sound sensor module (KY-038). Original art, MIT License (SimulIDE-AI-Sloped contributors) -->
+<svg xmlns="http://www.w3.org/2000/svg" version="1.2" baseProfile="tiny" width="48" height="56" viewBox="0 0 48 56"><title>Sound sensor module (KY-038)</title>
+<defs>
+<linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f5f7"/><stop offset="0.5" stop-color="#b9bdc2"/><stop offset="1" stop-color="#7d8186"/></linearGradient>
+<linearGradient id="metalh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8d9196"/><stop offset="0.45" stop-color="#eceff1"/><stop offset="1" stop-color="#7a7e83"/></linearGradient>
+<linearGradient id="blk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a4a50"/><stop offset="1" stop-color="#1b1b1e"/></linearGradient>
+<linearGradient id="blkh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2a2a2d"/><stop offset="0.4" stop-color="#4b4b51"/><stop offset="1" stop-color="#1a1a1c"/></linearGradient>
+<radialGradient id="dome" cx="0.4" cy="0.35" r="0.75"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#cfd6d8"/></radialGradient>
+<radialGradient id="knob" cx="0.4" cy="0.35" r="0.8"><stop offset="0" stop-color="#6a6a70"/><stop offset="1" stop-color="#18181a"/></radialGradient>
+<linearGradient id="screw" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2f2f2"/><stop offset="1" stop-color="#8e9296"/></linearGradient>
+</defs>
+<rect x="0.5" y="0.5" width="47" height="55" rx="3" fill="#1d4ea8" stroke="#0e2a63" stroke-width="1"/>
+<circle cx="4" cy="4" r="1.6" fill="#e8e8e8" stroke="#9a9a9a" stroke-width="0.4"/>
+<circle cx="44" cy="4" r="1.6" fill="#e8e8e8" stroke="#9a9a9a" stroke-width="0.4"/>
+<circle cx="4" cy="52" r="1.6" fill="#e8e8e8" stroke="#9a9a9a" stroke-width="0.4"/>
+<circle cx="44" cy="52" r="1.6" fill="#e8e8e8" stroke="#9a9a9a" stroke-width="0.4"/>
+<circle cx="15" cy="17" r="9" fill="url(#metalh)" stroke="#555a5e" stroke-width="0.8"/>
+<circle cx="15" cy="17" r="5" fill="#1a1a1d" stroke="#000" stroke-width="0.5"/>
+<circle cx="15" cy="17" r="1.8" fill="#444" stroke="none" stroke-width="0.5"/>
+<rect x="30" y="9" width="13" height="13" rx="1" fill="#2a6bd6" stroke="#12357a" stroke-width="0.6"/>
+<circle cx="36.5" cy="15.5" r="4" fill="#d5a021" stroke="#7a5a10" stroke-width="0.5"/>
+<line x1="34" y1="15.5" x2="39" y2="15.5" stroke="#222" stroke-width="1" stroke-linecap="butt"/>
+<rect x="18" y="30" width="12" height="6" rx="0" fill="#1b1b1f" stroke="none" stroke-width="0.5"/>
+<circle cx="6" cy="33" r="1.7" fill="#d02020" stroke="#222" stroke-width="0.3"/>
+<circle cx="5.49" cy="32.49" r="0.595" fill="#ffffff" stroke="none" stroke-width="0.5"/>
+<circle cx="42" cy="33" r="1.7" fill="#20c040" stroke="#222" stroke-width="0.3"/>
+<circle cx="41.49" cy="32.49" r="0.595" fill="#ffffff" stroke="none" stroke-width="0.5"/>
+<circle cx="12" cy="52" r="2.2" fill="#e8c25a" stroke="#9c7a20" stroke-width="0.4"/>
+<circle cx="12" cy="52" r="0.99" fill="#1c1c1c" stroke="none" stroke-width="0.5"/>
+<circle cx="20" cy="52" r="2.2" fill="#e8c25a" stroke="#9c7a20" stroke-width="0.4"/>
+<circle cx="20" cy="52" r="0.99" fill="#1c1c1c" stroke="none" stroke-width="0.5"/>
+<circle cx="28" cy="52" r="2.2" fill="#e8c25a" stroke="#9c7a20" stroke-width="0.4"/>
+<circle cx="28" cy="52" r="0.99" fill="#1c1c1c" stroke="none" stroke-width="0.5"/>
+<circle cx="36" cy="52" r="2.2" fill="#e8c25a" stroke="#9c7a20" stroke-width="0.4"/>
+<circle cx="36" cy="52" r="0.99" fill="#1c1c1c" stroke="none" stroke-width="0.5"/>
+<text x="24" y="31" font-family="sans-serif" font-size="3.8" font-weight="bold" fill="#dfe8ff" text-anchor="middle">SOUND</text>
+</svg>

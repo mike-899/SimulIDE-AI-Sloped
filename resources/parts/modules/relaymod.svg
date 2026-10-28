@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Relay module (SRD-05VDC, 1 channel). Original art, MIT License (SimulIDE-AI-Sloped contributors) -->
+<svg xmlns="http://www.w3.org/2000/svg" version="1.2" baseProfile="tiny" width="64" height="48" viewBox="0 0 64 48"><title>Relay module (SRD-05VDC, 1 channel)</title>
+<defs>
+<linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f5f7"/><stop offset="0.5" stop-color="#b9bdc2"/><stop offset="1" stop-color="#7d8186"/></linearGradient>
+<linearGradient id="metalh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8d9196"/><stop offset="0.45" stop-color="#eceff1"/><stop offset="1" stop-color="#7a7e83"/></linearGradient>
+<linearGradient id="blk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a4a50"/><stop offset="1" stop-color="#1b1b1e"/></linearGradient>
+<linearGradient id="blkh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2a2a2d"/><stop offset="0.4" stop-color="#4b4b51"/><stop offset="1" stop-color="#1a1a1c"/></linearGradient>
+<radialGradient id="dome" cx="0.4" cy="0.35" r="0.75"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#cfd6d8"/></radialGradient>
+<radialGradient id="knob" cx="0.4" cy="0.35" r="0.8"><stop offset="0" stop-color="#6a6a70"/><stop offset="1" stop-color="#18181a"/></radialGradient>
+<linearGradient id="screw" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2f2f2"/><stop offset="1" stop-color="#8e9296"/></linearGradient>
+</defs>
+<rect x="0.5" y="0.5" width="63" height="47" rx="3" fill="#1d4ea8" stroke="#0e2a63" stroke-width="1"/>
+<circle cx="4" cy="4" r="1.6" fill="#e8e8e8" stroke="#9a9a9a" stroke-width="0.4"/>
+<circle cx="60" cy="4" r="1.6" fill="#e8e8e8" stroke="#9a9a9a" stroke-width="0.4"/>
+<circle cx="4" cy="44" r="1.6" fill="#e8e8e8" stroke="#9a9a9a" stroke-width="0.4"/>
+<circle cx="60" cy="44" r="1.6" fill="#e8e8e8" stroke="#9a9a9a" stroke-width="0.4"/>
+<rect x="20" y="5" width="28" height="28" rx="2" fill="#1c64c8" stroke="#0e2a63" stroke-width="0.8"/>
+<rect x="22" y="7" width="24" height="24" rx="1" fill="#2a78e0" stroke="none" stroke-width="0"/>
+<text x="34" y="16" font-family="sans-serif" font-size="3.6" font-weight="bold" fill="#eef" text-anchor="middle">SRD-05VDC</text>
+<text x="34" y="21" font-family="sans-serif" font-size="3.6" font-weight="bold" fill="#eef" text-anchor="middle">-SL-C</text>
+<rect x="48" y="4" width="14" height="32" rx="0" fill="none" stroke="none" stroke-width="0.5"/>
+<rect x="52" y="5" width="11" height="34" rx="1" fill="#1c3b7a" stroke="#0b1d44" stroke-width="0.6"/>
+<circle cx="60" cy="16" r="3.4" fill="url(#screw)" stroke="#555a5e" stroke-width="0.5"/>
+<line x1="57.96" y1="16" x2="62.04" y2="16" stroke="#444" stroke-width="1" stroke-linecap="butt"/>
+<circle cx="60" cy="24" r="3.4" fill="url(#screw)" stroke="#555a5e" stroke-width="0.5"/>
+<line x1="57.96" y1="24" x2="62.04" y2="24" stroke="#444" stroke-width="1" stroke-linecap="butt"/>
+<circle cx="60" cy="32" r="3.4" fill="url(#screw)" stroke="#555a5e" stroke-width="0.5"/>
+<line x1="57.96" y1="32" x2="62.04" y2="32" stroke="#444" stroke-width="1" stroke-linecap="butt"/>
+<circle cx="10" cy="38" r="1.9" fill="#20c040" stroke="#222" stroke-width="0.3"/>
+<circle cx="9.43" cy="37.43" r="0.665" fill="#ffffff" stroke="none" stroke-width="0.5"/>
+<circle cx="10" cy="31" r="1.9" fill="#d02020" stroke="#222" stroke-width="0.3"/>
+<circle cx="9.43" cy="30.43" r="0.665" fill="#ffffff" stroke="none" stroke-width="0.5"/>
+<rect x="18" y="36" width="12" height="6" rx="0" fill="#1b1b1f" stroke="none" stroke-width="0.5"/>
+<rect x="34" y="36" width="8" height="6" rx="0" fill="#1b1b1f" stroke="none" stroke-width="0.5"/>
+<circle cx="4" cy="16" r="2.2" fill="#e8c25a" stroke="#9c7a20" stroke-width="0.4"/>
+<circle cx="4" cy="16" r="0.99" fill="#1c1c1c" stroke="none" stroke-width="0.5"/>
+<circle cx="4" cy="24" r="2.2" fill="#e8c25a" stroke="#9c7a20" stroke-width="0.4"/>
+<circle cx="4" cy="24" r="0.99" fill="#1c1c1c" stroke="none" stroke-width="0.5"/>
+<circle cx="4" cy="32" r="2.2" fill="#e8c25a" stroke="#9c7a20" stroke-width="0.4"/>
+<circle cx="4" cy="32" r="0.99" fill="#1c1c1c" stroke="none" stroke-width="0.5"/>
+</svg>

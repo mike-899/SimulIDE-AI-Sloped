@@ -118,6 +118,7 @@ RESOURCES = ./src/application.qrc
 RESOURCES += ./resources/themes/themes.qrc
 RESOURCES += ./resources/fonts/fonts.qrc
 RESOURCES += ./resources/parts/parts.qrc
+RESOURCES += ./resources/parts/modules.qrc
 HEADERS += ./src/gui/thememanager.h
 HEADERS += ./src/gui/circuitwidget/partart.h
 SOURCES += ./src/gui/circuitwidget/partart.cpp

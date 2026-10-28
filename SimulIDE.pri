@@ -9,6 +9,7 @@ INCLUDEPATH += \
     ./src/gui/circuitwidget/components/meters \
     ./src/gui/circuitwidget/components/other \
     ./src/gui/circuitwidget/components/outputs \
+    ./src/gui/circuitwidget/components/modules \
     ./src/gui/circuitwidget/components/passive \
     ./src/gui/circuitwidget/components/sources \
     ./src/gui/circuitwidget/components/switches \
@@ -189,6 +190,12 @@ HEADERS += \
     ./src/gui/circuitwidget/components/outputs/audio_out.h \
     ./src/gui/circuitwidget/components/outputs/dcmotor.h \
     ./src/gui/circuitwidget/components/outputs/hbridge.h \
+    ./src/gui/circuitwidget/components/modules/modulebase.h \
+    ./src/gui/circuitwidget/components/modules/sensors.h \
+    ./src/gui/circuitwidget/components/modules/powerparts.h \
+    ./src/gui/circuitwidget/components/modules/switchparts.h \
+    ./src/gui/circuitwidget/components/modules/icmodules.h \
+    ./src/gui/circuitwidget/components/modules/moduleitems.h \
     ./src/gui/circuitwidget/components/outputs/hd44780.h \
     ./src/gui/circuitwidget/components/outputs/ks0108.h \
     ./src/gui/circuitwidget/components/outputs/led.h \
@@ -546,6 +553,12 @@ SOURCES += \
     ./src/gui/circuitwidget/components/outputs/audio_out.cpp \
     ./src/gui/circuitwidget/components/outputs/dcmotor.cpp \
     ./src/gui/circuitwidget/components/outputs/hbridge.cpp \
+    ./src/gui/circuitwidget/components/modules/modulebase.cpp \
+    ./src/gui/circuitwidget/components/modules/sensors.cpp \
+    ./src/gui/circuitwidget/components/modules/powerparts.cpp \
+    ./src/gui/circuitwidget/components/modules/switchparts.cpp \
+    ./src/gui/circuitwidget/components/modules/icmodules.cpp \
+    ./src/gui/circuitwidget/components/modules/moduleitems.cpp \
     ./src/gui/circuitwidget/components/outputs/hd44780.cpp \
     ./src/gui/circuitwidget/components/outputs/ks0108.cpp \
     ./src/gui/circuitwidget/components/outputs/led.cpp \
