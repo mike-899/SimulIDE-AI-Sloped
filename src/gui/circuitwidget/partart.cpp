@@ -193,8 +193,7 @@ void PartArt::init()
     mod("MosfetModule", "irf520", QRectF(-32, -28, 64, 56), true);
     // Named presets of existing parts (same pins as the generic part)
     const QList<QLineF> bjtLeads = { QLineF(-8, 0, -5.2, 0),
-                                     QLineF(8, -8, 8, 1),
-                                     QLineF(8, 1, 3.45, 1),
+                                     QLineF(8, -8, 8, 1), QLineF(8, 1, 3.45, 1),
                                      QLineF(8, 8, -0.85, 8),
                                      QLineF(-0.85, 8, -0.85, 1.5) };
     mod("Q2N2222", "t2n2222", QRectF(-7, -22, 12.3, 24), false, bjtLeads);

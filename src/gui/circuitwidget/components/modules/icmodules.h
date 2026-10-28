@@ -62,8 +62,8 @@ class MAINMODULE_EXPORT Optocoupler : public ModuleBase
 class MAINMODULE_EXPORT RelayModule : public ModuleBase
 {
     Q_OBJECT
-    Q_PROPERTY(bool Active_Low READ activeLow WRITE setActiveLow DESIGNABLE true
-                   USER true)
+    Q_PROPERTY(bool Active_Low READ activeLow WRITE setActiveLow
+                   DESIGNABLE true USER true)
     MODULE_FACTORY(RelayModule)
   public:
     RelayModule(QObject *parent, QString type, QString id);

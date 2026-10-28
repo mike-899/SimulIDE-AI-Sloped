@@ -22,8 +22,8 @@
 struct HBridgeChannel {
     Pin *in;
     Pin *out;
-    int en; // Index in m_enPins
-    Pin *in2;  // TB6612: second input (IN2) and PWM, null otherwise
+    int en;   // Index in m_enPins
+    Pin *in2; // TB6612: second input (IN2) and PWM, null otherwise
     Pin *pwm;
     bool second; // TB6612: this is the OUT2 half of the bridge
     int state;

@@ -57,8 +57,8 @@ Pin *HBridge::addPin(QString name, int angle, QPoint pos, QString label)
 void HBridge::addChannel(Pin *in, int en, Pin *out)
 {
     HBridgeChannel ch;
-    ch.in    = in;
-    ch.out   = out;
+    ch.in     = in;
+    ch.out    = out;
     ch.en     = en;
     ch.in2    = 0l;
     ch.pwm    = 0l;
@@ -270,13 +270,13 @@ TB6612::TB6612(QObject *parent, QString type, QString id) :
     m_ron  = 0.5; // 0.5 ohm total per half bridge (1.2 ohm bridge)
 
     // Left header top to bottom, then right header
-    const char *names[16] = { "VM",  "VCC",  "GND",  "AO1",  "AO2", "BO2",
-                              "BO1", "GND2", "PWMA", "AIN2", "AIN1", "STBY",
+    const char *names[16] = { "VM",   "VCC",  "GND",  "AO1",  "AO2",  "BO2",
+                              "BO1",  "GND2", "PWMA", "AIN2", "AIN1", "STBY",
                               "BIN1", "BIN2", "PWMB", "GND3" };
     Pin *pins[16];
     for (int i = 0; i < 16; i++) {
-        QPoint pos = (i < 8) ? QPoint(-24, -28 + 8 * i)
-                             : QPoint(24, -28 + 8 * (i - 8));
+        QPoint pos =
+            (i < 8) ? QPoint(-24, -28 + 8 * i) : QPoint(24, -28 + 8 * (i - 8));
         QString label(names[i]);
         label.remove(QRegularExpression("[23]$"));
         if (label == "GND2" || label == "GND3")

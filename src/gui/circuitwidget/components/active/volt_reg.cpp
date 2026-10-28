@@ -18,10 +18,11 @@
  ***************************************************************************/
 
 #include "volt_reg.h"
-#include "partart.h"
+
 #include "connector.h"
-#include "simulator.h"
+#include "partart.h"
 #include "pin.h"
+#include "simulator.h"
 
 static const char* VoltReg_properties[] = {
     QT_TRANSLATE_NOOP("App::Property","Volts")

@@ -16,8 +16,8 @@
 #include "simulator.h"
 
 #include <QGraphicsProxyWidget>
-#include <QPainter>
 #include <QGraphicsSceneMouseEvent>
+#include <QPainter>
 #include <QSlider>
 #include <math.h>
 
@@ -56,13 +56,14 @@ Pin *ModuleBase::addPin(QString name, int angle, QPoint pos, QString label)
 int ModuleBase::addRes(Pin *a, Pin *b, double res)
 {
     Res r;
-    r.a             = a;
-    r.b             = b;
-    r.diode         = false;
-    std::string rid = (m_id + "-r" + QString::number(m_res.size())).toStdString();
-    r.ea            = new ePin(rid + "-a", 0);
-    r.eb            = new ePin(rid + "-b", 1);
-    r.r             = new eResistor(rid);
+    r.a     = a;
+    r.b     = b;
+    r.diode = false;
+    std::string rid =
+        (m_id + "-r" + QString::number(m_res.size())).toStdString();
+    r.ea = new ePin(rid + "-a", 0);
+    r.eb = new ePin(rid + "-b", 1);
+    r.r  = new eResistor(rid);
     r.r->setEpin(0, r.ea);
     r.r->setEpin(1, r.eb);
     r.r->setRes(res);
@@ -73,13 +74,14 @@ int ModuleBase::addRes(Pin *a, Pin *b, double res)
 int ModuleBase::addDiode(Pin *anode, Pin *cathode, double vf)
 {
     Res r;
-    r.a             = anode;
-    r.b             = cathode;
-    r.diode         = true;
-    std::string rid = (m_id + "-d" + QString::number(m_res.size())).toStdString();
-    r.ea            = new ePin(rid + "-a", 0);
-    r.eb            = new ePin(rid + "-b", 1);
-    eDiode *d       = new eDiode(rid);
+    r.a     = anode;
+    r.b     = cathode;
+    r.diode = true;
+    std::string rid =
+        (m_id + "-d" + QString::number(m_res.size())).toStdString();
+    r.ea      = new ePin(rid + "-a", 0);
+    r.eb      = new ePin(rid + "-b", 1);
+    eDiode *d = new eDiode(rid);
     d->setEpin(0, r.ea);
     d->setEpin(1, r.eb);
     d->setThreshold(vf);
@@ -91,7 +93,7 @@ int ModuleBase::addDiode(Pin *anode, Pin *cathode, double vf)
 int ModuleBase::addOut(Pin *pin, double imp)
 {
     Out o;
-    o.pin = pin;
+    o.pin  = pin;
     o.volt = 0;
     o.src  = new eSource(
         (m_id + "-out" + QString::number(m_outs.size())).toStdString(), pin);

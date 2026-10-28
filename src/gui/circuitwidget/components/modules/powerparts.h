@@ -17,10 +17,10 @@
 class MAINMODULE_EXPORT Battery : public ModuleBase
 {
     Q_OBJECT
-    Q_PROPERTY(double Voltage READ voltage WRITE setVoltage DESIGNABLE true USER
-                   true)
-    Q_PROPERTY(double Internal_Res READ intRes WRITE setIntRes DESIGNABLE true
-                   USER true)
+    Q_PROPERTY(
+        double Voltage READ voltage WRITE setVoltage DESIGNABLE true USER true)
+    Q_PROPERTY(double Internal_Res READ intRes WRITE setIntRes
+                   DESIGNABLE true USER true)
   public:
     Battery(QObject *parent, QString type, QString id, int kind);
     double voltage()
@@ -41,16 +41,16 @@ class MAINMODULE_EXPORT Battery : public ModuleBase
     double m_volt, m_ri;
 };
 
-#define BATTERY_CLASS(Cls, kind)                                               \
-    class MAINMODULE_EXPORT Cls : public Battery                               \
-    {                                                                          \
-        Q_OBJECT                                                               \
-        MODULE_FACTORY(Cls)                                                    \
-      public:                                                                  \
-        Cls(QObject *parent, QString type, QString id) :                       \
-            Battery(parent, type, id, kind)                                    \
-        {                                                                      \
-        }                                                                      \
+#define BATTERY_CLASS(Cls, kind)                         \
+    class MAINMODULE_EXPORT Cls : public Battery         \
+    {                                                    \
+        Q_OBJECT                                         \
+        MODULE_FACTORY(Cls)                              \
+      public:                                            \
+        Cls(QObject *parent, QString type, QString id) : \
+            Battery(parent, type, id, kind)              \
+        {                                                \
+        }                                                \
     };
 BATTERY_CLASS(Battery9V, 0)
 BATTERY_CLASS(Battery2AA, 1)
@@ -61,8 +61,8 @@ BATTERY_CLASS(CoinCell, 3)
 class MAINMODULE_EXPORT Fuse : public ModuleBase
 {
     Q_OBJECT
-    Q_PROPERTY(double Rating READ rating WRITE setRating DESIGNABLE true USER
-                   true)
+    Q_PROPERTY(
+        double Rating READ rating WRITE setRating DESIGNABLE true USER true)
     Q_PROPERTY(bool Blown READ blown WRITE setBlown DESIGNABLE true USER true)
     MODULE_FACTORY(Fuse)
   public:

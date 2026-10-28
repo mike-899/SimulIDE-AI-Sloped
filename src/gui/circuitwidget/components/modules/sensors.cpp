@@ -17,11 +17,11 @@
 #include <QSlider>
 #include <math.h>
 
-#define LIB_ITEM(Cls, name, cat, type)                                         \
-    LibraryItem *Cls::libraryItem()                                            \
-    {                                                                          \
-        return new LibraryItem(tr(name), tr(cat), "subc.png", type,            \
-                               Cls::construct);                                \
+#define LIB_ITEM(Cls, name, cat, type)                              \
+    LibraryItem *Cls::libraryItem()                                 \
+    {                                                               \
+        return new LibraryItem(tr(name), tr(cat), "subc.png", type, \
+                               Cls::construct);                     \
     }
 
 static const char *Sensor_properties[] = {
@@ -115,12 +115,12 @@ LIB_ITEM(Thermistor, "NTC Thermistor", "Sensors", "Thermistor")
 Thermistor::Thermistor(QObject *parent, QString type, QString id) :
     ModuleBase(parent, type, id)
 {
-    m_area  = QRectF(-10, -8, 20, 16);
-    m_temp  = 25;
-    m_r25   = 10e3;
-    m_beta  = 3950;
-    Pin *a  = addPin("A", 180, QPoint(-16, 0), "");
-    Pin *b  = addPin("B", 0, QPoint(16, 0), "");
+    m_area = QRectF(-10, -8, 20, 16);
+    m_temp = 25;
+    m_r25  = 10e3;
+    m_beta = 3950;
+    Pin *a = addPin("A", 180, QPoint(-16, 0), "");
+    Pin *b = addPin("B", 0, QPoint(16, 0), "");
     addRes(a, b, 10e3);
     m_slider = addSlider(QRect(-14, 12, 28, 8), -40, 125, 25);
     connect(m_slider, &QSlider::valueChanged, this, [this](int v) {
@@ -169,13 +169,13 @@ LIB_ITEM(SlidePot, "Slide Potentiometer", "Sensors", "SlidePot")
 SlidePot::SlidePot(QObject *parent, QString type, QString id) :
     ModuleBase(parent, type, id)
 {
-    m_area = QRectF(-12, -6, 24, 12);
-    m_res  = 10e3;
-    m_pos  = 50;
-    Pin *a = addPin("A", 180, QPoint(-16, 0), "");
-    Pin *w = addPin("W", 270, QPoint(0, 16), "");
-    Pin *b = addPin("B", 0, QPoint(16, 0), "");
-    m_pot  = addPot(a, w, b, m_res);
+    m_area   = QRectF(-12, -6, 24, 12);
+    m_res    = 10e3;
+    m_pos    = 50;
+    Pin *a   = addPin("A", 180, QPoint(-16, 0), "");
+    Pin *w   = addPin("W", 270, QPoint(0, 16), "");
+    Pin *b   = addPin("B", 0, QPoint(16, 0), "");
+    m_pot    = addPot(a, w, b, m_res);
     m_slider = addSlider(QRect(-11, -3, 22, 6), 0, 100, 50);
     connect(m_slider, &QSlider::valueChanged, this, [this](int v) {
         m_pos = v;
@@ -248,8 +248,7 @@ void PirSensor::zoneEvent(int, bool on)
 }
 void PirSensor::updateStep()
 {
-    bool act = m_motion ||
-               (m_timing && m_timer.elapsed() < m_hold * 1000);
+    bool act = m_motion || (m_timing && m_timer.elapsed() < m_hold * 1000);
     if (!act)
         m_timing = false;
     if (act != m_active) {
@@ -350,7 +349,7 @@ AnalogSensor::AnalogSensor(QObject *parent, QString type, QString id,
     m_od = addOut(m_do, 100);
     watch(m_vcc);
     watch(m_gnd);
-    int sy = soil ? 40 : 32;
+    int sy   = soil ? 40 : 32;
     m_slider = addSlider(QRect(-20, sy, 40, 8), 0, 100, m_level);
     connect(m_slider, &QSlider::valueChanged, this, [this](int v) {
         m_level = v;
@@ -413,7 +412,7 @@ LIB_ITEM(Joystick, "Joystick Module", "Sensors", "Joystick")
 Joystick::Joystick(QObject *parent, QString type, QString id) :
     ModuleBase(parent, type, id)
 {
-    m_area    = QRectF(-28, -28, 56, 56);
+    m_area = QRectF(-28, -28, 56, 56);
     m_x = m_y = 50;
     m_pressed = false;
     m_drag    = false;
@@ -468,7 +467,8 @@ void Joystick::drag(QPointF pos)
 void Joystick::mousePressEvent(QGraphicsSceneMouseEvent *e)
 {
     QPointF d = e->pos() - QPointF(0, -4);
-    if (e->button() == Qt::LeftButton && (d.x() * d.x() + d.y() * d.y()) < 144) {
+    if (e->button() == Qt::LeftButton &&
+        (d.x() * d.x() + d.y() * d.y()) < 144) {
         m_drag = true;
         drag(e->pos());
         e->accept();
@@ -524,9 +524,9 @@ static const int grayB[4] = { 1, 1, 0, 0 };
 RotaryEncoder::RotaryEncoder(QObject *parent, QString type, QString id) :
     ModuleBase(parent, type, id)
 {
-    m_area  = QRectF(-28, -24, 56, 48);
-    m_pos   = 0;
-    m_phase = 0;
+    m_area   = QRectF(-28, -24, 56, 48);
+    m_pos    = 0;
+    m_phase  = 0;
     m_swDown = false;
     Pin *clk = addPin("CLK", 270, QPoint(-16, 20), "CLK");
     Pin *dt  = addPin("DT", 270, QPoint(-8, 20), "DT");
@@ -573,8 +573,7 @@ void RotaryEncoder::setPosition(int p)
 }
 void RotaryEncoder::updateStep()
 {
-    if (!m_queue.isEmpty() &&
-        (!m_timer.isValid() || m_timer.elapsed() >= 15)) {
+    if (!m_queue.isEmpty() && (!m_timer.isValid() || m_timer.elapsed() >= 15)) {
         m_phase = m_queue.takeFirst();
         m_timer.restart();
         controlChanged();

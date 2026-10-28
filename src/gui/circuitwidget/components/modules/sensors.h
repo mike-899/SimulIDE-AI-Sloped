@@ -15,12 +15,12 @@
 
 #include <QElapsedTimer>
 
-#define MODULE_FACTORY(Cls)                                                    \
-  public:                                                                      \
-    static Component *construct(QObject *parent, QString type, QString id)    \
-    {                                                                          \
-        return new Cls(parent, type, id);                                      \
-    }                                                                          \
+#define MODULE_FACTORY(Cls)                                                \
+  public:                                                                  \
+    static Component *construct(QObject *parent, QString type, QString id) \
+    {                                                                      \
+        return new Cls(parent, type, id);                                  \
+    }                                                                      \
     static LibraryItem *libraryItem();
 
 // Light dependent resistor: R = R10 * (10 lux / Lux) ^ Gamma
@@ -61,8 +61,8 @@ class MAINMODULE_EXPORT Ldr : public ModuleBase
 class MAINMODULE_EXPORT Thermistor : public ModuleBase
 {
     Q_OBJECT
-    Q_PROPERTY(double Temperature READ temp WRITE setTemp DESIGNABLE true USER
-                   true)
+    Q_PROPERTY(
+        double Temperature READ temp WRITE setTemp DESIGNABLE true USER true)
     Q_PROPERTY(double R25 READ r25 WRITE setR25 DESIGNABLE true USER true)
     Q_PROPERTY(double Beta READ beta WRITE setBeta DESIGNABLE true USER true)
     MODULE_FACTORY(Thermistor)
@@ -96,7 +96,8 @@ class MAINMODULE_EXPORT Thermistor : public ModuleBase
 class MAINMODULE_EXPORT SlidePot : public ModuleBase
 {
     Q_OBJECT
-    Q_PROPERTY(double Resistance READ res WRITE setRes DESIGNABLE true USER true)
+    Q_PROPERTY(
+        double Resistance READ res WRITE setRes DESIGNABLE true USER true)
     Q_PROPERTY(int Position READ pos WRITE setPos DESIGNABLE true USER true)
     MODULE_FACTORY(SlidePot)
   public:
@@ -125,12 +126,12 @@ class MAINMODULE_EXPORT SlidePot : public ModuleBase
 class MAINMODULE_EXPORT PirSensor : public ModuleBase
 {
     Q_OBJECT
-    Q_PROPERTY(bool Motion READ motion WRITE setMotion DESIGNABLE true USER
-                   true)
-    Q_PROPERTY(double Hold_Time READ hold WRITE setHold DESIGNABLE true USER
-                   true)
-    Q_PROPERTY(double Out_Volt READ outLevel WRITE setOutLevel DESIGNABLE true
-                   USER true)
+    Q_PROPERTY(
+        bool Motion READ motion WRITE setMotion DESIGNABLE true USER true)
+    Q_PROPERTY(
+        double Hold_Time READ hold WRITE setHold DESIGNABLE true USER true)
+    Q_PROPERTY(double Out_Volt READ outLevel WRITE setOutLevel
+                   DESIGNABLE true USER true)
     MODULE_FACTORY(PirSensor)
   public:
     PirSensor(QObject *parent, QString type, QString id);
@@ -176,8 +177,8 @@ class MAINMODULE_EXPORT PirSensor : public ModuleBase
 class MAINMODULE_EXPORT IrObstacle : public ModuleBase
 {
     Q_OBJECT
-    Q_PROPERTY(bool Obstacle READ obstacle WRITE setObstacle DESIGNABLE true
-                   USER true)
+    Q_PROPERTY(
+        bool Obstacle READ obstacle WRITE setObstacle DESIGNABLE true USER true)
     MODULE_FACTORY(IrObstacle)
   public:
     IrObstacle(QObject *parent, QString type, QString id);
@@ -203,8 +204,8 @@ class MAINMODULE_EXPORT AnalogSensor : public ModuleBase
 {
     Q_OBJECT
     Q_PROPERTY(int Level READ level WRITE setLevel DESIGNABLE true USER true)
-    Q_PROPERTY(int Threshold READ threshold WRITE setThreshold DESIGNABLE true
-                   USER true)
+    Q_PROPERTY(int Threshold READ threshold WRITE setThreshold
+                   DESIGNABLE true USER true)
   public:
     AnalogSensor(QObject *parent, QString type, QString id, bool soil);
     int level()
@@ -257,8 +258,8 @@ class MAINMODULE_EXPORT Joystick : public ModuleBase
     Q_OBJECT
     Q_PROPERTY(int X READ x WRITE setX DESIGNABLE true USER true)
     Q_PROPERTY(int Y READ y WRITE setY DESIGNABLE true USER true)
-    Q_PROPERTY(bool Pressed READ pressed WRITE setPressed DESIGNABLE true USER
-                   true)
+    Q_PROPERTY(
+        bool Pressed READ pressed WRITE setPressed DESIGNABLE true USER true)
     MODULE_FACTORY(Joystick)
   public:
     Joystick(QObject *parent, QString type, QString id);
@@ -297,8 +298,8 @@ class MAINMODULE_EXPORT Joystick : public ModuleBase
 class MAINMODULE_EXPORT RotaryEncoder : public ModuleBase
 {
     Q_OBJECT
-    Q_PROPERTY(int Position READ position WRITE setPosition DESIGNABLE true
-                   USER true)
+    Q_PROPERTY(
+        int Position READ position WRITE setPosition DESIGNABLE true USER true)
     MODULE_FACTORY(RotaryEncoder)
   public:
     RotaryEncoder(QObject *parent, QString type, QString id);

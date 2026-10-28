@@ -12,11 +12,11 @@
 
 #include <QPainter>
 
-#define LIB_ITEM(Cls, name, cat, type)                                         \
-    LibraryItem *Cls::libraryItem()                                            \
-    {                                                                          \
-        return new LibraryItem(tr(name), tr(cat), "subc.png", type,            \
-                               Cls::construct);                                \
+#define LIB_ITEM(Cls, name, cat, type)                              \
+    LibraryItem *Cls::libraryItem()                                 \
+    {                                                               \
+        return new LibraryItem(tr(name), tr(cat), "subc.png", type, \
+                               Cls::construct);                     \
     }
 
 static const char *SwitchPart_properties[] = {
@@ -104,9 +104,9 @@ SpdtSwitch::SpdtSwitch(QObject *parent, QString type, QString id, bool toggle) :
     Pin *p3  = addPin("P3", 270, QPoint(8, 12), "");
     m_r1     = addRes(pc, p1, 1);
     m_r3     = addRes(pc, p3, 1);
-    m_zone = addZone(toggle ? QRectF(-10, -24, 20, 24)
-                            : QRectF(-12, -8, 24, 12),
-                     "", false, false);
+    m_zone =
+        addZone(toggle ? QRectF(-10, -24, 20, 24) : QRectF(-12, -8, 24, 12), "",
+                false, false);
     setLabelPos(-12, toggle ? -40 : -24, 0);
     setSwitch(m_r1, true);
     setSwitch(m_r3, false);
@@ -133,9 +133,11 @@ void SpdtSwitch::paintOver(QPainter *p)
     if (m_toggle) { // Lever tilts toward the connected pin
         QPointF base(0, -10);
         QPointF tip(m_pos ? 7 : -7, -22);
-        p->setPen(QPen(QColor(120, 124, 130), 3.4, Qt::SolidLine, Qt::RoundCap));
+        p->setPen(
+            QPen(QColor(120, 124, 130), 3.4, Qt::SolidLine, Qt::RoundCap));
         p->drawLine(base, tip);
-        p->setPen(QPen(QColor(215, 218, 222), 1.6, Qt::SolidLine, Qt::RoundCap));
+        p->setPen(
+            QPen(QColor(215, 218, 222), 1.6, Qt::SolidLine, Qt::RoundCap));
         p->drawLine(base, tip);
         p->setPen(Qt::NoPen);
         p->setBrush(QColor(200, 204, 210));
@@ -147,7 +149,8 @@ void SpdtSwitch::paintOver(QPainter *p)
         p->drawRoundedRect(QRectF(x + 0.5, -6.5, 7, 7.5), 1.2, 1.2);
         p->setPen(QPen(QColor(120, 120, 124), 0.5));
         for (int i = 0; i < 3; i++)
-            p->drawLine(QPointF(x + 2 + i * 2, -5), QPointF(x + 2 + i * 2, -0.5));
+            p->drawLine(QPointF(x + 2 + i * 2, -5),
+                        QPointF(x + 2 + i * 2, -0.5));
     }
     p->restore();
 }

@@ -13,11 +13,11 @@
 #include <QPainter>
 #include <math.h>
 
-#define LIB_ITEM(Cls, name, cat, type)                                         \
-    LibraryItem *Cls::libraryItem()                                            \
-    {                                                                          \
-        return new LibraryItem(tr(name), tr(cat), "subc.png", type,            \
-                               Cls::construct);                                \
+#define LIB_ITEM(Cls, name, cat, type)                              \
+    LibraryItem *Cls::libraryItem()                                 \
+    {                                                               \
+        return new LibraryItem(tr(name), tr(cat), "subc.png", type, \
+                               Cls::construct);                     \
     }
 
 static const char *IcModule_properties[] = {
@@ -79,12 +79,12 @@ LIB_ITEM(Optocoupler, "PC817 Optocoupler", "Semiconductors", "Optocoupler")
 Optocoupler::Optocoupler(QObject *parent, QString type, QString id) :
     ModuleBase(parent, type, id)
 {
-    m_area  = QRectF(-8, -8, 16, 16);
-    m_ctr   = 100;
-    Pin *a  = addPin("A", 180, QPoint(-12, -4), "A");
-    Pin *k  = addPin("K", 180, QPoint(-12, 4), "K");
-    m_c     = addPin("C", 0, QPoint(12, -4), "C");
-    m_e     = addPin("E", 0, QPoint(12, 4), "E");
+    m_area = QRectF(-8, -8, 16, 16);
+    m_ctr  = 100;
+    Pin *a = addPin("A", 180, QPoint(-12, -4), "A");
+    Pin *k = addPin("K", 180, QPoint(-12, 4), "K");
+    m_c    = addPin("C", 0, QPoint(12, -4), "C");
+    m_e    = addPin("E", 0, QPoint(12, 4), "E");
     for (Pin *p : m_pins) {
         p->setLength(3);
         p->setLabelColor(QColor(250, 250, 200));
@@ -130,16 +130,16 @@ LIB_ITEM(RelayModule, "Relay Module", "Modules", "RelayModule")
 RelayModule::RelayModule(QObject *parent, QString type, QString id) :
     ModuleBase(parent, type, id)
 {
-    m_area       = QRectF(-32, -24, 64, 48);
-    m_activeLow  = true;
-    m_energized  = false;
-    m_powered    = false;
-    m_vcc        = addPin("VCC", 180, QPoint(-28, -8), "VCC");
-    m_gnd        = addPin("GND", 180, QPoint(-28, 0), "GND");
-    m_in         = addPin("IN", 180, QPoint(-28, 8), "IN");
-    Pin *nc      = addPin("NC", 0, QPoint(28, -8), "NC");
-    Pin *com     = addPin("COM", 0, QPoint(28, 0), "COM");
-    Pin *no      = addPin("NO", 0, QPoint(28, 8), "NO");
+    m_area      = QRectF(-32, -24, 64, 48);
+    m_activeLow = true;
+    m_energized = false;
+    m_powered   = false;
+    m_vcc       = addPin("VCC", 180, QPoint(-28, -8), "VCC");
+    m_gnd       = addPin("GND", 180, QPoint(-28, 0), "GND");
+    m_in        = addPin("IN", 180, QPoint(-28, 8), "IN");
+    Pin *nc     = addPin("NC", 0, QPoint(28, -8), "NC");
+    Pin *com    = addPin("COM", 0, QPoint(28, 0), "COM");
+    Pin *no     = addPin("NO", 0, QPoint(28, 8), "NO");
     for (Pin *p : m_pins)
         p->setLength(3);
     m_coil = addRes(m_vcc, m_gnd, 1500);
@@ -159,7 +159,7 @@ void RelayModule::evaluate()
     if (m_powered && m_in->isConnected()) {
         double v = m_in->getVolt() - m_gnd->getVolt();
         double h = m_vcc->getVolt() - m_gnd->getVolt();
-        act = m_activeLow ? (v < h * 0.3) : (v > h * 0.5);
+        act      = m_activeLow ? (v < h * 0.3) : (v > h * 0.5);
     }
     m_energized = act;
     setResAdmit(m_coil, act ? 1 / 66.0 : 1 / 1500.0); // 70 mA coil + LED
@@ -184,15 +184,15 @@ LIB_ITEM(MosfetModule, "IRF520 MOSFET Module", "Modules", "MosfetModule")
 MosfetModule::MosfetModule(QObject *parent, QString type, QString id) :
     ModuleBase(parent, type, id)
 {
-    m_area       = QRectF(-32, -28, 64, 56);
-    m_vgs        = 0;
-    Pin *vinp    = addPin("VINP", 180, QPoint(-24, -8), "VIN+");
-    Pin *vinn    = addPin("VINN", 180, QPoint(-24, 8), "VIN-");
-    Pin *vp      = addPin("VP", 0, QPoint(24, -8), "V+");
-    Pin *vn      = addPin("VN", 0, QPoint(24, 8), "V-");
-    m_sig        = addPin("SIG", 270, QPoint(-8, 24), "SIG");
-    Pin *vcc     = addPin("VCC", 270, QPoint(0, 24), "VCC");
-    m_gnd        = addPin("GND", 270, QPoint(8, 24), "GND");
+    m_area    = QRectF(-32, -28, 64, 56);
+    m_vgs     = 0;
+    Pin *vinp = addPin("VINP", 180, QPoint(-24, -8), "VIN+");
+    Pin *vinn = addPin("VINN", 180, QPoint(-24, 8), "VIN-");
+    Pin *vp   = addPin("VP", 0, QPoint(24, -8), "V+");
+    Pin *vn   = addPin("VN", 0, QPoint(24, 8), "V-");
+    m_sig     = addPin("SIG", 270, QPoint(-8, 24), "SIG");
+    Pin *vcc  = addPin("VCC", 270, QPoint(0, 24), "VCC");
+    m_gnd     = addPin("GND", 270, QPoint(8, 24), "GND");
     Q_UNUSED(vcc);
     for (Pin *p : m_pins)
         p->setLength(3);
@@ -209,7 +209,7 @@ MosfetModule::MosfetModule(QObject *parent, QString type, QString id) :
 }
 void MosfetModule::evaluate()
 {
-    m_vgs = m_sig->isConnected() ? m_sig->getVolt() - volt(m_gnd) : 0;
+    m_vgs    = m_sig->isConnected() ? m_sig->getVolt() - volt(m_gnd) : 0;
     double g = 1e-9;
     if (m_vgs > 2.0) { // Vgs(th) 2..4 V, Rds(on) 0.27 ohm at 10 V
         double r = 0.27 + 5.7 * exp(-(m_vgs - 2.0) / 1.2);

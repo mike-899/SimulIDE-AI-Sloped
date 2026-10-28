@@ -18,8 +18,8 @@
 class MAINMODULE_EXPORT TactileButton : public ModuleBase
 {
     Q_OBJECT
-    Q_PROPERTY(bool Pressed READ pressed WRITE setPressed DESIGNABLE true USER
-                   true)
+    Q_PROPERTY(
+        bool Pressed READ pressed WRITE setPressed DESIGNABLE true USER true)
     MODULE_FACTORY(TactileButton)
   public:
     TactileButton(QObject *parent, QString type, QString id);
@@ -43,8 +43,8 @@ class MAINMODULE_EXPORT TactileButton : public ModuleBase
 class MAINMODULE_EXPORT SpdtSwitch : public ModuleBase
 {
     Q_OBJECT
-    Q_PROPERTY(int Position READ position WRITE setPosition DESIGNABLE true
-                   USER true)
+    Q_PROPERTY(
+        int Position READ position WRITE setPosition DESIGNABLE true USER true)
   public:
     SpdtSwitch(QObject *parent, QString type, QString id, bool toggle);
     int position()
@@ -89,8 +89,8 @@ class MAINMODULE_EXPORT ToggleSwitch : public SpdtSwitch
 class MAINMODULE_EXPORT ReedSwitch : public ModuleBase
 {
     Q_OBJECT
-    Q_PROPERTY(bool Magnet READ magnet WRITE setMagnet DESIGNABLE true USER
-                   true)
+    Q_PROPERTY(
+        bool Magnet READ magnet WRITE setMagnet DESIGNABLE true USER true)
     MODULE_FACTORY(ReedSwitch)
   public:
     ReedSwitch(QObject *parent, QString type, QString id);

@@ -52,7 +52,10 @@ class AudioOut : public Component, public eResistor
 
         bool buzzer() { return m_buzzer; }
         void setBuzzer( bool buz ) { m_buzzer = buz; }
-        void setBuzzFreq( int hz ) { m_buzzFreq = hz; } // Active buzzer tone
+        void setBuzzFreq(int hz)
+        {
+            m_buzzFreq = hz;
+        } // Active buzzer tone
 
         virtual void stamp();
         virtual void resetState();

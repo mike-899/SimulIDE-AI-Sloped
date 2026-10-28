@@ -47,8 +47,7 @@ class Reg7805 : public VoltReg
 class Lm317 : public VoltReg
 {
   public:
-    Lm317(QObject *parent, QString type, QString id) :
-        VoltReg(parent, type, id)
+    Lm317(QObject *parent, QString type, QString id) : VoltReg(parent, type, id)
     {
         setVRef(1.25);
         // TO-220 front view, left to right: ADJ OUT IN
@@ -95,7 +94,7 @@ class Stepper28BYJ : public Stepper
     }
 };
 
-template <typename T>
+template<typename T>
 static Component *make(QObject *parent, QString type, QString id)
 {
     return new T(parent, type, id);
@@ -149,9 +148,9 @@ void addModuleItems(ItemLibrary *lib)
     // Motors and drivers
     lib->addItem(TB6612::libraryItem());
     lib->addItem(Uln2003::libraryItem());
-    lib->addItem(new LibraryItem(
-        QObject::tr("Stepper 28BYJ-48"), QObject::tr("Motors"), "steeper.png",
-        "Stepper28BYJ", make<Stepper28BYJ>));
+    lib->addItem(new LibraryItem(QObject::tr("Stepper 28BYJ-48"),
+                                 QObject::tr("Motors"), "steeper.png",
+                                 "Stepper28BYJ", make<Stepper28BYJ>));
     // Modules
     lib->addItem(RelayModule::libraryItem());
     lib->addItem(MosfetModule::libraryItem());
@@ -161,24 +160,24 @@ void addModuleItems(ItemLibrary *lib)
         "Q2N2222", [](QObject *p, QString t, QString i) {
             return makeBjt(p, t, i, BJT::Q2N2222);
         }));
-    lib->addItem(new LibraryItem(
-        QObject::tr("BC547 NPN"), QObject::tr("Semiconductors"), "bjt.png",
-        "BC547", [](QObject *p, QString t, QString i) {
-            return makeBjt(p, t, i, BJT::BC547);
-        }));
+    lib->addItem(new LibraryItem(QObject::tr("BC547 NPN"),
+                                 QObject::tr("Semiconductors"), "bjt.png",
+                                 "BC547", [](QObject *p, QString t, QString i) {
+                                     return makeBjt(p, t, i, BJT::BC547);
+                                 }));
     lib->addItem(new LibraryItem(
         QObject::tr("TIP120 Darlington"), QObject::tr("Semiconductors"),
         "bjt.png", "TIP120", [](QObject *p, QString t, QString i) {
             return makeBjt(p, t, i, BJT::TIP120);
         }));
     lib->addItem(new LibraryItem(
-        QObject::tr("1N4007 Diode"), QObject::tr("Semiconductors"),
-        "diode.png", "D1N4007", [](QObject *p, QString t, QString i) {
+        QObject::tr("1N4007 Diode"), QObject::tr("Semiconductors"), "diode.png",
+        "D1N4007", [](QObject *p, QString t, QString i) {
             return makeDiode(p, t, i, Diode::D1N4007);
         }));
     lib->addItem(new LibraryItem(
-        QObject::tr("1N4148 Diode"), QObject::tr("Semiconductors"),
-        "diode.png", "D1N4148", [](QObject *p, QString t, QString i) {
+        QObject::tr("1N4148 Diode"), QObject::tr("Semiconductors"), "diode.png",
+        "D1N4148", [](QObject *p, QString t, QString i) {
             return makeDiode(p, t, i, Diode::D1N4148);
         }));
     lib->addItem(new LibraryItem(

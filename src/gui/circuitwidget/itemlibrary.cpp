@@ -77,6 +77,7 @@
 //#include "outbus.h"
 #include "dcmotor.h"
 #include "hbridge.h"
+#include "moduleitems.h"
 #include "pcd8544.h"
 #include "piccomponent.h"
 #include "potentiometer.h"
@@ -102,7 +103,6 @@
 #include "switchdip.h"
 #include "textcomponent.h"
 #include "volt_reg.h"
-#include "moduleitems.h"
 #include "voltimeter.h"
 #include "voltsource.h"
 #include "wavegen.h"
@@ -183,8 +183,10 @@ void ItemLibrary::loadItems()
     addItem(L293D::libraryItem());
     addItem( AudioOut::libraryItem() );
     // Sensors, power parts, modules and named presets
-    addItem(new LibraryItem(tr("Power"), tr("Sources"), "voltsource.png", "", 0l));
-    addItem(new LibraryItem(tr("Semiconductors"), tr("Active"), "bjt.png", "", 0l));
+    addItem(
+        new LibraryItem(tr("Power"), tr("Sources"), "voltsource.png", "", 0l));
+    addItem(
+        new LibraryItem(tr("Semiconductors"), tr("Active"), "bjt.png", "", 0l));
     addItem(new LibraryItem(tr("Modules"), tr("Micro"), "subc.png", "", 0l));
     addModuleItems(this);
     // Micro

@@ -15,11 +15,11 @@
 #include <QPainter>
 #include <math.h>
 
-#define LIB_ITEM(Cls, name, cat, type)                                         \
-    LibraryItem *Cls::libraryItem()                                            \
-    {                                                                          \
-        return new LibraryItem(tr(name), tr(cat), "subc.png", type,            \
-                               Cls::construct);                                \
+#define LIB_ITEM(Cls, name, cat, type)                              \
+    LibraryItem *Cls::libraryItem()                                 \
+    {                                                               \
+        return new LibraryItem(tr(name), tr(cat), "subc.png", type, \
+                               Cls::construct);                     \
     }
 
 static const char *Power_properties[] = {
@@ -36,27 +36,28 @@ Battery::Battery(QObject *parent, QString type, QString id, int kind) :
     m_kind = kind;
     Pin *pos, *neg;
     switch (kind) {
-    case 0: // PP3
-        m_area = QRectF(-14, -24, 28, 48);
-        m_volt = 9;
-        m_ri   = 1.5;
-        pos    = addPin("PLUS", 90, QPoint(-8, -24), "+");
-        neg    = addPin("MINUS", 90, QPoint(8, -24), "-");
-        break;
-    case 1: // 2xAA holder with flying leads
-    case 2: // 4xAA
-        m_area = QRectF(-32, kind == 1 ? -12 : -20, 56, kind == 1 ? 24 : 40);
-        m_volt = kind == 1 ? 3 : 6;
-        m_ri   = kind == 1 ? 0.3 : 0.6;
-        pos    = addPin("PLUS", 0, QPoint(40, -4), "+");
-        neg    = addPin("MINUS", 0, QPoint(40, 4), "-");
-        break;
-    default: // CR2032
-        m_area = QRectF(-16, -16, 32, 32);
-        m_volt = 3;
-        m_ri   = 15;
-        neg    = addPin("MINUS", 180, QPoint(-16, 0), "-");
-        pos    = addPin("PLUS", 0, QPoint(16, 0), "+");
+        case 0: // PP3
+            m_area = QRectF(-14, -24, 28, 48);
+            m_volt = 9;
+            m_ri   = 1.5;
+            pos    = addPin("PLUS", 90, QPoint(-8, -24), "+");
+            neg    = addPin("MINUS", 90, QPoint(8, -24), "-");
+            break;
+        case 1: // 2xAA holder with flying leads
+        case 2: // 4xAA
+            m_area =
+                QRectF(-32, kind == 1 ? -12 : -20, 56, kind == 1 ? 24 : 40);
+            m_volt = kind == 1 ? 3 : 6;
+            m_ri   = kind == 1 ? 0.3 : 0.6;
+            pos    = addPin("PLUS", 0, QPoint(40, -4), "+");
+            neg    = addPin("MINUS", 0, QPoint(40, 4), "-");
+            break;
+        default: // CR2032
+            m_area = QRectF(-16, -16, 32, 32);
+            m_volt = 3;
+            m_ri   = 15;
+            neg    = addPin("MINUS", 180, QPoint(-16, 0), "-");
+            pos    = addPin("PLUS", 0, QPoint(16, 0), "+");
     }
     for (Pin *p : m_pins) {
         p->setLength(3);
