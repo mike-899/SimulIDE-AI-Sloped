@@ -54,6 +54,7 @@ class McpTools : public QObject
     QJsonObject stopSimulation(const QJsonObject &a);
     QJsonObject getSimulationState(const QJsonObject &a);
     QJsonObject getComponentState(const QJsonObject &a);
+    QJsonObject getPinVoltages(const QJsonObject &a);
     QJsonObject loadFirmware(const QJsonObject &a);
     QJsonObject ispProgram(const QJsonObject &a);
     QJsonObject setCode(const QJsonObject &a);

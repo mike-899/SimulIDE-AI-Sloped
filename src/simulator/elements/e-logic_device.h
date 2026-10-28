@@ -89,6 +89,16 @@ class MAINMODULE_EXPORT eLogicDevice : public eElement
         void setClockPin( eSource* clockPin) { m_clockPin = clockPin; }
         void setInput( int n, eSource* input );
         void createClockPin();
+
+        // Input / output stages (SPICE export)
+        eSource *inputSource(int i)
+        {
+            return m_input[i];
+        }
+        eSource *outputSource(int i)
+        {
+            return m_output[i];
+        }
         void createOutEnablePin();
         void createInEnablePin();
 

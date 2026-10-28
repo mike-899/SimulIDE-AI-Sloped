@@ -14,8 +14,10 @@
 #include "e-element.h"
 #include "e-node.h"
 #include "mainwindow.h"
+#include "mcucomponent.h"
 #include "ngspice-api.h"
 #include "simulator.h"
+#include "spicecosim.h"
 
 #include <QCoreApplication>
 #include <QLibrary>
@@ -103,6 +105,30 @@ int SpiceEngine::cbBgRunning(bool notRunning, int, void *user)
     // ngspice sends 'true' when the background thread is NOT running
     SpiceEngine *e = static_cast<SpiceEngine *>(user);
     e->m_bgRunning = !notRunning; // Informative only, see step()
+    if (notRunning && e->m_cosim && SpiceCosim::s_active)
+        SpiceCosim::self()->onBgEnded(); // Chunk finished (or failed)
+    return 0;
+}
+
+int SpiceEngine::cbVsrc(double *value, double time, char *name, int, void *user)
+{
+    SpiceEngine *e = static_cast<SpiceEngine *>(user);
+    *value         = 0;
+    if (e->m_cosim)
+        *value = SpiceCosim::self()->sourceValue(name, time + e->m_chunkOffset);
+    return 0;
+}
+
+int SpiceEngine::cbSync(double time, double *delta, double, int redostep, int,
+                        int loc, void *user)
+{
+    // Called by ngspice before every time step (loc 0, after accepting a
+    // point) and after a step was computed (loc 1). Only the
+    // co-simulation limits the step; ngspice decides otherwise.
+    SpiceEngine *e = static_cast<SpiceEngine *>(user);
+    if (e->m_cosim && !e->m_halt)
+        SpiceCosim::self()->onSync(time + e->m_chunkOffset, delta, redostep,
+                                   loc);
     return 0;
 }
 
@@ -125,6 +151,8 @@ int SpiceEngine::cbData(void *data, int, int, void *user)
             }
             if (name.startsWith("v(") && name.endsWith(")"))
                 name = name.mid(2, name.size() - 3);
+            else if (name.startsWith("i(") && name.endsWith(")"))
+                name = name.mid(2, name.size() - 3) + "#branch";
             e->m_vecToSlot[i] = e->m_slotNames.indexOf(name);
         }
         e->m_mapDone = true;
@@ -141,6 +169,14 @@ int SpiceEngine::cbData(void *data, int, int, void *user)
             p.v[s] = all->vecsa[i]->creal;
     }
     e->m_lastTime = p.t;
+    if (e->m_cosim) // Lockstep: apply now, the MCU thread is waiting
+    {
+        e->m_last = p.v;
+        e->m_chunkPoints++;
+        e->applyPoint(p);
+        SpiceCosim::self()->onPoint(p.t);
+        return 0;
+    }
     {
         QMutexLocker lock(&e->m_mutex);
         e->m_last = p.v;
@@ -186,6 +222,15 @@ static int ng_bg(NG_BOOL r, int id, void *u)
 {
     return SpiceEngine::cbBgRunning(r, id, u);
 }
+static int ng_vsrc(double *v, double t, char *n, int id, void *u)
+{
+    return SpiceEngine::cbVsrc(v, t, n, id, u);
+}
+static int ng_sync(double t, double *d, double od, int rs, int id, int loc,
+                   void *u)
+{
+    return SpiceEngine::cbSync(t, d, od, rs, id, loc, u);
+}
 }
 
 //------------------------------------------------------------------ engine --
@@ -226,6 +271,11 @@ bool SpiceEngine::load(QString *error)
     }
     ((ngSpice_Init_t)m_init)(ng_char, ng_stat, ng_exit, ng_data, ng_init, ng_bg,
                              this);
+    // EXTERNAL sources and time step control for the MCU co-simulation
+    m_initSync = (void *)m_lib->resolve("ngSpice_Init_Sync");
+    if (m_initSync)
+        ((ngSpice_Init_Sync_t)m_initSync)(ng_vsrc, nullptr, ng_sync, nullptr,
+                                          this);
     m_initialized = true;
     return true;
 }
@@ -278,7 +328,7 @@ QString SpiceEngine::netlistText(QString *error)
 {
     SpiceNetlist net;
     QString err;
-    bool ok = net.build(&err);
+    bool ok = net.build(&err, true); // MCU pins as EXTERNAL sources
     if (error)
         *error = err;
     QString text = net.lines(m_chunkLen, m_maxStep).join("\n");
@@ -292,7 +342,7 @@ bool SpiceEngine::runChunk(const QHash<eNode *, double> *ic, QString *error)
     command("destroy all");
     command("remcirc");
 
-    QStringList lines = m_net.lines(m_chunkLen, m_maxStep, ic);
+    QStringList lines = m_net.lines(m_chunkLen, m_maxStep, ic, m_cosim);
     std::vector<QByteArray> store;
     std::vector<char *> ptrs;
     for (const QString &l : lines)
@@ -305,8 +355,9 @@ bool SpiceEngine::runChunk(const QHash<eNode *, double> *ic, QString *error)
         QMutexLocker lock(&m_mutex);
         m_failed = false;
     }
-    m_mapDone   = false;
-    m_chunkDone = false;
+    m_mapDone     = false;
+    m_chunkDone   = false;
+    m_chunkPoints = 0;
     ((ngSpice_Circ_t)m_circ)(ptrs.data());
 
     bool failed;
@@ -325,20 +376,8 @@ bool SpiceEngine::runChunk(const QHash<eNode *, double> *ic, QString *error)
     return true;
 }
 
-bool SpiceEngine::start(QString *error)
+void SpiceEngine::mapSlots()
 {
-    stop();
-    if (!load(error))
-        return false;
-    if (!m_net.build(error))
-        return false;
-
-    MainWindow *mw = MainWindow::self();
-    if (mw) {
-        double ms = mw->settings()->value("spice/maxstep", 20e-6).toDouble();
-        if (ms > 1e-9 && ms < 1e-2)
-            m_maxStep = ms;
-    }
     m_slotNodes.clear();
     m_slotNames.clear();
     for (eNode *n : m_net.nodes()) {
@@ -347,6 +386,38 @@ bool SpiceEngine::start(QString *error)
     }
     for (const SpiceNetlist::Ammeter &a : m_net.ammeters())
         m_slotNames.append(a.vector);
+}
+
+static double setting(const char *key, double def, double min, double max)
+{
+    MainWindow *mw = MainWindow::self();
+    if (!mw)
+        return def;
+    double v = mw->settings()->value(key, def).toDouble();
+    return (v >= min && v <= max) ? v : def;
+}
+
+bool SpiceEngine::start(QString *error)
+{
+    stop();
+    if (!load(error))
+        return false;
+
+    // Microcontrollers run in lockstep with ngspice (SpiceCosim)
+    m_cosim = !McuComponent::mcuList().isEmpty();
+    if (m_cosim && !m_initSync) {
+        if (error)
+            *error = "this libngspice has no ngSpice_Init_Sync (needed to "
+                     "co-simulate microcontrollers)";
+        m_cosim = false;
+        return false;
+    }
+    if (!m_net.build(error, m_cosim)) {
+        m_cosim = false;
+        return false;
+    }
+    m_maxStep = setting("spice/maxstep", 20e-6, 1e-9, 1e-2);
+    mapSlots();
 
     m_clockEls.clear(); // Elements sampled every simulation step (scopes)
     for (eElement *el : Simulator::self()->m_simuClock)
@@ -364,57 +435,185 @@ bool SpiceEngine::start(QString *error)
     m_lastTime    = 0;
     m_wall.start();
 
-    if (!runChunk(nullptr, error))
+    SpiceCosim *cs = SpiceCosim::self();
+    if (m_cosim) {
+        // The MCUs run at most one "horizon" ahead of ngspice (latency of
+        // asynchronous inputs such as pin change interrupts); ngspice may
+        // reach the next sync time in one step (max step = 1.25 horizon).
+        double horizon = setting("spice/cosimHorizon", 50e-6, 1e-7, 1e-2);
+        m_maxStep      = 1.25 * horizon;
+        m_chunkLen     = 0.25;
+        cs->setParams(horizon, setting("spice/cosimRise", 10e-9, 1e-12, 1e-6),
+                      setting("spice/cosimInputRes", 2e-6, 0, 1e-3));
+        cs->begin(0);
+        cs->setup(this, m_net.mcuPins());
+        cs->prepareChunk(0, m_chunkLen, 0);
+    } else
+        m_chunkLen = 2;
+
+    if (!runChunk(nullptr, error) || (m_cosim && !cs->waitParked())) {
+        if (m_cosim) {
+            if (error && cs->failed())
+                *error = cs->error() + "\n" + log();
+            stop();
+        }
         return false;
+    }
     m_running = true;
     std::cout << "\n    ngspice engine running (" << m_net.nodes().size()
-              << " nodes)\n"
-              << std::endl;
+              << " nodes";
+    if (m_cosim)
+        std::cout << ", " << McuComponent::mcuList().size()
+                  << " MCU co-simulated, " << m_net.mcuPins().size()
+                  << " MCU pins";
+    std::cout << ")\n" << std::endl;
     return true;
+}
+
+void SpiceEngine::halt()
+{
+    m_halt    = true;
+    m_running = false;
+    if (m_cosim) {
+        SpiceCosim::s_active = false;
+        SpiceCosim::self()->release(); // ngspice is parked in cbSync
+    }
+    haltBg();
+    QMutexLocker lock(&m_mutex);
+    m_queue.clear();
 }
 
 void SpiceEngine::stop()
 {
-    m_halt    = true;
-    m_running = false;
-    haltBg();
-    QMutexLocker lock(&m_mutex);
-    m_queue.clear();
+    halt();
+    if (m_cosim)
+        SpiceCosim::self()->end();
+    m_cosim = false;
 }
 
 void SpiceEngine::restart()
 {
     QHash<eNode *, double> ic;
     QString err;
-    stop();
-    if (!m_net.build(&err)) {
+    halt();
+    if (!m_net.build(&err, m_cosim)) {
         std::cout << "ngspice: " << err.toStdString() << std::endl;
+        stop();
         return;
     }
     for (eNode *n : m_net.nodes())
         ic.insert(n, n->getVolt());
+    mapSlots();
 
-    m_slotNodes.clear();
-    m_slotNames.clear();
-    for (eNode *n : m_net.nodes()) {
-        m_slotNodes.append(n);
-        m_slotNames.append(m_net.nodeName(n));
+    SpiceCosim *cs = SpiceCosim::self();
+    if (m_cosim) {
+        m_lastTime = cs->time();
+        cs->setup(this, m_net.mcuPins());
+        SpiceCosim::s_active = true;
+        cs->prepareChunk(m_lastTime, m_chunkLen, m_lastTime);
     }
-    for (const SpiceNetlist::Ammeter &a : m_net.ammeters())
-        m_slotNames.append(a.vector);
-
     m_chunkOffset = m_lastTime;
     m_wallOffset  = m_lastTime;
     m_wall.restart();
-    if (runChunk(&ic, &err))
+    if (runChunk(&ic, &err) && (!m_cosim || cs->waitParked()))
         m_running = true;
-    else
+    else {
         std::cout << "ngspice: " << err.toStdString() << std::endl;
+        if (m_cosim)
+            stop();
+    }
+}
+
+//---------------------------------------------------- MCU co-simulation --
+
+double SpiceEngine::cosimBatchEnd(double tick)
+{
+    double simT = SpiceCosim::self()->time();
+    double wall = m_wallOffset + m_wall.nsecsElapsed() * 1e-9;
+    // As fast as possible up to real time; when slower, simply slower
+    return std::min(simT + tick, wall + tick);
+}
+
+void SpiceEngine::cosimRun()
+{
+    SpiceCosim *cs     = SpiceCosim::self();
+    Simulator *sim     = Simulator::self();
+    const double slice = 0.02; // Simulated / wall seconds per batch
+    while (m_running && m_cosim && sim->isRunning() && !cs->failed()) {
+        double tEnd = cosimBatchEnd(slice);
+        if (tEnd - cs->time() < 1e-4) // Ahead of real time: wait
+        {
+            QThread::usleep(1000);
+            continue;
+        }
+        cs->runBatch(tEnd, slice);
+    }
+    if (cs->failed()) {
+        std::cout << "ngspice co-simulation error: "
+                  << cs->error().toStdString() << "\n"
+                  << log().toStdString() << std::endl;
+        m_running    = false;
+        sim->m_error = true; // GUI stops the simulation
+    }
+}
+
+bool SpiceEngine::cosimNextChunk()
+{
+    // Keep the stored transient small: the next chunk is as long as
+    // about 200000 points (1 ms .. 1 s)
+    double len = m_chunkLen;
+    if (m_chunkPoints > 0)
+        len = m_chunkLen * 200000.0 / m_chunkPoints;
+    m_chunkLen = std::max(1e-3, std::min(1.0, len));
+
+    QHash<eNode *, double> ic;
+    {
+        QMutexLocker lock(&m_mutex);
+        for (int i = 0; i < m_slotNodes.size() && i < (int)m_last.size(); i++)
+            ic.insert(m_slotNodes[i], m_last[i]);
+    }
+    SpiceCosim *cs = SpiceCosim::self();
+    double t       = cs->time();
+    m_chunkOffset  = t;
+    cs->prepareChunk(t, m_chunkLen, std::max(t, cs->target()));
+    QString err;
+    if (!runChunk(&ic, &err)) {
+        std::cout << "ngspice: " << err.toStdString() << std::endl;
+        return false;
+    }
+    return true;
+}
+
+void SpiceEngine::applyPoint(const Point &p)
+{
+    Simulator *sim                          = Simulator::self();
+    const QList<SpiceNetlist::Ammeter> &ams = m_net.ammeters();
+    int nNodes                              = m_slotNodes.size();
+    double stepsPerS                        = sim->m_stepsPerus * 1e6;
+
+    for (int i = 0; i < nNodes; i++)
+        m_slotNodes[i]->setVolt(p.v[i]);
+    for (int k = 0; k < ams.size(); k++) {
+        double I = p.v[nNodes + k];
+        ams[k].rNode->setVolt(ams[k].lNode->getVolt() - I * ams[k].res);
+    }
+    uint64_t target = (uint64_t)(p.t * stepsPerS + 0.5);
+    while (sim->m_step < target) {
+        for (eElement *el : m_clockEls)
+            el->simuClockStep();
+        sim->m_step++;
+    }
+    sim->m_circTime = sim->m_step * sim->m_stepNS;
+    // Native solver lists filled by setVolt() are not used here
+    sim->m_changedFast.clear();
+    sim->m_reactive.clear();
+    sim->m_nonLinear.clear();
+    sim->m_eChangedNodeList.clear();
 }
 
 void SpiceEngine::step()
 {
-    if (!m_running)
+    if (!m_running || m_cosim)
         return;
     Simulator *sim = Simulator::self();
 
@@ -455,26 +654,16 @@ void SpiceEngine::step()
         QMutexLocker lock(&m_mutex);
         pts.swap(m_queue);
     }
-    const QList<SpiceNetlist::Ammeter> &ams = m_net.ammeters();
-    int nNodes                              = m_slotNodes.size();
-    double stepsPerS                        = sim->m_stepsPerus * 1e6;
     uint64_t maxSteps = sim->m_step + 4 * sim->m_circuitRate + 1;
+    double stepsPerS  = sim->m_stepsPerus * 1e6;
 
     for (const Point &p : pts) {
-        for (int i = 0; i < nNodes; i++)
-            m_slotNodes[i]->setVolt(p.v[i]);
-        for (int k = 0; k < ams.size(); k++) {
-            double I = p.v[nNodes + k];
-            ams[k].rNode->setVolt(ams[k].lNode->getVolt() - I * ams[k].res);
-        }
-        uint64_t target = (uint64_t)(p.t * stepsPerS);
-        if (target > maxSteps)
-            target = maxSteps;
-        while (sim->m_step < target) {
-            for (eElement *el : m_clockEls)
-                el->simuClockStep();
-            sim->m_step++;
-        }
+        if ((uint64_t)(p.t * stepsPerS) > maxSteps) // GUI was late
+        {
+            Point q = p;
+            q.t     = maxSteps / stepsPerS;
+            applyPoint(q);
+        } else
+            applyPoint(p);
     }
-    sim->m_circTime = sim->m_step * sim->m_stepNS;
 }

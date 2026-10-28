@@ -708,9 +708,11 @@ void MainWindow::createMenus()
     QAction *spiceAct = m_spiceAct = simMenu->addAction(
         materialIcon("tune"), tr("Accurate analog (ngspice)"));
     spiceAct->setObjectName("spiceEngineAction");
-    spiceAct->setToolTip(tr("Solve purely analog circuits with ngspice "
-                            "(circuits with MCUs keep using the native "
-                            "engine). See docs/ANALOG_ENGINE.md"));
+    spiceAct->setToolTip(tr("Solve the circuit with ngspice. "
+                            "Microcontrollers run in lockstep with it in "
+                            "simulated time: accurate, but it may run "
+                            "slower than real time (see the speed %). "
+                            "See docs/ANALOG_ENGINE.md"));
     spiceAct->setCheckable(true);
     spiceAct->setChecked(SpiceEngine::enabled());
     connect(spiceAct, &QAction::toggled, [this](bool on) {

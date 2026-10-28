@@ -102,6 +102,15 @@ class MAINMODULE_EXPORT Simulator : public QObject
     {
         return m_spiceMode;
     }
+    QList<BaseProcessor *> mcuList()
+    {
+        return m_mcuList;
+    }
+    // Measured simulation speed, % of real time (updated every second)
+    double realSpeed()
+    {
+        return m_realSpeed;
+    }
 
     void addToEnodeBusList(eNode *nod);
     void remFromEnodeBusList(eNode *nod, bool del);
@@ -183,6 +192,7 @@ class MAINMODULE_EXPORT Simulator : public QObject
     bool m_paused;
     bool m_error;
     bool m_spiceMode; // Analog circuit solved by ngspice (SpiceEngine)
+    double m_realSpeed = 0;
 
     int m_timerId;
     int m_timerTick;

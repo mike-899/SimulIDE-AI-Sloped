@@ -48,7 +48,7 @@ read/write files with your user rights). Use `--no-mcp` if that is a concern.
 |------|-----------|-------------|
 | `list_component_types` | `category?` | All placeable component types (type, name, category) |
 | `get_circuit` | `include_properties?` | Components (id, type, x, y, rotation, properties, pins and what they connect to) and wires |
-| `add_component` | `type, x, y, rotation?, properties?` | Place a component; returns its id and pin names |
+| `add_component` | `type, x, y, rotation?, properties?` | Place a component; returns its id and pin names. `type: "Node"` places a wire junction (3 pins) to join 3+ pins |
 | `remove_component` | `id` | Remove a component (with its wires) or a single wire |
 | `set_property` | `id, name, value` | Set a property; enums accept names (e.g. `Color: "red"`) |
 | `connect_pins` | `compA, pinA, compB, pinB` | Draw a wire between two pins (pins hold one wire each; use a `Node` to branch) |
@@ -57,15 +57,16 @@ read/write files with your user rights). Use `--no-mcp` if that is a concern.
 | `load_circuit` | `path` | Open a `.simu` file |
 | `save_circuit` | `path` | Save to a `.simu` file |
 | `start_simulation` / `stop_simulation` | | Power the circuit on/off |
-| `get_simulation_state` | | running, paused, step, time, rates |
-| `get_component_state` | `id` | Pin voltages, voltage across 2-pin parts, properties, MCU firmware; for AVRs also `avr` (blank, in_reset, prog_enabled, flash_head, fuses) |
+| `get_simulation_state` | | running, paused, step, time, rates, `real_time_percent` (measured simulated/wall time), `analog_engine` (`native`, `ngspice`, `ngspice+mcu`) and, for the MCU co-simulation, `cosimulation` statistics (simulated time, ngspice points, syncs, MCU pin edges, wall time) |
+| `get_component_state` | `id` | Pin voltages, voltage across 2-pin parts, properties, MCU firmware; for AVRs also `avr` (blank, in_reset, prog_enabled, flash_head, fuses, `gpior` = GPIOR0..2 registers, `cycles`) |
+| `get_pin_voltages` | `ids` | Pin voltages of several components read in one consistent snapshot, plus the simulated time `time_s` |
 | `load_firmware` | `mcu_id, hex_path` | Load a firmware file into an AVR/PIC/Arduino component |
 | `isp_program` | `programmer_id, hex_path, target?, timeout_ms?` | Program the AVR wired to a simulated ArduinoISP with the built-in STK500v1 uploader; waits and returns the log (see `docs/ISP.md`) |
 | `set_code` | `path, code` | Write a source file and open it in the code editor |
 | `compile_code` | `mcu_id?` | Compile the current editor file (optionally binding it to an MCU); returns the compiler output |
 | `select_mcu` | `mcu_id?` | List MCUs in the circuit (id, device, firmware, active) and optionally make one the active target |
 | `screenshot_circuit` | `mode?` (`circuit`/`view`), `max_size?` | PNG of the circuit as MCP image content |
-| `set_analog_engine` | `engine?` (`native`/`ngspice`) | Select the analog engine, report ngspice availability (see ANALOG_ENGINE.md) |
+| `set_analog_engine` | `engine?` (`native`/`ngspice`) | Select the analog engine, report ngspice availability (see ANALOG_ENGINE.md). With `ngspice`, circuits with microcontrollers run in lockstep co-simulation (possibly slower than real time) |
 | `get_spice_netlist` | | SPICE netlist of the circuit as exported for ngspice |
 
 Tool failures are returned as normal results with `isError: true` and a text explanation.

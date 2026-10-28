@@ -94,6 +94,20 @@ void Simulator::timerEvent(
         CircuitWidget::self()->setRate(-1);
         return;
     }
+    if (m_spiceMode && SpiceEngine::self()->cosim()) // ngspice + MCUs
+    {
+        // A worker thread runs the MCUs and ngspice in lockstep in
+        // simulated time, paced to real time when it is fast enough
+        // (otherwise it simply runs slower); here only the GUI is updated.
+        m_refTime = m_RefTimer.nsecsElapsed();
+        m_tStep   = m_step;
+        runGraphicStep1();
+        if (m_CircuitFuture.isFinished())
+            m_CircuitFuture =
+                QtConcurrent::run(&SpiceEngine::cosimRun, SpiceEngine::self());
+        runGraphicStep2();
+        return;
+    }
     if (m_spiceMode) // ngspice solves the circuit: apply its results
     {
         m_refTime = m_RefTimer.nsecsElapsed();
@@ -151,6 +165,7 @@ void Simulator::runGraphicStep2()
     if (deltaRefTime >= 1e9) // We want steps per Sec = 1e9 ns
     {
         stepsPerSec = (m_tStep - m_lastStep) * 1e9 / deltaRefTime;
+        m_realSpeed = (stepsPerSec * 100.0) / (1e6 * m_stepsPerus);
         CircuitWidget::self()->setRate((stepsPerSec * 100) /
                                        (1e6 * m_stepsPerus) /*m_simuRate*/);
         m_lastStep    = m_tStep;
@@ -402,9 +417,10 @@ void Simulator::stopSim()
         m_spiceMode = false;
     }
     // emit pauseDebug();
-    m_paused   = false;
-    m_circTime = 0;
-    m_step     = 0;
+    m_paused    = false;
+    m_circTime  = 0;
+    m_step      = 0;
+    m_realSpeed = 0;
 
     for (eNode *node : m_eNodeList)
         node->setVolt(0);
@@ -428,7 +444,7 @@ void Simulator::pauseSim()
     m_paused = true;
     stopTimer();
     if (m_spiceMode)
-        SpiceEngine::self()->stop();
+        SpiceEngine::self()->halt(); // Keeps the MCU co-simulation state
 
     std::cout << "\n    Simulation Paused \n" << std::endl;
 }

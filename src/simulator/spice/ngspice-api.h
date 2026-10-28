@@ -67,6 +67,13 @@ typedef int(SendData)(pvecvaluesall, int, int, void *);
 typedef int(SendInitData)(pvecinfoall, int, void *);
 typedef int(BGThreadRunning)(NG_BOOL, int, void *);
 
+// ngSpice_Init_Sync callbacks (co-simulation)
+typedef int(GetVSRCData)(double *, double, char *, int, void *);
+typedef int(GetISRCData)(double *, double, char *, int, void *);
+typedef int(GetSyncData)(double, double *, double, int, int, int, void *);
+
+typedef int (*ngSpice_Init_Sync_t)(GetVSRCData *, GetISRCData *, GetSyncData *,
+                                   int *, void *);
 typedef int (*ngSpice_Init_t)(SendChar *, SendStat *, ControlledExit *,
                               SendData *, SendInitData *, BGThreadRunning *,
                               void *);
