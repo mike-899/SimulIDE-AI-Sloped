@@ -23,6 +23,7 @@
 
 class eNode;
 class ePin;
+class McuComponentPin;
 
 class MAINMODULE_EXPORT SpiceNetlist
 {
@@ -36,12 +37,24 @@ class MAINMODULE_EXPORT SpiceNetlist
 
     // Build from the simulator elements. Returns false (and the reasons in
     // *error) when the circuit contains parts that cannot run in SPICE.
-    bool build(QString *error);
+    // withMcu: export microcontroller pins as EXTERNAL driven sources for
+    // the lockstep co-simulation (SpiceCosim); otherwise MCUs are rejected.
+    bool build(QString *error, bool withMcu = false);
 
     // Full netlist text: tran analysis tstop with max step, optional
-    // initial node voltages (continuation of a previous run)
+    // initial node voltages (continuation of a previous run). saveOnly:
+    // store only node voltages and ammeter currents (less memory).
     QStringList lines(double tstop, double maxStep,
-                      const QHash<eNode *, double> *ic = nullptr) const;
+                      const QHash<eNode *, double> *ic = nullptr,
+                      bool saveOnly                    = false) const;
+
+    // MCU pins in co-simulation slot order: slot k is driven by the
+    // EXTERNAL sources "vmv<k>" (Thevenin voltage) and "vmg<k>" (output
+    // conductance) through the B source "bmp<k>".
+    const QList<McuComponentPin *> &mcuPins() const
+    {
+        return m_mcuPins;
+    }
 
     const QHash<QString, eNode *> &vectorNodes() const
     {
@@ -68,6 +81,7 @@ class MAINMODULE_EXPORT SpiceNetlist
     QHash<QString, eNode *> m_vecNodes;
     QHash<QString, QString> m_modelNames; // Model text -> name
     QList<Ammeter> m_ammeters;
+    QList<McuComponentPin *> m_mcuPins;
     QStringList m_elements;
     QStringList m_models;
     int m_nc = 0;

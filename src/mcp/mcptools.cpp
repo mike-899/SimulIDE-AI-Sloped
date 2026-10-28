@@ -23,9 +23,11 @@
 #include "itemlibrary.h"
 #include "mainwindow.h"
 #include "mcucomponent.h"
+#include "node.h"
 #include "outpaneltext.h"
 #include "pin.h"
 #include "simulator.h"
+#include "spicecosim.h"
 #include "spiceengine.h"
 
 #include <QBuffer>
@@ -169,8 +171,9 @@ McpTools::McpTools(QObject *parent) : QObject(parent)
     reg("stop_simulation", "Power off the circuit (stop the simulation).",
         schema(), &McpTools::stopSimulation);
     reg("get_simulation_state",
-        "Return whether the simulation is running/paused, the simulation time "
-        "and rates.",
+        "Return whether the simulation is running/paused, the simulation time, "
+        "rates, the measured real-time percentage and the analog engine "
+        "in use (with co-simulation statistics).",
         schema(), &McpTools::getSimulationState);
     reg("get_component_state",
         "Return runtime state of a component: pin voltages, connection state "
@@ -178,6 +181,15 @@ McpTools::McpTools(QObject *parent) : QObject(parent)
         schema(QJsonObject{ { "id", prop("string", "Component id") } },
                { "id" }),
         &McpTools::getComponentState);
+    {
+        QJsonObject ids = prop("array", "Component ids");
+        ids["items"]    = QJsonObject{ { "type", "string" } };
+        reg("get_pin_voltages",
+            "Pin voltages of several components read at the same instant "
+            "(one consistent snapshot), plus the simulated time.",
+            schema(QJsonObject{ { "ids", ids } }, { "ids" }),
+            &McpTools::getPinVoltages);
+    }
     {
         QJsonObject p;
         p["mcu_id"] =
@@ -243,9 +255,11 @@ McpTools::McpTools(QObject *parent) : QObject(parent)
     {
         QJsonObject p;
         p["engine"] =
-            prop("string", "'native' (default real-time engine, works with "
-                           "MCUs) or 'ngspice' (accurate analog, purely "
-                           "analog circuits). Omit to only query.");
+            prop("string", "'native' (default real-time engine) or "
+                           "'ngspice' (accurate analog; microcontrollers "
+                           "run in lockstep co-simulation in simulated "
+                           "time, possibly slower than real time). Omit "
+                           "to only query.");
         reg("set_analog_engine",
             "Select the analog engine used by the next start_simulation and "
             "report ngspice availability (docs/ANALOG_ENGINE.md).",
@@ -609,6 +623,20 @@ QJsonObject McpTools::addComponent(const QJsonObject &a)
     if (!a.value("x").isDouble() || !a.value("y").isDouble())
         return fail("'x' and 'y' must be numbers");
 
+    if (type.compare("Node", Qt::CaseInsensitive) == 0) // Wire junction
+    {
+        Circuit *circ = Circuit::self();
+        if (circ->is_constarted())
+            circ->deleteNewConnector();
+        circ->saveState();
+        Node *node = new Node(circ, "Node", "Node-" + circ->newSceneId());
+        node->setPos(QPointF(qRound(a.value("x").toDouble() / 8) * 8,
+                             qRound(a.value("y").toDouble() / 8) * 8));
+        circ->compList()->append(node);
+        circ->addItem(node);
+        markChanged();
+        return ok(compToJson(node, true));
+    }
     LibraryItem *li = 0l;
     for (LibraryItem *it : ItemLibrary::self()->items())
         if (it->type() == type) {
@@ -885,6 +913,47 @@ QJsonObject McpTools::getSimulationState(const QJsonObject &)
     r["circuit_time_ps"] = (double)sim->circTime();
     r["circuit_rate"]    = sim->circuitRate();
     r["simu_rate"]       = sim->simuRate();
+    // Measured speed (simulated time / wall time), updated every second
+    r["real_time_percent"] = sim->realSpeed();
+    SpiceEngine *spice     = SpiceEngine::self();
+    r["analog_engine"]     = !sim->spiceMode() ? "native"
+                             : spice->cosim()  ? "ngspice+mcu"
+                                               : "ngspice";
+    if (sim->spiceMode() && spice->cosim()) {
+        SpiceCosim *cs = SpiceCosim::self();
+        QJsonObject c;
+        c["sim_time_s"]     = cs->time();
+        c["spice_points"]   = (double)cs->points();
+        c["spice_rejected"] = (double)cs->rejected();
+        c["syncs"]          = (double)cs->syncs();
+        c["mcu_pin_edges"]  = (double)cs->edges();
+        // Wall time of the MCU thread, the part spent waiting for ngspice
+        // and the ngspice thread busy time
+        c["batch_wall_s"] = cs->batchWall();
+        c["spice_wall_s"] = cs->spiceWall();
+        c["ng_compute_s"] = cs->ngCompute();
+        r["cosimulation"] = c;
+    }
+    return ok(r);
+}
+
+QJsonObject McpTools::getPinVoltages(const QJsonObject &a)
+{
+    QJsonObject r, comps;
+    for (const QJsonValue &v : a.value("ids").toArray()) {
+        QString id      = v.toString();
+        Component *comp = findComp(id);
+        if (!comp)
+            return fail("No component with id '" + id + "'");
+        QJsonObject pins;
+        for (Pin *p : compPins(comp))
+            if (p->isConnected() && p->getEnode())
+                pins[pinName(p)] = p->getVolt();
+        comps[id] = pins;
+    }
+    r["components"] = comps;
+    r["time_s"]     = Simulator::self()->step() * 1e-6 /
+                  std::max(1.0, Simulator::self()->stepsPerus());
     return ok(r);
 }
 
@@ -941,7 +1010,17 @@ QJsonObject McpTools::getComponentState(const QJsonObject &a)
                            .arg(cpu->fuse[1], 2, 16, QChar('0'))
                            .arg(cpu->fuse[2], 2, 16, QChar('0'))
                            .arg(cpu->lockbits, 2, 16, QChar('0'));
-        r["avr"] = isp;
+        // General purpose I/O registers: handy for firmware test results
+        QJsonObject gp;
+        for (const char *reg : { "GPIOR0", "GPIOR1", "GPIOR2" }) {
+            int addr = ap->getRegAddress(reg);
+            if (addr >= 0 && addr <= (int)cpu->ramend)
+                gp[reg] = cpu->data[addr];
+        }
+        if (!gp.isEmpty())
+            isp["gpior"] = gp;
+        isp["cycles"] = (double)cpu->cycle;
+        r["avr"]      = isp;
     }
 
     if (!running)

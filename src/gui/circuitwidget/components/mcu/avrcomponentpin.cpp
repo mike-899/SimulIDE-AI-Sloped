@@ -22,6 +22,7 @@
 #include "avrcompbase.h"
 #include "baseprocessor.h"
 #include "simulator.h"
+#include "spicecosim.h"
 
 AVRComponentPin::AVRComponentPin( McuComponent* mcu, QString id, QString type, QString label, int pos, int xpos, int ypos, int angle )
                : McuComponentPin( mcu, id, type, label, pos, xpos, ypos, angle )
@@ -183,6 +184,8 @@ void AVRComponentPin::pullupNotConnected( bool up )
 void AVRComponentPin::adcread()
 {
     //qDebug() << "ADC Read channel:    pin: " << m_id <<m_ePin[0]->getVolt()*1000 ;
+    if (SpiceCosim::s_active) // ngspice: sample at the present MCU time
+        SpiceCosim::self()->inputSync(m_mcuComponent->processor(), 0);
     avr_raise_irq( m_Write_adc_irq, m_ePin[0]->getVolt()*1000 );
 }
 

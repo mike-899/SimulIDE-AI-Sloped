@@ -16,15 +16,19 @@
 #include "e-bjt.h"
 #include "e-capacitor.h"
 #include "e-diode.h"
+#include "e-gate.h"
 #include "e-inductor.h"
 #include "e-mosfet.h"
 #include "e-node.h"
 #include "e-source.h"
 #include "mcucomponent.h"
+#include "mcucomponentpin.h"
 #include "simulator.h"
 #include "wavegen.h"
 
+#include <QSet>
 #include <cmath>
+#include <typeinfo>
 
 static QString num(double v)
 {
@@ -84,6 +88,8 @@ QString SpiceNetlist::node(ePin *pin)
         return QString("nc%1").arg(m_nc++); // Dangling terminal
 
     eNode *enode = pin->getEnode();
+    if (enode->getNodeNumber() == 0) // Internal ground node (e.g. boards)
+        return "0";
     QString name = m_nodeNames.value(enode);
     if (name.isEmpty()) {
         name = QString("n%1").arg(m_nodeNames.size() + 1);
@@ -106,7 +112,7 @@ QString SpiceNetlist::model(const QString &text, const QString &prefix)
     return name;
 }
 
-bool SpiceNetlist::build(QString *error)
+bool SpiceNetlist::build(QString *error, bool withMcu)
 {
     m_nodeNames.clear();
     m_vecNodes.clear();
@@ -114,18 +120,85 @@ bool SpiceNetlist::build(QString *error)
     m_ammeters.clear();
     m_elements.clear();
     m_models.clear();
+    m_mcuPins.clear();
     m_nc = 0;
 
     QStringList unsupported;
 
-    if (BaseProcessor::self() || McuComponent::self())
-        unsupported.append("microcontroller (MCUs cannot run inside ngspice)");
+    if (!withMcu && !McuComponent::mcuList().isEmpty())
+        unsupported.append("microcontroller (enable the co-simulation)");
+
+    // Logic devices: single input buffers/inverters (e.g. the Arduino
+    // board LED driver) become behavioural sources, anything else is not
+    // supported. Their eSources are handled here, not as plain sources.
+    QHash<eElement *, eGate *> bufOut; // Output stage -> buffer
+    QSet<eElement *> logicSrc;
+    for (eElement *el : Simulator::self()->elementList()) {
+        eLogicDevice *ld = dynamic_cast<eLogicDevice *>(el);
+        if (!ld)
+            continue;
+        bool connected = false;
+        for (int i = 0; i < ld->numInps(); i++) {
+            ePin *p = ld->inputSource(i)->getEpin();
+            connected |= p && p->isConnected();
+        }
+        for (int i = 0; i < ld->numOuts(); i++) {
+            ePin *p = ld->outputSource(i)->getEpin();
+            connected |= p && p->isConnected();
+            logicSrc.insert(ld->outputSource(i));
+        }
+        if (!connected)
+            continue;
+        eGate *g = dynamic_cast<eGate *>(ld);
+        if (g && typeid(*g) == typeid(eGate) && g->numInps() == 1 &&
+            g->numOuts() == 1 && !g->tristate() && !g->openCol())
+            bufOut.insert(g->outputSource(0), g);
+        else
+            unsupported.append(QString::fromStdString(ld->getId()));
+    }
 
     int idx = 0;
     for (eElement *el : Simulator::self()->elementList()) {
         idx++;
         QString id   = QString::number(idx);
         Component *c = dynamic_cast<Component *>(el);
+
+        if (McuComponentPin *mp = dynamic_cast<McuComponentPin *>(el)) {
+            ePin *pin = mp->getEpin();
+            if (!withMcu || !pin || !pin->isConnected() || !pin->getEnode())
+                continue;
+            // Thevenin output stage driven by the MCU in lockstep:
+            // I = G(t)*(V(pin) - Vth(t)), G and Vth asked to SimulIDE at
+            // every time point through EXTERNAL sources.
+            int k = m_mcuPins.size();
+            m_mcuPins.append(mp);
+            QString n = node(pin);
+            m_elements.append(QString("VMV%1 mv%1 0 DC 0 EXTERNAL").arg(k));
+            m_elements.append(QString("VMG%1 mg%1 0 DC 0 EXTERNAL").arg(k));
+            m_elements.append(
+                QString("BMP%1 %2 0 I=V(mg%1)*(V(%2)-V(mv%1))").arg(k).arg(n));
+            continue;
+        }
+        if (eGate *g = bufOut.value(el)) {
+            ePin *in  = g->inputSource(0)->getEpin();
+            ePin *out = g->outputSource(0)->getEpin();
+            double vl = g->outLowV(), vh = g->outHighV();
+            double vt = (g->inputHighV() + g->inputLowV()) / 2;
+            bool inv  = g->outputSource(0)->isInverted();
+            QString o = "bo" + id;
+            // Smooth switching (0.1 V wide) instead of an ideal step
+            m_elements.append("B" + id + " " + o + " 0 V=" + num(vl) + "+" +
+                              num(vh - vl) + "*(0.5" + (inv ? "-" : "+") +
+                              "0.5*tanh((V(" + node(in) + ")-" + num(vt) +
+                              ")*20))");
+            m_elements.append("RB" + id + " " + node(out) + " " + o + " " +
+                              num(std::max(g->outImp(), 1e-3)));
+            continue;
+        }
+        if (logicSrc.contains(el))
+            continue; // Output of an unsupported (reported) logic device
+        if (dynamic_cast<eLogicDevice *>(el))
+            continue; // Its input/output eSources are the elements
 
         if (eMosfet *m = dynamic_cast<eMosfet *>(el)) {
             ePin *d = pinOf(m, 0), *s = pinOf(m, 1), *g = pinOf(m, 2);
@@ -266,7 +339,8 @@ bool SpiceNetlist::build(QString *error)
 }
 
 QStringList SpiceNetlist::lines(double tstop, double maxStep,
-                                const QHash<eNode *, double> *ic) const
+                                const QHash<eNode *, double> *ic,
+                                bool saveOnly) const
 {
     QStringList l;
     l << "* SimulIDE circuit exported for ngspice";
@@ -279,6 +353,14 @@ QStringList SpiceNetlist::lines(double tstop, double maxStep,
             if (!n.isEmpty())
                 s += " v(" + n + ")=" + num(it.value());
         }
+        l << s;
+    }
+    if (saveOnly) {
+        QString s = ".save";
+        for (const QString &n : m_nodeNames)
+            s += " v(" + n + ")";
+        for (const Ammeter &a : m_ammeters)
+            s += " i(" + a.vector.section('#', 0, 0) + ")";
         l << s;
     }
     l << ".options rshunt=1e12 itl4=50 noacct";

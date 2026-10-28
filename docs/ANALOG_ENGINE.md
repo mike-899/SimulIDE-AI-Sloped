@@ -28,8 +28,29 @@ resistencia") de antes, y además puede usar **ngspice** como motor
   Accurate analog (ngspice)*. El circuito se exporta como netlist SPICE, se
   ejecuta un transitorio en libngspice en segundo plano, sincronizado con el
   tiempo real, y los resultados alimentan la interfaz (sondas, voltímetros,
-  osciloscopio, brillo de LEDs). Si el circuito tiene un microcontrolador (u
-  otras piezas no soportadas) se usa automáticamente el motor nativo.
+  osciloscopio, brillo de LEDs). Si el circuito tiene piezas no soportadas
+  (lógica, op-amps, relés...) se usa automáticamente el motor nativo.
+- **Co-simulación con microcontroladores (nuevo, §7):** en modo ngspice los
+  AVR/Arduino (y PIC) ya **no** desactivan ngspice. El MCU y ngspice avanzan
+  en *lockstep* en **tiempo simulado**: el MCU ejecuta instrucciones por
+  delante de ngspice hasta su próximo cambio de pin (o lectura de entrada /
+  muestra del ADC); entonces ngspice avanza exactamente hasta ese instante
+  (callback `GetSyncData` de ngspice compartido, que solo acorta pasos) y el
+  pin cambia con una rampa de 10 ns en fuentes `EXTERNAL` (equivalente
+  Thévenin del pin: 40 Ω en salida, alta impedancia + pull-up en entrada).
+  Las entradas digitales, el ADC y el reset leen la tensión del nodo de
+  ngspice en el instante simulado actual. Entre eventos ngspice da pasos
+  adaptativos grandes (hasta 62,5 µs), sin paso fijo de 1 µs.
+- **Velocidad honesta:** va tan rápido como puede hasta el tiempo real; si
+  el circuito es más pesado va más lento, pero sincronizado. El % de tiempo
+  real se ve en la interfaz y en `get_simulation_state`
+  (`real_time_percent`). Medido: blink con transistor, lazo PWM 490 Hz →
+  RC → ADC y UART software a 9600 baudios: 100 / 100 / 66 %; conmutar un pin
+  a 10 kHz: 36 %, a 100 kHz: 4 % (cada flanco cuesta ~20 puntos de
+  ngspice). Dos Arduinos conectados: 64–96 %.
+- **Precisión:** LED + 2N2222 manejado por un Arduino: 13,72 mA (ngspice)
+  frente a 13,79 mA (nativo); lazo PWM→RC→ADC: media del ADC 510,5 frente a
+  510,0 teórico (nativo 511,8 con ±7 LSB de dispersión).
 - **Validación:** el motor nativo y ngspice coinciden en < 0,1 % en todas las
   pruebas DC (tabla abajo).
 - **Velocidad:** circuitos con Arduino siguen al 100 % de tiempo real; el
@@ -45,16 +66,18 @@ resistencia") de antes, y además puede usar **ngspice** como motor
 
 | | A: ngspice "SPICE mode" | B: better native models |
 |---|---|---|
-| Works with MCUs (AVR/PIC/Arduino) | no (see §5) | **yes** |
+| Works with MCUs (AVR/PIC/Arduino) | yes: lockstep co-simulation in simulated time (§7), may run slower than real time | **yes**, real time |
 | Accuracy | reference | matches ngspice to < 0.1 % in DC (§6) |
 | Time resolution | adaptive (ns) | fixed 1 µs step, capacitors updated every 50 µs |
 | Real-time cost | 4-20 µs per time point | event driven, ~free when nothing changes |
 | Dependencies | libngspice at runtime | none |
 
 The native engine was improved first because it is what every circuit with a
-microcontroller (the main SimulIDE use case) runs on. ngspice was added as an
-optional "accurate analog" mode for purely analog circuits; it is loaded with
-`QLibrary` at runtime, so SimulIDE builds and runs without it.
+microcontroller (the main SimulIDE use case) runs on in real time. ngspice
+was added as an optional "accurate analog" mode, first for purely analog
+circuits and now also with microcontrollers in lockstep co-simulation (§7);
+it is loaded with `QLibrary` at runtime, so SimulIDE builds and runs
+without it.
 
 ## 2. Native engine changes
 
@@ -133,9 +156,11 @@ appended at the end of the enums (saved as integers).
   `eSource` as `V + series R` (rails, fixed voltage, ground, probes, meter
   outputs), Clock (PULSE) and WaveGen (SIN/PULSE), ammeters as 0 V sources.
   Models are generated from the same presets as the native engine.
-  Anything else (logic, op-amps, MCUs, relays, current sources) makes the
-  export fail with the list of unsupported parts, and the native engine is
-  used.
+  Microcontroller pins become EXTERNAL driven sources (§7) and single
+  input logic buffers / inverters (e.g. the Arduino board LED driver) a
+  smooth behavioural source. Anything else (other logic, op-amps, relays,
+  current sources) makes the export fail with the list of unsupported
+  parts, and the native engine is used.
 * `SpiceEngine` loads `libngspice` (`ngspice`, `libngspice.so.0`, or
   `spice/library` in simulide.ini), sends the netlist with `ngSpice_Circ`,
   runs `.tran <maxstep> 2s uic` with `bg_run`. The `SendData` callback
@@ -151,7 +176,8 @@ appended at the end of the enums (saved as integers).
 * Toggle: *Simulation → Accurate analog (ngspice)*, `simulide --spice` /
   `--no-spice`, `SIMULIDE_SPICE=1`, `spice/enabled=true` in simulide.ini,
   or the MCP tool `set_analog_engine` (`get_spice_netlist` returns the
-  exported netlist). `spice/maxstep` (default 20e-6 s) sets the max step.
+  exported netlist). `spice/maxstep` (default 20e-6 s) sets the max step
+  of purely analog circuits.
 
 ## 4. Validation
 
@@ -205,19 +231,10 @@ basic_led 4.4 µs/point (455 % real time), npn-amplifier 5.3 µs (379 %),
 mosfet-H_Bridge 8 µs (250 %), npn_vco-led 19.7 µs (88 %; the astable needs
 many small steps).
 
-### MCU co-simulation evaluation (not implemented)
-ngspice offers `ngSpice_Init_Sync` with `GetVSRCData` (EXTERNAL voltage
-sources whose value is asked at every time point) and `GetSyncData` (the
-caller can cut the time step), which would let MCU pins drive ngspice in
-lockstep. With 4–20 µs per accepted time point, a circuit needs fewer than
-~50 000–200 000 points per simulated second to stay real time. Every MCU pin
-edge forces a time point (plus the ones around it for the edge), and the
-MCU must be advanced inside the ngspice callback. PWM/LED circuits
-(kHz edges) would be fine, but bit-banged buses, UART at 115 kbaud or
-software PWM give 10⁵–10⁶ edges/s and fall to 5–50 % real time. Halting and
-resuming the background thread per edge (`bg_halt`/`bg_resume`) costs
-milliseconds and is not usable. Therefore SPICE mode is disabled when a MCU
-is present; the improved native engine covers that case.
+### MCU co-simulation
+The co-simulation that was only evaluated in the first version (halting
+the background thread per edge was too slow) is implemented with the
+`GetSyncData` callback instead, see §7.
 
 ## 6. Limitations
 * Native: no junction/diffusion capacitances, no BJT RB/RC/RE, no
@@ -227,7 +244,204 @@ is present; the improved native engine covers that case.
 * ngspice mode: only the parts listed in §3; switch and potentiometer
   positions are read when the transient (re)starts (pause/resume or any
   property edit restarts it from the current node voltages); inductor
-  currents are not carried over between restarts or 2 s chunks; no MCUs; ammeters show the
-  current of their 0 V source.
+  currents are not carried over between restarts or chunks; ammeters show
+  the current of their 0 V source.
+* MCU co-simulation: see §7.6.
 * `add_component` over MCP cannot create `Node` items (not in the item
   library); the validation used generated `.simu` files instead.
+
+## 7. MCU co-simulation with ngspice (lockstep, simulated time)
+
+With *Accurate analog (ngspice)* enabled, a circuit with AVR / Arduino (and
+PIC) microcontrollers no longer falls back to the native engine: the MCUs
+and ngspice advance together in **simulated time**. The native engine stays
+the default; this mode is only used when the user enables ngspice.
+
+Code: `src/simulator/spice/spicecosim.*` (MCU side, handoff, pin sources),
+`spiceengine.*` (ngspice callbacks, chunks), `spicenetlist.*` (export),
+hooks in `mcucomponentpin.cpp` (pin changes) and `avrcomponentpin.cpp`
+(ADC samples).
+
+### 7.1 Synchronisation mechanism: why `GetSyncData` + EXTERNAL sources
+
+| Option | Verdict |
+|---|---|
+| `stop when time > t` / `bg_halt` + `alter` + `resume` per MCU event | Every halt/resume of the background thread costs milliseconds (`_thread_stop` polls every 10 ms), and `alter` of a source value is a discontinuity ngspice does not know about (no breakpoint): rejected. |
+| XSPICE `d_cosim` code model | Needs the MCU simulator built as a separate shared library loaded by ngspice and moves SimulIDE's MCU/GUI integration out of process: too invasive. |
+| Coroutine (ucontext) running the MCU inside the ngspice callback | Fastest handoff, but not portable (Windows) and fragile with simavr/gpsim. |
+| **Shared ngspice: `ngSpice_Init_Sync` with `GetVSRCData` (EXTERNAL voltage sources) and `GetSyncData`** | **Chosen.** A long-standing part of the `sharedspice.h` API (present in the distribution packages, e.g. Debian/Ubuntu `libngspice0` 42), no recompilation. `GetSyncData` is called after every accepted time point (location 0, after ngspice's own breakpoint handling) with a pointer to the next time step, and again when a step is rejected (location 1): the client can only shorten the step, so ngspice keeps its full accuracy control (LTE, Newton, order). EXTERNAL sources are asked for their value at every trial time, so MCU-driven waveforms are known exactly where ngspice evaluates them. |
+
+### 7.2 Algorithm
+
+Two threads run in **strict alternation** (only one runs at any time, so no
+locking of the circuit data is needed):
+
+* **MCU thread** (`SpiceEngine::cosimRun`, a QtConcurrent worker while the
+  simulation runs): executes the firmware instruction by instruction
+  (`BaseProcessor::stepCpu`), the MCU whose simulated time is the smallest
+  first (multi-MCU: each processor keeps its own clock, `cycle() *
+  stepNS`). The MCUs run **ahead** of ngspice.
+* **ngspice background thread**: runs the transient. In `GetSyncData`
+  (location 0) the accepted time `T` is published; if `T` reached the time
+  the MCU thread asked for, ngspice hands the turn back and **parks** until
+  the next request. Otherwise its next step is clamped so that it lands
+  exactly on the requested time and on the end of every pin ramp.
+
+The MCU thread asks ngspice to catch up (`syncTo(t)`) only when needed:
+
+1. **Output change** (`McuComponentPin::setState/setDirection/update` →
+   `SpiceCosim::pinChanged`): ngspice first advances to the MCU time `t` of
+   the instruction with the old pin state, then the pin's EXTERNAL sources
+   ramp to the new state in 10 ns (`spice/cosimRise`) starting exactly at
+   `t`; the ramp end is a forced time point.
+2. **Input samples:** ADC conversion start (`AVRComponentPin::adcread`, exact
+   time) and PINx register reads (wrapped simavr I/O read callback). A
+   digital read only syncs when ngspice is behind by more than the time
+   step ngspice itself proposed (its accuracy based resolution) and at least
+   `spice/cosimInputRes` (2 µs): polling loops do not force a time point
+   every few cycles while the analog side is quiet.
+3. **Horizon:** the MCUs never run more than `spice/cosimHorizon` (50 µs)
+   ahead of ngspice. This bounds the latency of asynchronous inputs (pin
+   change / external interrupts, timer input capture, reset) and is also
+   ngspice's maximum step (×1.25, so one step reaches the next sync).
+
+After every accepted point (`SendData`) the eNode voltages, the ammeters and
+the per-step elements (oscilloscope, plotter) are updated and the MCU input
+pins (and RESET/AVCC/AREF) whose node moved by more than 2 mV get the new
+voltage (`setVChanged`, the same entry point the native engine uses).
+
+Between MCU events ngspice takes its own adaptive steps (up to 62.5 µs),
+there is no fixed 1 µs step.
+
+### 7.3 Pin model in the netlist
+
+Every connected MCU pin `k` is exported as
+
+```
+VMV<k> mv<k> 0 DC 0 EXTERNAL            * Thevenin voltage  (asked to SimulIDE)
+VMG<k> mg<k> 0 DC 0 EXTERNAL            * output conductance (asked to SimulIDE)
+BMP<k> <pin node> 0 I=V(mg<k>)*(V(<pin node>)-V(mv<k>))
+```
+
+i.e. exactly the native pin stage: output = 5 V / 0 V behind 40 Ω, input =
+high impedance (1e-14 S) plus the 100 kΩ pull-up when enabled, open
+collector, extra sources (Vref). Both values ramp linearly over the rise
+time on every change (output↔input changes included), so ngspice never
+sees a step discontinuity. Board ground nodes (node number 0) map to SPICE
+ground; the Arduino board LED buffer becomes a smooth behavioural source.
+
+### 7.4 Pacing and speed display
+
+`SpiceEngine::cosimRun` runs batches of up to 20 ms of simulated / wall
+time. The batch end is `min(simTime, wallTime) + 20 ms`: the simulation
+runs as fast as possible up to real time and never more than one batch
+ahead of the wall clock; when the circuit is heavier it simply runs slower
+than real time (no catching up, no skipped events). The speed shown in the
+status bar and returned as `real_time_percent` by `get_simulation_state`
+is measured (simulated time / wall time); `cosimulation` adds the number of
+ngspice points, syncs, MCU pin edges and the wall time split.
+
+The thread handoff spins (with `pause` / yields) for up to 200 µs before
+sleeping on a condition variable: a sleep/wake-up costs 15–30 µs on the
+test VM, more than a typical ngspice time point (5 µs).
+
+Settings (`simulide.ini`): `spice/cosimHorizon` (50e-6 s),
+`spice/cosimRise` (10e-9 s), `spice/cosimInputRes` (2e-6 s).
+
+### 7.5 Tests (Arduino Uno, firmware built with avr-gcc, driven via MCP)
+
+Load during the runs: 4-core Xeon 2.3 GHz VM shared with other jobs (load
+average 0.5–2.3). Test circuits and firmware are built through the MCP
+server (`add_component`, `connect_pins`, `load_firmware`,
+`set_analog_engine`, `get_pin_voltages`).
+
+**(1) Blink through a 2N2222 driver** — D9 → 1 kΩ → 2N2222 base, 5 V →
+220 Ω → red LED → collector; firmware toggles D9 every 100 ms. Mean of all
+"on" snapshots (consistent snapshot of all pins with `get_pin_voltages`):
+
+| Quantity (LED on) | native | ngspice co-sim | note |
+|---|---|---|---|
+| LED current | 13.79 mA | 13.72 mA | |
+| LED Vf | 1.950 V | 1.950 V | |
+| Vbe (pins) | 0.744 V | 0.784 V | ngspice adds RB = 10 Ω drop |
+| Vce(sat) (pins) | 0.016 V | 0.030 V | ngspice adds RC = 1 Ω drop |
+| Base current | 4.09 mA | 4.05 mA | |
+| D9 pin voltage | 4.836 V | 4.838 V | 40 Ω output stage |
+| real time | 99.6 % | 100.0 % | MCU thread busy 55 % of the wall time |
+
+With D9 held high (DC) both engines give the same values. In the "off"
+phase the collector is a floating node (LED off, transistor off) whose
+voltage depends on junction capacitances: ngspice shows the turn-off
+overshoot of the stored base charge (collector up to 6–10 V for a few ms,
+also reproduced by standalone ngspice with a PULSE source), the native
+engine (no junction capacitances) 4.05 V.
+
+**(2) PWM → RC → ADC feedback loop** — Timer1 8-bit phase-correct PWM on
+D9 (490 Hz, the Arduino `analogWrite` frequency of pin 9) → 10 kΩ → node
+with 1 µF to GND → A0. The firmware averages 64 ADC conversions (AVcc =
+5 V, prescaler 128) and moves the duty by one step until the average equals
+512 (2.5 V).
+
+| Quantity (steady state) | native | ngspice co-sim | theory |
+|---|---|---|---|
+| duty (OCR1A) | 126–128 (mean 127.0) | 127 (constant) | 127.5 → 127/128 |
+| ADC average reading | 511.8 (505–519) | 510.5 (510–511) | 1024·127/255 = 510.0 |
+| real time | 100 % | 100.9 % | |
+
+The ADC samples the ngspice node at the exact conversion start time, so the
+averaged reading matches the theoretical mean within 0.5 LSB and the loop
+settles on one duty value (native: the 50 µs capacitor update produces a
+±7 LSB spread and the loop hunts ±1).
+
+**(3) Bit-bang speed** — D9 → 220 Ω → red LED → GND:
+
+| Firmware | pin edges / s | ngspice points / s | native rt % | ngspice co-sim rt % |
+|---|---|---|---|---|
+| toggle every 500 µs (1 kHz) | 2 000 | 83 000 | 100 | 100 |
+| software UART 9600 baud ('U') | 9 550 | 244 000 | 100 | 66 |
+| toggle every 50 µs (10 kHz) | 20 000 | 471 000 | 100 | 36 |
+| toggle every 5 µs (100 kHz) | 203 000 | 3 950 000 | 94 | 4.2 |
+
+Each edge costs ~20 accepted (+2.5 rejected) ngspice time points: the
+10 ns edge, the diode/junction transient and the ×2 per step growth back to
+the large step. ngspice spends 5.4–6.2 µs per point in the shared library
+(standalone ngspice with an internal PULSE source: 2.2 µs; shared library
+with EXTERNAL + B sources and SendData: 4.6 µs), SimulIDE's per-point
+callback ~0.3 µs and the MCU emulation the rest.
+
+**(4) Two MCUs** — Arduino A toggles D9 at 1 kHz → Arduino B D2; B polls
+PIND, counts rising edges (GPIOR0/1) and mirrors the input on its D9 → LED.
+
+| Case | native edges/s (rt %) | ngspice co-sim edges/s (rt %) |
+|---|---|---|
+| A 16 MHz, B 16 MHz | 996.7 (100) | 998.3 (64) |
+| A 8 MHz, B 16 MHz (per-processor clocks) | 498.4 (100) | 500.2 (96) |
+
+(The small native deficit comes from sampling the counter and the step
+counter with separate MCP calls.) Also checked: property edits while
+running (220 Ω → 470 Ω: LED current 13.73 → 6.61 mA, simulated time and MCU
+state kept), the PIC example `Pic/PWM_Pic16F627A` (co-simulated, 74–86 %
+real time) and the purely analog examples (unchanged, ~100 %).
+
+### 7.6 Limitations
+
+* Speed: ~20 ngspice points per MCU pin edge. PWM / blink / UART up to a
+  few thousand edges per second run in real time; 10⁵ edges/s (fast
+  bit-bang, software PWM, bit-banged SPI) run at a few % of real time.
+* Edge time resolution is the start of the instruction (a few cycles); with several
+  MCUs one MCU may see another's edge up to one instruction late.
+* Asynchronous inputs (pin change / external interrupts, input capture,
+  analog comparator, reset) are delivered at ngspice time points, at most
+  one horizon (50 µs) late; polled reads (PINx) and the ADC are sampled at
+  the read time (PINx: within ngspice's own step, at least 2 µs).
+* PIC (gpsim): co-simulated and its outputs verified (PWM example); its
+  inputs are sampled at ngspice points only (no register read / ADC hooks
+  yet).
+* Hardware peripherals with their own SimulIDE elements (I2C/TWI, logic
+  ICs, LCD controllers...) are not exported: such circuits fall back to the
+  native engine with the list of unsupported parts.
+* A restart (pause/resume, property edit, every transient chunk of ~200 000
+  points) completes running pin ramps immediately and loses inductor
+  currents (as in the analog mode).
+* While ngspice is enabled the MCU always runs in this mode; there is no
+  per-part choice.

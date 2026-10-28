@@ -52,6 +52,14 @@ class MAINMODULE_EXPORT BaseProcessor : public QObject
         {
             m_mcuStepNS = ns;
         }
+        double stepNS()
+        {
+            return m_mcuStepNS;
+        }
+        bool inReset()
+        {
+            return m_resetStatus;
+        }
 
         QString getFileName();
 

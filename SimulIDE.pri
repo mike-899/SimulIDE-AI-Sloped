@@ -367,6 +367,7 @@ HEADERS += \
     ./src/simulator/spice/ngspice-api.h \
     ./src/simulator/spice/spicenetlist.h \
     ./src/simulator/spice/spiceengine.h \
+    ./src/simulator/spice/spicecosim.h \
     ./src/simulator/elements/active/e-semimodel.h \
     ./src/simulator/elements/active/e-nlstamp.h \
     ./src/simulator/elements/active/e-mosfet.h \
@@ -710,6 +711,7 @@ SOURCES += \
     ./src/simulator/elements/active/e-diode.cpp \
     ./src/simulator/spice/spicenetlist.cpp \
     ./src/simulator/spice/spiceengine.cpp \
+    ./src/simulator/spice/spicecosim.cpp \
     ./src/simulator/elements/active/e-semimodel.cpp \
     ./src/simulator/elements/active/e-mosfet.cpp \
     ./src/simulator/elements/active/e-mux_analog.cpp \

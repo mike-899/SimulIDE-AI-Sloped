@@ -48,12 +48,28 @@ class MAINMODULE_EXPORT SpiceEngine
     QString netlistText(QString *error = nullptr);
 
     bool start(QString *error); // Called after Simulator::startSim()
-    void stop();
-    void restart(); // Circuit or property changed while running
+    void stop();                // Stop (ends a MCU co-simulation)
+    void halt();                // Pause: MCU co-simulation state is kept
+    void restart();             // Circuit or property changed while running
     bool isRunning()
     {
         return m_running;
     }
+
+    // Lockstep co-simulation with microcontrollers (SpiceCosim)
+    bool cosim()
+    {
+        return m_cosim;
+    }
+    bool cosimAvailable()
+    {
+        return m_initSync != nullptr;
+    }
+    // GUI thread: simulated time the next batch must reach (real time
+    // pacing: never more than one tick ahead of the wall clock)
+    double cosimBatchEnd(double tick);
+    void cosimRun();       // MCU thread: runs until the simulation stops
+    bool cosimNextChunk(); // MCU thread
 
     void step(); // GUI thread, every timer tick: apply streamed results
 
@@ -73,6 +89,8 @@ class MAINMODULE_EXPORT SpiceEngine
     static int cbData(void *, int, int, void *);
     static int cbInitData(void *, int, void *);
     static int cbBgRunning(bool, int, void *);
+    static int cbVsrc(double *, double, char *, int, void *);
+    static int cbSync(double, double *, double, int, int, int, void *);
 
   private:
     SpiceEngine();
@@ -86,12 +104,15 @@ class MAINMODULE_EXPORT SpiceEngine
         double t;
         std::vector<double> v;
     };
+    void mapSlots();
+    void applyPoint(const Point &p); // Point -> eNodes, step counter
 
     QLibrary *m_lib    = nullptr;
     void *m_init       = nullptr;
     void *m_circ       = nullptr;
     void *m_cmd        = nullptr;
     void *m_runningFn  = nullptr;
+    void *m_initSync   = nullptr;
     bool m_initialized = false;
 
     SpiceNetlist m_net;
@@ -118,8 +139,10 @@ class MAINMODULE_EXPORT SpiceEngine
     std::atomic<bool> m_bgRunning{ false };
     std::atomic<bool> m_chunkDone{ false };
     std::atomic<bool> m_halt{ false };
-    bool m_failed   = false;
-    int m_idleTicks = 0;
+    bool m_cosim           = false;
+    uint64_t m_chunkPoints = 0; // Points in the running chunk (cosim)
+    bool m_failed          = false;
+    int m_idleTicks        = 0;
 
     QStringList m_log;
     QString m_version;
