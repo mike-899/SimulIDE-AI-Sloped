@@ -75,7 +75,8 @@ class MAINMODULE_EXPORT Component : public QObject, public QGraphicsItem
       enum { Type = UserType + 1 };
       int type() const
       {
-          return Type; }
+          return Type;
+      }
 
         QString idLabel();
         void setIdLabel( QString id );
