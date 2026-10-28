@@ -42,6 +42,10 @@ make
 
 In the folder `build/release/SimulIDE_x.x.x` you will find the executable and all the files needed to run SimulIDE. SimulIDE executable is in bin folder. No need for installation, place SimulIDE folder wherever you want and run the executable.
 
+## Breaking change: Arduino Mega pin layout
+
+The pins of the Arduino Mega board were moved to sit exactly on the header holes of the realistic board art (see `changelog.txt`). Pin names and MCU mappings are unchanged, but circuits saved with an older Mega will load with the wires on the moved pins displaced; re-route those wires.
+
 ## Social:
 
 Here on [this Discord channel](https://discord.gg/nTRbdpY) you may ask for help or discuss different SimulIDE related matters.

@@ -65,6 +65,7 @@ class MAINMODULE_EXPORT Pin : public QObject, public QGraphicsItem, public ePin
         void setFontSize( int size );
 
         void setVisible( bool visible );
+        void setLabelVisible(bool visible);
 
         void moveBy( int dx, int dy );
 
