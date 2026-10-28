@@ -117,15 +117,10 @@ void PartArt::init()
                  { { QRectF(54.0, 3.0, 74.4, 8.5), d8, pcb },
                    { QRectF(55.0, 11.5, 73.4, 13.0), d8, pcb } });
 
-        // Mega: the analog and power headers sit one pitch off the package
-        const QPointF one(-7.2, 0);
+        // Mega: the package pins sit on the real header holes of the art
+        // (see mega.package), so no warps are needed
         addBoard("arduino_mega", "fritzing/arduino_mega.svg",
-                 QRectF(-4, 0, 168, 339.97), QList<QLineF>(),
-                 { { QRectF(67.0, 3.0, 74.5, 8.5), d8, pcb },
-                   { QRectF(83.9, 11.5, 57.6, 16.3), d8, pcb },
-                   { QRectF(108.0, 121.0, 45.0, 28.5), one, pcb },
-                   { QRectF(157.5, 133.9, 60.5, 15.6), one, pcb },
-                   { QRectF(221.5, 133.9, 59.5, 15.6), one, pcb } });
+                 QRectF(0, 0, 168, 339.97), QList<QLineF>(), {});
 
         // Nano: pin ends are 8 px from the holes
         QList<QLineF> nano;
@@ -261,6 +256,7 @@ void PartArt::setEnabled(bool en)
         c->artGeometryAboutToChange();
     s_enabled = en ? 1 : 0;
     for (Component *c : comps) {
+        c->artToggled();
         c->update();
         for (QGraphicsItem *ch : c->childItems())
             ch->update(); // Pins

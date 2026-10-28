@@ -142,7 +142,8 @@ void Chip::initChip()
             QString label = element.attribute( "label" );
             QString id    = element.attribute( "id" );
             QString side  = element.attribute( "side" );
-            int     pos   = element.attribute( "pos" ).toInt();
+            double pos    = element.attribute("pos")
+                             .toDouble(); // fractions allow off-grid pins
 
             int xpos = 0;
             int ypos = 0;
@@ -151,24 +152,24 @@ void Chip::initChip()
             if( side=="left" )
             {
                 xpos = -8;
-                ypos = 8*pos;
+                ypos  = qRound(8 * pos);
                 angle = 180;
             }
             else if( side=="top")
             {
-                xpos = 8*pos;
+                xpos  = qRound(8 * pos);
                 ypos = -8;
                 angle = 90;
             }
             else if( side=="right" )
             {
                 xpos =  m_width*8+8;
-                ypos = 8*pos;
+                ypos  = qRound(8 * pos);
                 angle = 0;
             }
             else if( side=="bottom" )
             {
-                xpos = 8*pos;
+                xpos  = qRound(8 * pos);
                 ypos =  m_height*8+8;
                 angle = 270;
             }

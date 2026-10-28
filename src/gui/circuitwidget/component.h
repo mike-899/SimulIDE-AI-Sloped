@@ -67,12 +67,15 @@ class MAINMODULE_EXPORT Component : public QObject, public QGraphicsItem
       {
           prepareGeometryChange();
       }
+      virtual void artToggled() {} // Realistic art was switched on/off
 
-        Component( QObject* parent, QString type, QString id );
-        ~Component();
+      Component(QObject *parent, QString type, QString id);
+      ~Component();
 
-        enum { Type = UserType + 1 };
-        int type() const { return Type; }
+      enum { Type = UserType + 1 };
+      int type() const
+      {
+          return Type; }
 
         QString idLabel();
         void setIdLabel( QString id );

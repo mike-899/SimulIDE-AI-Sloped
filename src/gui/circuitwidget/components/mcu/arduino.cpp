@@ -65,6 +65,7 @@ Arduino::Arduino( QObject* parent, QString type, QString id )
     if( m_error == 0 )
     {
         initBoard();
+        artToggled();
         setFreq( 16 );
         //initBootloader();
         
@@ -146,7 +147,8 @@ void Arduino::initBoard()
     m_boardLed->getEpin(0)->setEnode( m_bufferEnode );
     m_boardLed->getEpin(1)->setEnode( m_groundEnode ); // Connect board led to ground
 
-    if( objectName().contains("Mega") ) m_boardLed->setPos( 35+12, 125+105 );
+    if (objectName().contains("Mega"))
+        m_boardLed->setPos(35 + 12 + 4, 125 + 105);
     else                                m_boardLed->setPos( 35, 125 );
 
     for( int i=0; i<m_numpins; i++ )                      // Create Pins
@@ -211,6 +213,14 @@ static QString boardArt(const QString &background)
         { ":/arduinoNano.png", "board:arduino_nano" }
     };
     return boards.value(background);
+}
+
+// The realistic board art already has the header names printed on it
+void Arduino::artToggled()
+{
+    bool show = !(PartArt::enabled() && !boardArt(m_BackGround).isEmpty());
+    for (McuComponentPin *mcuPin : m_pinList)
+        mcuPin->pin()->setLabelVisible(show);
 }
 
 QRectF Arduino::boundingRect() const

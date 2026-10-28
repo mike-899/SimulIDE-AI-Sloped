@@ -343,6 +343,11 @@ void Pin::setVisible( bool visible )
     QGraphicsItem::setVisible( visible );
 }
 
+void Pin::setLabelVisible(bool visible)
+{
+    m_label.setVisible(visible);
+}
+
 void Pin::paint( QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget )
 {
     Q_UNUSED(option); Q_UNUSED(widget);
