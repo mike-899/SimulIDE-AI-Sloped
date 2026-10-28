@@ -54,12 +54,12 @@ void PICComponentPin::attach( pic_processor *PicProcessor )
 
         if( !iopin )
         {
-            qDebug() << "PICComponentPin::attach : iopin is NULL: "<< m_id << endl;
+            qDebug() << "PICComponentPin::attach : iopin is NULL: " << m_id;
             return;
         }
         if( m_pIOPIN )
         {
-            qDebug() << "PICComponentPin::attach :Already have an iopin" << endl;
+            qDebug() << "PICComponentPin::attach :Already have an iopin";
             return;
         }
         m_pIOPIN = iopin;
@@ -91,8 +91,10 @@ void PICComponentPin::setVChanged()
     }
     else if( m_pinType == 21 ) // reset
     {
-        if( volt < 3 )  BaseProcessor::self()->hardReset( true );
-        else            BaseProcessor::self()->hardReset( false );
+        if (volt < 3)
+            m_mcuComponent->processor()->hardReset(true);
+        else
+            m_mcuComponent->processor()->hardReset(false);
     }
 }
 

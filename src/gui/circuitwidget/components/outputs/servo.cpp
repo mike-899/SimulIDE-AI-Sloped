@@ -18,8 +18,10 @@
  ***************************************************************************/
 
 #include "servo.h"
-#include "simulator.h"
+
 #include "circuit.h"
+#include "partart.h"
+#include "simulator.h"
 
 static const char* Servo_properties[] = {
     QT_TRANSLATE_NOOP("App::Property","Speed")
@@ -191,6 +193,34 @@ QPainterPath Servo::shape() const
 void Servo::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget )
 {
     Component::paint( p, option, widget );
+
+    if (paintArt(p)) // Realistic part art (Dagu 9g servo, body only)
+    {
+        QRectF ar = PartArt::artRect(m_type);
+        double k  = ar.width() / 117.0; // art units -> px
+        p->save();
+        p->setRenderHint(QPainter::Antialiasing);
+
+        // Wires from the pins into the body: V+ red, Gnd brown, Sig orange
+        static const QColor wire[3] = { QColor(204, 20, 20), QColor(140, 59, 0),
+                                        QColor(239, 97, 0) };
+        for (int i = 0; i < 3; i++) {
+            p->setPen(QPen(wire[i], 2.4, Qt::SolidLine, Qt::FlatCap));
+            p->drawLine(QPointF(-48, -16 + 16 * i),
+                        QPointF(ar.x(), -16 + 16 * i));
+        }
+        // Horn on the output gear, turning with the servo position
+        QPointF hub(ar.x() + 40 * k, ar.y() + 21.8 * k);
+        const double hk = 0.36; // horn art units -> px
+        p->translate(hub);
+        p->rotate(m_pos);
+        p->translate(-hub);
+        PartArt::paintRes(p, ":/parts/mit/servo_horn.svg",
+                          QRectF(hub.x() - 91.467 * hk, hub.y() - 59.773 * hk,
+                                 170.08 * hk, 119.55 * hk));
+        p->restore();
+        return;
+    }
     //p->drawPath( shape() );
     p->setBrush( QColor(50, 70, 100) );
     p->drawRoundedRect( QRect( -(m_width/2)*8, -(m_height/2)*8, m_width*8, m_height*8 ), 4, 4 );

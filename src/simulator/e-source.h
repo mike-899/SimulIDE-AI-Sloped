@@ -50,6 +50,10 @@ class MAINMODULE_EXPORT eSource : public eElement
     void setImp(double imp);
 
     double getVolt();
+    double voltOut()
+    {
+        return m_voltOut;
+    }
 
     ePin *getEpin();
     ePin *getEpin(QString pinName);

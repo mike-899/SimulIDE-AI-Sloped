@@ -18,12 +18,14 @@
  ***************************************************************************/
 
 #include "connectorline.h"
-#include "connector.h"
-#include "circuitview.h"
+
 #include "circuit.h"
+#include "circuitview.h"
+#include "connector.h"
 #include "node.h"
+#include "thememanager.h"
 #include "utils.h"
- 
+
 ConnectorLine::ConnectorLine( int x1, int y1, int x2, int y2, Connector* connector )
              : QGraphicsObject()
 {
@@ -230,7 +232,7 @@ void ConnectorLine::remove()
 
 void ConnectorLine::mousePressEvent( QGraphicsSceneMouseEvent* event )
 {
-    if( event->button() == Qt::MidButton )                      // Move Line
+    if (event->button() == Qt::MiddleButton) // Move Line
     {
         event->accept();
 
@@ -238,9 +240,7 @@ void ConnectorLine::mousePressEvent( QGraphicsSceneMouseEvent* event )
         else if( dx() == 0 ) CircuitView::self()->viewport()->setCursor( Qt::SplitHCursor );
         else                 CircuitView::self()->viewport()->setCursor( Qt::SizeAllCursor );
         m_moving = true;
-    }
-    else if( event->button() == Qt::LeftButton )
-    {
+    } else if (event->button() == Qt::LeftButton) {
         if( event->modifiers() == Qt::ControlModifier ) setSelected( !isSelected() ); // Select - Deselect
         
         else if( event->modifiers() & Qt::ShiftModifier ) // Move Corner
@@ -476,7 +476,8 @@ void ConnectorLine::paint( QPainter* p, const QStyleOptionGraphicsItem* option, 
     //p->setPen( pen );
 
     QColor color;
-    if( isSelected() ) color = QColor( Qt::darkGray );
+    if (isSelected())
+        color = ThemeManager::self()->wireSelected();
     else if( !m_isBus  && Circuit::self()->animate() )               //color = QColor( 40, 40, 60 /*Qt::black*/ );
     {
         if( m_pConnector->getVolt() > 2.5 ) color = QColor( 200, 50, 50 );
@@ -493,7 +494,8 @@ void ConnectorLine::paint( QPainter* p, const QStyleOptionGraphicsItem* option, 
         //color = QColor( volt, 50, 250-volt);
     }
     else if( m_isBus ) color =  Qt::darkGreen;
-    else color = QColor( 40, 40, 60 /*Qt::black*/ );
+    else
+        color = ThemeManager::self()->wireColor();
 
     QPen pen( color, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin );
     //p->setBrush( Qt::green );

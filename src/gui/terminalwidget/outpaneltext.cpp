@@ -84,48 +84,48 @@ OutHighlighter::OutHighlighter( QTextDocument *parent )
     patterns<< "ERROR";
     for( const QString &pattern : patterns )
     {
-        rule.pattern = QRegExp( pattern );
+        rule.pattern = QRegularExpression( pattern );
         rule.format = errorFormat;
         highlightingRules.append( rule );
     }*/
 
     fileFormat.setForeground( QColor(110, 180, 100) );
-    rule.pattern = QRegExp( "/[^\n]*" );
+    rule.pattern = QRegularExpression("/[^\n]*");
     rule.format = fileFormat;
     highlightingRules.append( rule );
 
     numberFormat.setForeground( QColor(120, 120, 250) );
-    rule.pattern = QRegExp("[0-9]+");
+    rule.pattern = QRegularExpression("[0-9]+");
     rule.format = numberFormat;
     highlightingRules.append(rule);
 
     quotationFormat.setForeground( QColor(50, 200, 100) );
-    rule.pattern = QRegExp( "\".*\"" );
+    rule.pattern = QRegularExpression("\".*\"");
     rule.format = quotationFormat;
     highlightingRules.append( rule );
 
     successFormat.setForeground( QColor(255, 255, 200) );
     successFormat.setFontWeight( QFont::Bold );
-    rule.pattern = QRegExp("SUCCESS");
+    rule.pattern = QRegularExpression("SUCCESS");
     rule.format = successFormat;
     highlightingRules.append(rule);
     
     sentFormat.setForeground( QColor(255, 255, 200) );
     sentFormat.setFontWeight( QFont::Bold );
-    rule.pattern = QRegExp("SENT:");
+    rule.pattern = QRegularExpression("SENT:");
     rule.format = sentFormat;
     highlightingRules.append(rule);
 
     warningFormat.setForeground( QColor(255, 200, 100) );
     warningFormat.setFontWeight( QFont::Bold );
-    rule.pattern = QRegExp("WARNING");
+    rule.pattern = QRegularExpression("WARNING");
     rule.format = warningFormat;
     highlightingRules.append(rule);
 
     errorFormat.setForeground( QColor(100, 50, 0) );
     errorFormat.setBackground( QColor(255, 255, 100) );
     errorFormat.setFontWeight( QFont::Bold );
-    rule.pattern = QRegExp(" ERROR");
+    rule.pattern = QRegularExpression(" ERROR");
     rule.format = errorFormat;
     highlightingRules.append(rule);
 }
@@ -138,13 +138,11 @@ void OutHighlighter::highlightBlock( const QString &text )
 
     for( const HighlightingRule &rule : highlightingRules )
     {
-        QRegExp expression( rule.pattern );
-        int index = expression.indexIn( upText );
-        while( index >= 0 )
-        {
-            int length = expression.matchedLength();
-            setFormat( index, length, rule.format );
-            index = expression.indexIn( upText, index + length );
+        QRegularExpressionMatchIterator it = rule.pattern.globalMatch(upText);
+        while (it.hasNext()) {
+            QRegularExpressionMatch match = it.next();
+            setFormat(match.capturedStart(), match.capturedLength(),
+                      rule.format);
         }
     }
 }

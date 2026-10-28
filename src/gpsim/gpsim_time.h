@@ -21,6 +21,7 @@ License along with this library; if not, see
 #ifndef __GPSIM_TIME_H__
 #define __GPSIM_TIME_H__
 
+#include <cstdint>
 #include "breakpoints.h"
 
 //---------------------------------------------------------

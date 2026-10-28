@@ -69,7 +69,7 @@ int GcbDebugger::compile()
 
     QProcess compGcb( 0l );
     compGcb.setWorkingDirectory( m_fileDir );
-    compGcb.start( command );
+    compGcb.startCommand(command);
     compGcb.waitForFinished(-1);
     QString p_stdout = compGcb.readAllStandardOutput();
 
@@ -278,7 +278,8 @@ void GcbDebugger::mapGcbToAsm()  // Map asm_source_line <=> gcb_source_line
             int  address = text.last().toInt();
             QString type = "uint8";
             if( m_varList.contains( name ) ) type = m_varList[ name ];
-            BaseProcessor::self()->addWatchVar( name, address ,type  );
+            if (proc())
+                proc()->addWatchVar(name, address, type);
             //qDebug()<<"GcbDebugger::mapGcbToAsm var:"<<asmLine<<name<< address<<type;
             
             if( type.contains( "array" ) )
@@ -291,7 +292,8 @@ void GcbDebugger::mapGcbToAsm()  // Map asm_source_line <=> gcb_source_line
                 for( int i=1; i<size; i++ )
                 {
                     QString elmName = name+"("+QString::number( i )+")";
-                    BaseProcessor::self()->addWatchVar( elmName, address+i ,"uint8"  );
+                    if (proc())
+                        proc()->addWatchVar(elmName, address + i, "uint8");
                     if( !m_varList.contains( elmName ) ) 
                     {
                         m_varList[ elmName ] = m_typesList[ "uint8" ];

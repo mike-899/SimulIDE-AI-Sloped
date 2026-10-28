@@ -71,13 +71,17 @@
 #include "mosfet.h"
 #include "mux.h"
 #include "mux_analog.h"
+#include "netlabel.h"
 #include "op_amp.h"
 #include "oscope.h"
 //#include "outbus.h"
-#include "piccomponent.h"
+#include "dcmotor.h"
+#include "hbridge.h"
+#include "moduleitems.h"
 #include "pcd8544.h"
-#include "probe.h"
+#include "piccomponent.h"
 #include "potentiometer.h"
+#include "probe.h"
 #include "push.h"
 #include "rail.h"
 #include "rectangle.h"
@@ -98,8 +102,8 @@
 #include "switch.h"
 #include "switchdip.h"
 #include "textcomponent.h"
-#include "voltimeter.h"
 #include "volt_reg.h"
+#include "voltimeter.h"
 #include "voltsource.h"
 #include "wavegen.h"
 #include "ws2812.h"
@@ -136,6 +140,9 @@ void ItemLibrary::loadItems()
     addItem( CurrSource::libraryItem() );
     addItem( Rail::libraryItem() );
     addItem( Ground::libraryItem() );
+    addItem(NetLabel::libraryItem());
+    addItem(NetLabel::powerLibraryItem());
+    addItem(NetLabel::groundLibraryItem());
     // Switches
     addItem( Push::libraryItem() );
     addItem( Switch::libraryItem() );
@@ -169,7 +176,19 @@ void ItemLibrary::loadItems()
     addItem( Ssd1306::libraryItem() );
     addItem( Stepper::libraryItem() );
     addItem( Servo::libraryItem() );
+    addItem(
+        new LibraryItem(tr("Motors"), tr("Outputs"), "steeper.png", "", 0l));
+    addItem(DcMotor::libraryItem());
+    addItem(L298N::libraryItem());
+    addItem(L293D::libraryItem());
     addItem( AudioOut::libraryItem() );
+    // Sensors, power parts, modules and named presets
+    addItem(
+        new LibraryItem(tr("Power"), tr("Sources"), "voltsource.png", "", 0l));
+    addItem(
+        new LibraryItem(tr("Semiconductors"), tr("Active"), "bjt.png", "", 0l));
+    addItem(new LibraryItem(tr("Modules"), tr("Micro"), "subc.png", "", 0l));
+    addModuleItems(this);
     // Micro
     addItem( PICComponent::libraryItem() );
     addItem( AVRComponent::libraryItem() );
@@ -343,7 +362,7 @@ QString LibraryItem::getHelpFile( QString name )
         if( file.open(QFile::ReadOnly | QFile::Text) ) // Get Text from Help File
         {
             QTextStream s1( &file );
-            s1.setCodec("UTF-8");
+            s1.setEncoding(QStringConverter::Utf8);
 
             help = s1.readAll();
 

@@ -25,8 +25,8 @@
 #ifndef UI_FINDREPLACEFORM_H
 #define UI_FINDREPLACEFORM_H
 
+#include <QAction>
 #include <QtCore/QVariant>
-#include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
 #include <QtWidgets/QCheckBox>

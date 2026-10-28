@@ -18,11 +18,12 @@
  ***************************************************************************/
 
 #include "pin.h"
-#include "bus.h"
-#include "node.h"
-#include "connector.h"
-#include "circuit.h"
 
+#include "bus.h"
+#include "circuit.h"
+#include "connector.h"
+#include "netlabel.h"
+#include "node.h"
 
 Pin::Pin( int angle, const QPoint &pos, QString id, int index, Component* parent )
    : QObject()
@@ -124,6 +125,8 @@ void Pin::registerPins( eNode* enode )     // Called by connector closing or oth
     {
         Bus* bus = dynamic_cast<Bus*>(m_component);
         bus->registerPins( enode );
+    } else if (NetLabel *label = dynamic_cast<NetLabel *>(m_component)) {
+        label->registerPins(enode); // Join same-name labels
     }
     m_blocked = false;
 }
@@ -243,7 +246,7 @@ void Pin::setLabelPos()
     if( m_angle == 0 )   // Right side
     {
         m_label.setRotation( 0 );
-        xlabelpos -= fm.width(m_label.text())+m_length+1;
+        xlabelpos -= fm.horizontalAdvance(m_label.text()) + m_length + 1;
         ylabelpos -= fm.height()*2/3;
     }
     if( m_angle == 90 )   // Top
@@ -340,6 +343,11 @@ void Pin::setVisible( bool visible )
     QGraphicsItem::setVisible( visible );
 }
 
+void Pin::setLabelVisible(bool visible)
+{
+    m_label.setVisible(visible);
+}
+
 void Pin::paint( QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget )
 {
     Q_UNUSED(option); Q_UNUSED(widget);
@@ -349,11 +357,18 @@ void Pin::paint( QPainter* painter, const QStyleOptionGraphicsItem* option, QWid
 
     //painter->setBrush( Qt::red );
     //painter->drawRect( boundingRect() );
-    
+
+    if (m_component && m_component->artActive()) // Realistic part: metal lead
+    {
+        pen.setColor(QColor(150, 150, 150));
+        pen.setWidthF(1.6);
+    }
     if( m_unused )     pen.setColor( QColor( 75, 120, 170 ));
     if( isSelected() ) pen.setColor( Qt::darkGray);
 
     painter->setPen(pen);
+    if (m_component && m_component->artNoLegs())
+        return; // Module / chip art: the pin sits on a hole or terminal
     painter->drawLine( 0, 0, m_length-1, 0);
     
     if( m_inverted )

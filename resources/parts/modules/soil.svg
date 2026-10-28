@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Soil moisture sensor with comparator board. Original art, MIT License (SimulIDE-AI-Sloped contributors) -->
+<svg xmlns="http://www.w3.org/2000/svg" version="1.2" baseProfile="tiny" width="48" height="72" viewBox="0 0 48 72"><title>Soil moisture sensor with comparator board</title>
+<defs>
+<linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f5f7"/><stop offset="0.5" stop-color="#b9bdc2"/><stop offset="1" stop-color="#7d8186"/></linearGradient>
+<linearGradient id="metalh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8d9196"/><stop offset="0.45" stop-color="#eceff1"/><stop offset="1" stop-color="#7a7e83"/></linearGradient>
+<linearGradient id="blk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a4a50"/><stop offset="1" stop-color="#1b1b1e"/></linearGradient>
+<linearGradient id="blkh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2a2a2d"/><stop offset="0.4" stop-color="#4b4b51"/><stop offset="1" stop-color="#1a1a1c"/></linearGradient>
+<radialGradient id="dome" cx="0.4" cy="0.35" r="0.75"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#cfd6d8"/></radialGradient>
+<radialGradient id="knob" cx="0.4" cy="0.35" r="0.8"><stop offset="0" stop-color="#6a6a70"/><stop offset="1" stop-color="#18181a"/></radialGradient>
+<linearGradient id="screw" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2f2f2"/><stop offset="1" stop-color="#8e9296"/></linearGradient>
+</defs>
+<path d="M12,0.5 L36,0.5 L36,22 L24,34 L12,22 Z" fill="#1c1c20" stroke="#000" stroke-width="0.8"/>
+<path d="M16,3 L32,3 L32,21 L24,29 L16,21 Z" fill="#c9a24a" stroke="#7a5a10" stroke-width="0.5"/>
+<line x1="24" y1="5" x2="24" y2="26" stroke="#1c1c20" stroke-width="0.8" stroke-linecap="butt"/>
+<rect x="14" y="33" width="20" height="6" rx="0" fill="none" stroke="none" stroke-width="0.5"/>
+<rect x="0.5" y="36" width="47" height="35.5" rx="3" fill="#1d6b3a" stroke="#0e3d1f" stroke-width="1"/>
+<circle cx="4" cy="40" r="1.6" fill="#e8e8e8" stroke="#9a9a9a" stroke-width="0.4"/>
+<circle cx="44" cy="40" r="1.6" fill="#e8e8e8" stroke="#9a9a9a" stroke-width="0.4"/>
+<circle cx="4" cy="67" r="1.6" fill="#e8e8e8" stroke="#9a9a9a" stroke-width="0.4"/>
+<circle cx="44" cy="67" r="1.6" fill="#e8e8e8" stroke="#9a9a9a" stroke-width="0.4"/>
+<rect x="14" y="41" width="20" height="8" rx="0" fill="#1b1b1f" stroke="none" stroke-width="0.5"/>
+<text x="24" y="47" font-family="sans-serif" font-size="3.6" font-weight="bold" fill="#cfd" text-anchor="middle">LM393</text>
+<rect x="33" y="52" width="10" height="7" rx="1" fill="#2a6bd6" stroke="#12357a" stroke-width="0.5"/>
+<circle cx="38" cy="55.5" r="2.2" fill="#d5a021" stroke="#7a5a10" stroke-width="0.4"/>
+<circle cx="7" cy="52" r="1.6" fill="#d02020" stroke="#222" stroke-width="0.3"/>
+<circle cx="6.52" cy="51.52" r="0.56" fill="#ffffff" stroke="none" stroke-width="0.5"/>
+<circle cx="7" cy="58" r="1.6" fill="#20c040" stroke="#222" stroke-width="0.3"/>
+<circle cx="6.52" cy="57.52" r="0.56" fill="#ffffff" stroke="none" stroke-width="0.5"/>
+<circle cx="12" cy="66" r="2.2" fill="#e8c25a" stroke="#9c7a20" stroke-width="0.4"/>
+<circle cx="12" cy="66" r="0.99" fill="#1c1c1c" stroke="none" stroke-width="0.5"/>
+<circle cx="20" cy="66" r="2.2" fill="#e8c25a" stroke="#9c7a20" stroke-width="0.4"/>
+<circle cx="20" cy="66" r="0.99" fill="#1c1c1c" stroke="none" stroke-width="0.5"/>
+<circle cx="28" cy="66" r="2.2" fill="#e8c25a" stroke="#9c7a20" stroke-width="0.4"/>
+<circle cx="28" cy="66" r="0.99" fill="#1c1c1c" stroke="none" stroke-width="0.5"/>
+<circle cx="36" cy="66" r="2.2" fill="#e8c25a" stroke="#9c7a20" stroke-width="0.4"/>
+<circle cx="36" cy="66" r="0.99" fill="#1c1c1c" stroke="none" stroke-width="0.5"/>
+</svg>

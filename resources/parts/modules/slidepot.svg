@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Slide potentiometer. Original art, MIT License (SimulIDE-AI-Sloped contributors) -->
+<svg xmlns="http://www.w3.org/2000/svg" version="1.2" baseProfile="tiny" width="24" height="16" viewBox="0 0 24 16"><title>Slide potentiometer</title>
+<defs>
+<linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f5f7"/><stop offset="0.5" stop-color="#b9bdc2"/><stop offset="1" stop-color="#7d8186"/></linearGradient>
+<linearGradient id="metalh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8d9196"/><stop offset="0.45" stop-color="#eceff1"/><stop offset="1" stop-color="#7a7e83"/></linearGradient>
+<linearGradient id="blk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a4a50"/><stop offset="1" stop-color="#1b1b1e"/></linearGradient>
+<linearGradient id="blkh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2a2a2d"/><stop offset="0.4" stop-color="#4b4b51"/><stop offset="1" stop-color="#1a1a1c"/></linearGradient>
+<radialGradient id="dome" cx="0.4" cy="0.35" r="0.75"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#cfd6d8"/></radialGradient>
+<radialGradient id="knob" cx="0.4" cy="0.35" r="0.8"><stop offset="0" stop-color="#6a6a70"/><stop offset="1" stop-color="#18181a"/></radialGradient>
+<linearGradient id="screw" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2f2f2"/><stop offset="1" stop-color="#8e9296"/></linearGradient>
+</defs>
+<rect x="0.5" y="0.5" width="23" height="11" rx="1" fill="url(#metal)" stroke="#555a5e" stroke-width="0.6"/>
+<rect x="3" y="4" width="18" height="4" rx="2" fill="#16161a" stroke="#000" stroke-width="0.3"/>
+<line x1="3.5" y1="1.5" x2="3.5" y2="3" stroke="#555" stroke-width="0.4" stroke-linecap="butt"/>
+<line x1="6" y1="1.5" x2="6" y2="3" stroke="#555" stroke-width="0.4" stroke-linecap="butt"/>
+<line x1="8.5" y1="1.5" x2="8.5" y2="3" stroke="#555" stroke-width="0.4" stroke-linecap="butt"/>
+<line x1="11" y1="1.5" x2="11" y2="3" stroke="#555" stroke-width="0.4" stroke-linecap="butt"/>
+<line x1="13.5" y1="1.5" x2="13.5" y2="3" stroke="#555" stroke-width="0.4" stroke-linecap="butt"/>
+<line x1="16" y1="1.5" x2="16" y2="3" stroke="#555" stroke-width="0.4" stroke-linecap="butt"/>
+<line x1="18.5" y1="1.5" x2="18.5" y2="3" stroke="#555" stroke-width="0.4" stroke-linecap="butt"/>
+<line x1="12" y1="11" x2="12" y2="16" stroke="#9aa0a6" stroke-width="1.6" stroke-linecap="butt"/>
+</svg>

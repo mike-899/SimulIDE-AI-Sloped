@@ -74,11 +74,17 @@ AudioOut::AudioOut( QObject* parent, QString type, QString id )
     
     m_resist = 8;
     m_buzzer = false;
-    
+    m_buzzFreq = 600;
+
     int refreshPeriod = 10; // mS
     int sampleRate    = 40000; // samples/S
-    
-    m_deviceinfo = QAudioDeviceInfo::defaultOutputDevice(); 
+
+    m_dataBuffer = 0l; // Fix: deleted in destructor even without audio device
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    m_deviceinfo = QMediaDevices::defaultAudioOutput();
+#else
+    m_deviceinfo = QAudioDeviceInfo::defaultOutputDevice();
+#endif
     if( m_deviceinfo.isNull() ) 
     {
         qDebug() <<"No defaulf Audio Output Device Found" ;
@@ -86,6 +92,17 @@ AudioOut::AudioOut( QObject* parent, QString type, QString id )
     }
     m_format.setSampleRate( sampleRate );  
     m_format.setChannelCount(1);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    m_format.setSampleFormat(QAudioFormat::UInt8);
+
+    if (!m_deviceinfo.isFormatSupported(m_format)) {
+        qDebug() << "Default format not supported - trying to use preferred";
+        m_format = m_deviceinfo.preferredFormat();
+
+        qDebug() << m_format.sampleRate() << m_format.channelCount()
+                 << m_format.bytesPerSample() * 8;
+    }
+#else
     m_format.setSampleSize(8);
     m_format.setCodec( "audio/pcm" );  
     m_format.setByteOrder( QAudioFormat::LittleEndian );  
@@ -97,9 +114,10 @@ AudioOut::AudioOut( QObject* parent, QString type, QString id )
         m_format = m_deviceinfo.nearestFormat( m_format );  
         
         qDebug() << m_format.sampleRate() << m_format.channelCount()<<m_format.sampleSize();
-    }  
-    m_audioOutput = new QAudioOutput( m_deviceinfo, m_format );   
-    
+    }
+#endif
+    m_audioOutput = new AudioOutputDev(m_deviceinfo, m_format);
+
     m_dataSize = 2*refreshPeriod*sampleRate/1000;
     
     m_dataBuffer = new char[ m_dataSize ];
@@ -117,7 +135,7 @@ AudioOut::AudioOut( QObject* parent, QString type, QString id )
 
 AudioOut::~AudioOut()
 {
-    delete m_dataBuffer;
+    delete[] m_dataBuffer;
     //qDebug() << "AudioOut::~AudioOut deleting" << QString::fromStdString( m_elmId );
 }
 
@@ -157,7 +175,7 @@ void AudioOut::simuClockStep()
         {
             if( voltPN> 2.5 )
             {
-                int stepsPC = stepsPerUs*1e6/600;
+                int stepsPC = stepsPerUs * 1e6 / m_buzzFreq;
                 double time = Simulator::self()->step();
                 time = remainder( time, stepsPC );
                 time = qDegreesToRadians( time*360/stepsPC );
@@ -217,6 +235,9 @@ QPainterPath AudioOut::shape() const
 void AudioOut::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget )
 {
     Component::paint( p, option, widget );
+
+    if (paintArt(p))
+        return; // Realistic part art
 
     //p->drawRect( -10.5, -12, 12, 24 );
     static const QPointF points[7] = {

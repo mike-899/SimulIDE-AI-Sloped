@@ -20,11 +20,22 @@
 #ifndef AUDIOOUT_H
 #define AUDIOOUT_H
 
-#include "itemlibrary.h"
 #include "e-resistor.h"
+#include "itemlibrary.h"
 
-#include <QIODevice>  
-#include <QAudioOutput>  
+#include <QIODevice>
+#include <QtGlobal>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#    include <QAudioDevice>
+#    include <QAudioSink>
+#    include <QMediaDevices>
+typedef QAudioDevice AudioDeviceInfo;
+typedef QAudioSink AudioOutputDev;
+#else
+#    include <QAudioOutput>
+typedef QAudioDeviceInfo AudioDeviceInfo;
+typedef QAudioOutput AudioOutputDev;
+#endif
 
 class AudioOut : public Component, public eResistor
 {
@@ -41,6 +52,10 @@ class AudioOut : public Component, public eResistor
 
         bool buzzer() { return m_buzzer; }
         void setBuzzer( bool buz ) { m_buzzer = buz; }
+        void setBuzzFreq(int hz)
+        {
+            m_buzzFreq = hz;
+        } // Active buzzer tone
 
         virtual void stamp();
         virtual void resetState();
@@ -54,19 +69,20 @@ class AudioOut : public Component, public eResistor
         void OnAudioNotify();
         
     private:
-        QAudioDeviceInfo m_deviceinfo;
-        QAudioFormat     m_format;  
-        
-        QAudioOutput*    m_audioOutput;
-        QIODevice*       m_auIObuffer;
-        
-        char* m_dataBuffer;
-        int    m_dataSize;
-        int    m_dataCount;
-        
-        int m_counter;
+      AudioDeviceInfo m_deviceinfo;
+      QAudioFormat m_format;
 
-        bool m_buzzer;
+      AudioOutputDev *m_audioOutput;
+      QIODevice *m_auIObuffer;
+
+      char *m_dataBuffer;
+      int m_dataSize;
+      int m_dataCount;
+
+      int m_counter;
+
+      bool m_buzzer;
+      int m_buzzFreq;
 };
 
 #endif

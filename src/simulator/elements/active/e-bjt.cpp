@@ -17,215 +17,85 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <math.h>   // fabs(x,y)
-#include <sstream>
-#include <QDebug>
-#include <ctime>
-
 #include "e-bjt.h"
+
+#include "e-nlstamp.h"
 #include "e-node.h"
 #include "simulator.h"
 
-eBJT::eBJT( std::string id )
-    : eResistor( id )
+#include <cmath>
+#include <iostream>
+#include <sstream>
+
+static const double VTOL     = 5e-5;
+static const double ITOL_ABS = 1e-10; // Current tolerance, see e-diode.cpp
+static const double ITOL_REL = 1e-4;  // Junction voltage convergence tolerance
+
+enum { C = 0, E = 1, B = 2 }; // ePin order
+
+eBJT::eBJT(std::string id) : eResistor(id)
 {
     m_ePin.resize(3);
-    
-    m_gain = 100;
-    m_PNP = false;
+
+    m_gain      = 100;
+    m_BEthr     = 0.7;
+    m_PNP       = false;
     m_BCdiodeOn = false;
-    
-    std::stringstream ssa;
-    ssa << m_elmId << "-BEdiode";
-    m_BEdiode = new ePN( ssa.str() );
-    m_BEdiode->initEpins();
-    setBEthr( 0.7 );
-    
-    std::stringstream ssb;
-    ssb << m_elmId << "-BCdiode";
-    m_BCdiode = new eDiode( ssb.str() );
-    m_BCdiode->initEpins();
-}
-eBJT::~eBJT()
-{ 
-    delete m_BEdiode;
-    delete m_BCdiode;
-}
+    m_model     = "Custom";
+    m_baseCurr  = 0;
+    m_collCurr  = 0;
 
-void eBJT::stamp()
+    refreshModel();
+    resetState();
+}
+eBJT::~eBJT() {}
+
+// Model or parameter changed: reload it safely while the simulation runs and
+// make sure the device is evaluated again
+void eBJT::refreshModel()
 {
-     // C
-    {
-        eNode* enod0 = m_ePin[0]->getEnode();
-        if( enod0 )
-        {
-            enod0->addToNoLinList(this);
-            enod0->setSwitched( true );
-        }
-    }
-     // E
-    {
-        eNode* enod1 = m_ePin[1]->getEnode();
-        if( enod1 )
-        {
-            enod1->addToNoLinList(this);
-            enod1->setSwitched( true );
-        }
-    }
-     // B
-    {
-        eNode* enod2 = m_ePin[2]->getEnode();
-        if( enod2 ) enod2->addToNoLinList(this);
-    }
-    eResistor::stamp();
+    Simulator *sim = Simulator::self();
+    bool running   = sim->isRunning();
+    if (running)
+        sim->pauseSim();
+
+    loadModel();
+    if (running || sim->isPaused())
+        sim->addToNoLinList(this);
+
+    if (running)
+        sim->resumeSim();
 }
 
-void eBJT::attach()
+void eBJT::loadModel()
 {
-     // C
-    {
-        eNode* enod0 = m_ePin[0]->getEnode();
-        if( m_BCdiodeOn )
-        {
-            if( m_PNP ) m_BCdiode->getEpin( 0 )->setEnode( enod0 );
-            else        m_BCdiode->getEpin( 1 )->setEnode( enod0 );
-        }
-    }
-     // E
-    {
-        eNode* enod1 = m_ePin[1]->getEnode();
-        if( m_PNP ) m_BEdiode->getEpin( 0 )->setEnode( enod1 );
-        else        m_BEdiode->getEpin( 1 )->setEnode( enod1 );
-    }
-     // B
-    {
-        eNode* enod2 = m_ePin[2]->getEnode();
-        if( m_PNP )
-        {
-            m_BEdiode->getEpin( 1 )->setEnode( enod2 );
-            if( m_BCdiodeOn ) m_BCdiode->getEpin( 1 )->setEnode( enod2 );
-        }
-        else
-        {
-            m_BEdiode->getEpin( 0 )->setEnode( enod2 );
-            if( m_BCdiodeOn ) m_BCdiode->getEpin( 0 )->setEnode( enod2 );
-        }
-    }
+    if ((m_model == "Custom") || !Semi::bjtPreset(m_model, m_p))
+        m_p = Semi::customBjt(m_gain, m_BEthr, m_PNP);
+    m_PNP = m_p.pnp;
+
+    m_vcritBE  = Semi::vcrit(m_p.nf * Semi::VT, m_p.is);
+    m_vcritBC  = Semi::vcrit(m_p.nr * Semi::VT, m_p.is);
+    m_vbeStamp = 1e9; // Force restamp
 }
 
-void eBJT::resetState()
+void eBJT::setModelName(const QString &model)
 {
-    //eResistor::setRes( 400/m_gain );
-    eResistor::setAdmit( 0 );
-    eResistor::stamp();
+    bool pauseSim = Simulator::self()->isRunning();
+    if (pauseSim)
+        Simulator::self()->pauseSim();
 
-    m_BEdiode->resetState();
-    if( m_BCdiodeOn ) m_BCdiode->resetState();
+    m_model = model;
+    refreshModel();
 
-    m_accuracy = Simulator::self()->NLaccuracy();
-    //m_stage = 0;
-    m_lastOut = 0;
-    m_baseCurr = 0;
-    m_voltE = 0;
-    m_Efollow = false;
-
-    srand(time(NULL));
+    if (pauseSim)
+        Simulator::self()->resumeSim();
 }
 
-void eBJT::setVChanged() 
+void eBJT::setGain(double gain)
 {
-    double voltCE;
-    double voltBE;
-    double voltC = m_ePin[0]->getVolt();
-    double voltE = m_ePin[1]->getVolt();
-    double voltB = m_ePin[2]->getVolt();
-    //qDebug()<<voltC<<voltE<<voltB;
-
-    if( m_PNP )
-    {
-        voltCE = voltE-voltC;
-        voltBE = voltE-voltB;
-    }
-    else
-    {
-        voltCE = voltC-voltE;
-        voltBE = voltB-voltE;
-    }
-    if( voltCE < cero_doub ) voltCE = cero_doub;
-    
-    double maxCurrCE = voltCE/m_resist;
-    double current = maxCurrCE;
-    
-    if( !m_Efollow )
-    {
-        if( m_PNP )
-        {
-            if( fabs( voltE-m_voltE )<0 ){ m_Efollow = true; }
-        }
-        else if(( fabs(m_voltE) > 1e-3 )&&( m_voltE != voltE ))
-        { 
-            m_Efollow = true; 
-            eResistor::setRes( 400/m_gain );
-            eResistor::stamp();
-        }
-        m_voltE = voltE;
-    }
-    double satK = 0;
-
-    if( voltCE < voltBE )          
-    {
-        satK = voltCE/voltBE-1;
-        satK = pow( satK, 2 );
-    }
-    m_baseCurr = m_BEdiode->current();
-
-    double currentCE = m_baseCurr*m_gain*(1+voltCE/75);
-    currentCE -= currentCE*satK;
-    
-    //qDebug()<<"m_baseCurr"<<m_baseCurr<<"    currentCE"<<currentCE<<"     maxCurrCE"<<maxCurrCE<<"     voltBE"<<voltBE <<"    m_Efollow"<<m_Efollow;
-
-    if( m_Efollow )
-    {
-        current = maxCurrCE-currentCE;
-
-        //double r = (double)(std::rand() %10+1);
-        
-        current = m_lastOut+(current-m_lastOut)/2;//(3.5+1.5/r);
-
-        if( current < 0 ) current = 0;
-        
-        //qDebug()<<"current"<<current<<"  m_baseCurr"<<m_baseCurr<<"  currentCE"<<currentCE<<"  maxCurrCE"<<maxCurrCE<<"  voltBE"<<voltBE <<" m_Efollow"<<m_Efollow;
-
-        if( m_PNP ) current = -current;
-
-        double accuracy = m_accuracy/5;
-
-        if( fabs(current-m_lastOut) < accuracy ) return;
-        
-        m_lastOut = current;
-        m_ePin[0]->stampCurrent( current );
-        m_ePin[1]->stampCurrent(-current );
-    }
-    else
-    {
-        double admit = 0;
-        if( currentCE!=0 && voltCE!=0 ) admit = currentCE/voltCE;
-        if( admit < 0 ) admit = 0;
-        //admit = m_lastOut+(admit-m_lastOut)/2;
-
-        double r = (double)(std::rand() %10+1);
-
-        admit = m_lastOut + (admit-m_lastOut)/r;
-
-        //admit *= 1.1;
-        
-        if( fabs(admit-m_lastOut) < m_accuracy ) return;
-        
-        eResistor::setAdmit( admit );
-        eResistor::stamp();
-        m_lastOut = admit;
-        //qDebug()<< QString::fromStdString( m_elmId )<<" voltBE"<<voltBE << " admit" <<admit;
-    }
+    m_gain = gain;
+    if (m_model == "Custom")
+        refreshModel();
 }
 
 double eBJT::BEthr()
@@ -233,45 +103,166 @@ double eBJT::BEthr()
     return m_BEthr;
 }
 
-void eBJT::setBEthr( double thr )
+void eBJT::setBEthr(double thr)
 {
-    if( thr == 0 ) thr = 0.7;
-    m_BEdiode->setThreshold( thr );
+    if (thr == 0)
+        thr = 0.7;
     m_BEthr = thr;
+    if (m_model == "Custom")
+        refreshModel();
 }
 
-void eBJT::setBCd( bool bcd ) 
-{ 
-    if( !bcd )
+void eBJT::setPnp(double pnp)
+{
+    bool p = (pnp != 0);
+    if ((m_model != "Custom") && (p != m_p.pnp) && !m_p.complement.isEmpty())
+        m_model = m_p.complement; // Same family, other polarity
+    m_PNP = p;
+    refreshModel();
+    if (m_PNP != p) // Preset without complement: fall back to custom
     {
-        m_BCdiode->getEpin( 0 )->setEnode( 0l );
-        m_BCdiode->getEpin( 1 )->setEnode( 0l );
+        m_model = "Custom";
+        m_PNP   = p;
+        refreshModel();
     }
-    m_BCdiodeOn = bcd; 
+}
+
+void eBJT::stamp()
+{
+    for (int i = 0; i < 3; i++) {
+        if (m_ePin[i]->isConnected()) {
+            eNode *node = m_ePin[i]->getEnode();
+            node->addToNoLinList(this);
+            node->setSwitched(true);
+        }
+    }
+    m_vbe      = 0;
+    m_vbc      = 0;
+    m_vbeStamp = 1e9;
+    setVChanged(); // Initial linearization
+}
+
+void eBJT::resetState()
+{
+    m_baseCurr = 0;
+    m_collCurr = 0;
+    m_vbe      = 0;
+    m_vbc      = 0;
+    m_vbeStamp = 1e9;
+    m_vbcStamp = 1e9;
+}
+
+void eBJT::setVChanged()
+{
+    if (!m_ePin[C]->isConnected() || !m_ePin[E]->isConnected() ||
+        !m_ePin[B]->isConnected())
+        return;
+
+    int it = Simulator::self()->nlIteration();
+    if (it > NEWTON_MAX) // Not converging here: continue in the next step
+    {
+        Simulator::self()->addToNoLinNextStep(this);
+        return;
+    }
+
+    double t  = m_PNP ? -1 : 1;
+    double vc = m_ePin[C]->getVolt();
+    double ve = m_ePin[E]->getVolt();
+    double vb = m_ePin[B]->getVolt();
+
+    double vbe = t * (vb - ve);
+    double vbc = t * (vb - vc);
+
+    double vbeT = vbe, vbcT = vbc;
+    vbe = Semi::pnjlim(vbe, m_vbe, m_p.nf * Semi::VT, m_vcritBE);
+    vbc = Semi::pnjlim(vbc, m_vbc, m_p.nr * Semi::VT, m_vcritBC);
+
+    if (it > NEWTON_DAMP) // Newton not converging (e.g. latch at a switching
+                          // instant)
+    {
+        double k = 0.5; // Damped Newton
+        vbe      = m_vbe + k * (vbe - m_vbe);
+        vbc      = m_vbc + k * (vbc - m_vbc);
+    }
+    m_vbe = vbe;
+    m_vbc = vbc;
+
+    if ((std::fabs(vbe - vbeT) > VTOL) || (std::fabs(vbc - vbcT) > VTOL))
+        Simulator::self()->addToNoLinList(this); // Limited: iterate again
+
+    if ((std::fabs(vbe - m_vbeStamp) < VTOL) &&
+        (std::fabs(vbc - m_vbcStamp) < VTOL))
+        return; // Converged
+
+    Semi::BjtOp op;
+    Semi::bjtEval(m_p, vbe, vbc, op);
+
+    bool limited =
+        (std::fabs(vbe - vbeT) > VTOL) || (std::fabs(vbc - vbcT) > VTOL);
+    if (!limited && (m_vbeStamp < 1e8)) // Currents already well predicted?
+    {
+        double dbe = vbe - m_vbeStamp, dbc = vbc - m_vbcStamp;
+        double icP = m_opS.ic + m_opS.dicVbe * dbe + m_opS.dicVbc * dbc;
+        double ibP = m_opS.ib + m_opS.dibVbe * dbe + m_opS.dibVbc * dbc;
+        if ((std::fabs(op.ic - icP) < ITOL_ABS + ITOL_REL * std::fabs(op.ic)) &&
+            (std::fabs(op.ib - ibP) < ITOL_ABS + ITOL_REL * std::fabs(op.ib)))
+            return;
+    }
+    m_vbeStamp = vbe;
+    m_vbcStamp = vbc;
+    m_opS      = op;
+
+    NLStamp<3> s;
+    s.clear();
+    s.v0[E] = ve; // Linearization point consistent with limited vbe, vbc
+    s.v0[B] = ve + t * vbe;
+    s.v0[C] = s.v0[B] - t * vbc;
+
+    // Partial derivatives are polarity independent (t*t = 1)
+    s.J[C][B] = op.dicVbe + op.dicVbc;
+    s.J[C][E] = -op.dicVbe;
+    s.J[C][C] = -op.dicVbc;
+    s.J[B][B] = op.dibVbe + op.dibVbc;
+    s.J[B][E] = -op.dibVbe;
+    s.J[B][C] = -op.dibVbc;
+    for (int j = 0; j < 3; j++)
+        s.J[E][j] = -(s.J[C][j] + s.J[B][j]);
+
+    s.I[C] = t * op.ic;
+    s.I[B] = t * op.ib;
+    s.I[E] = -(s.I[C] + s.I[B]);
+
+    s.addG(C, E, Semi::GMIN); // Keeps the C-E pair always connected
+
+    m_baseCurr = s.I[B];
+    m_collCurr = s.I[C];
+
+    s.stamp(&m_ePin[0]);
 }
 
 void eBJT::initEpins()
 {
     std::stringstream sd;
     sd << m_elmId << "-collector";
-    m_ePin[0] = new ePin( sd.str(), 0 );
-    
+    m_ePin[0] = new ePin(sd.str(), 0);
+
     std::stringstream ss;
     ss << m_elmId << "-emiter";
-    m_ePin[1] = new ePin( ss.str(), 1 ); 
-    
+    m_ePin[1] = new ePin(ss.str(), 1);
+
     std::stringstream sg;
     sg << m_elmId << "-base";
-    m_ePin[2] = new ePin( sg.str(), 2 );  
+    m_ePin[2] = new ePin(sg.str(), 2);
 }
 
-ePin* eBJT::getEpin( QString pinName )
+ePin *eBJT::getEpin(QString pinName)
 {
-    ePin* pin = 0l;
-    if     ( pinName == "collector") pin = m_ePin[0];
-    else if( pinName == "emiter")    pin = m_ePin[1];
-    else if( pinName == "base")      pin = m_ePin[2];
+    ePin *pin = 0l;
+    if (pinName == "collector")
+        pin = m_ePin[0];
+    else if (pinName == "emiter")
+        pin = m_ePin[1];
+    else if (pinName == "base")
+        pin = m_ePin[2];
     return pin;
 }
-
-

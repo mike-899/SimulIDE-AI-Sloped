@@ -18,7 +18,9 @@
  ***************************************************************************/
 
 #include "mcucomponentpin.h"
+
 #include "baseprocessor.h"
+#include "spicecosim.h"
 
 McuComponentPin::McuComponentPin( McuComponent* mcuComponent, QString id, QString type, QString label, int pos, int xpos, int ypos, int angle )
                : QObject( mcuComponent )
@@ -115,8 +117,10 @@ void McuComponentPin::setDirection( bool out )
         m_gndAdmit = cero_doub;
         update();
 
-        BaseProcessor::self()->setExtraStep(); // Run Extra Simulation Step
+        m_mcuComponent->processor()
+            ->setExtraStep(); // Run Extra Simulation Step
     }
+    cosimChanged();
 }
 
 void McuComponentPin::setState( bool state )
@@ -146,8 +150,9 @@ void McuComponentPin::setState( bool state )
     {
         eSource::setOut( state );
         eSource::stampOutput();
+        cosimChanged();
     }
-    BaseProcessor::self()->setExtraStep(); // Run Extra Simulation Step
+    m_mcuComponent->processor()->setExtraStep(); // Run Extra Simulation Step
 }
 
 void McuComponentPin::update()
@@ -159,6 +164,15 @@ void McuComponentPin::update()
     m_voltOut = 5*vddAdmit*Rth;
 
     eSource::setImp( Rth );
+    cosimChanged();
+}
+
+void McuComponentPin::cosimChanged()
+{
+    // ngspice co-simulation: the pin drives an EXTERNAL source, tell it
+    // the new Thevenin equivalent at the present MCU time
+    if (SpiceCosim::s_active && m_cosimSlot >= 0)
+        SpiceCosim::self()->pinChanged(this);
 }
 
 void McuComponentPin::setPullup( bool up )
@@ -177,7 +191,7 @@ void McuComponentPin::setPullup( bool up )
     }
     update();
 
-    BaseProcessor::self()->setExtraStep(); // Run Extra Simulation Step
+    m_mcuComponent->processor()->setExtraStep(); // Run Extra Simulation Step
 }
 
 void McuComponentPin::setExtraSource( double vddAdmit, double gndAdmit )

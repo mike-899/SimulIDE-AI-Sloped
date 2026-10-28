@@ -10,32 +10,41 @@ SimulIDE Community Edition is a fork of SimulIDE software, a simple real time el
 
 Build dependencies:
 
- - Qt5 dev packages
- - Qt5Core
- - Qt5Gui
- - Qt5Xml
- - Qt5Widgets
- - Qt5Concurrent
- - Qt5svg dev
- - Qt5 Multimedia dev
- - Qt5 Serialport dev
- - Qt5 Script
- - Qt5 qmake
+ - Qt 6 dev packages (Qt >= 6.2)
+ - Qt6 Core, Gui, Widgets, Xml, Concurrent, Network
+ - Qt6 Svg
+ - Qt6 Multimedia
+ - Qt6 SerialPort
+ - Qt6 Qml (QtDeclarative, used for the scripted "Function" logic component)
+ - Qt6 tools (lrelease) and qmake6
  - libelf-dev
  - gcc-avr
  - avr-libc
 
  
+On Ubuntu/Debian (24.04+):
+
+```
+sudo apt install qt6-base-dev qt6-multimedia-dev qt6-serialport-dev qt6-svg-dev \
+    qt6-declarative-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools libelf-dev
+```
+
+On Arch Linux: `pacman -S qt6-base qt6-multimedia qt6-serialport qt6-svg qt6-declarative qt6-tools libelf`
+
 Once installed:
 
 ```
 mkdir build
 cd build
-qmake ..
+qmake6 ..
 make
 ```
 
 In the folder `build/release/SimulIDE_x.x.x` you will find the executable and all the files needed to run SimulIDE. SimulIDE executable is in bin folder. No need for installation, place SimulIDE folder wherever you want and run the executable.
+
+## Breaking change: Arduino Mega pin layout
+
+The pins of the Arduino Mega board were moved to sit exactly on the header holes of the realistic board art (see `changelog.txt`). Pin names and MCU mappings are unchanged, but circuits saved with an older Mega will load with the wires on the moved pins displaced; re-route those wires.
 
 ## Social:
 

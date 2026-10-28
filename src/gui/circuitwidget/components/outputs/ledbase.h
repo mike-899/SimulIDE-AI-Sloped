@@ -34,22 +34,34 @@ class MAINMODULE_EXPORT LedBase : public Component, public eLed
     Q_PROPERTY( double MaxCurrent READ maxCurrent WRITE setMaxCurrent DESIGNABLE true USER true )
     Q_PROPERTY( double Resistance READ res        WRITE setRes        DESIGNABLE true USER true )
     Q_PROPERTY( bool   Grounded   READ grounded   WRITE setGrounded   DESIGNABLE true USER true )
+    Q_PROPERTY(
+        LedModel Model READ model WRITE setModel DESIGNABLE true USER true)
     Q_ENUMS( LedColor )
+    Q_ENUMS(LedModel)
 
-    public:
-        LedBase( QObject* parent, QString type, QString id );
-        ~LedBase();
-        
-        enum LedColor {
-            yellow = 0,
-            red,
-            green,
-            blue,
-            orange,
-            purple
-        };
-        
-        void setColor( LedColor color ) { m_ledColor = color; }
+  public:
+    LedBase(QObject *parent, QString type, QString id);
+    ~LedBase();
+
+    enum LedColor { yellow = 0, red, green, blue, orange, purple, white };
+
+    // Auto: colour specific SPICE-like model, Custom: Threshold/Resistance
+    enum LedModel { Auto = 0, Custom };
+
+    void setColor(LedColor color)
+    {
+        m_ledColor = color;
+        setLedColor(color);
+    }
+
+    LedModel model()
+    {
+        return (m_model == "Custom") ? Custom : Auto;
+    }
+    void setModel(LedModel m)
+    {
+        setModelName((m == Custom) ? "Custom" : "Auto");
+    }
         LedColor color() { return m_ledColor; } 
 
         void updateStep();
@@ -59,11 +71,14 @@ class MAINMODULE_EXPORT LedBase : public Component, public eLed
 
         virtual void paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget );
 
-    public slots:
+        QString artRes() const override;
+
+      public slots:
         virtual void remove();
 
     protected:
         virtual void drawBackground( QPainter *p )=0;
+        void drawArtGlow(QPainter *p, QColor color);
         virtual void drawForeground( QPainter *p )=0;
         
         bool     m_grounded;

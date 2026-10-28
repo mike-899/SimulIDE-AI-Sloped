@@ -40,6 +40,8 @@ void PushBase::onbuttonPressed()
     m_button->setChecked( true );
     m_changed = true;
     update();
+    if (parentItem())
+        parentItem()->update(); // KeyPad paints its keys
 }
 
 void PushBase::onbuttonReleased()
@@ -49,6 +51,8 @@ void PushBase::onbuttonReleased()
     m_button->setChecked( false );
     m_changed = true;
     update();
+    if (parentItem())
+        parentItem()->update(); // KeyPad paints its keys
 }
 
 void PushBase::keyEvent( QString key, bool pressed )

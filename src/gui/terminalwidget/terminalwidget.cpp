@@ -163,11 +163,13 @@ TerminalWidget::TerminalWidget( QWidget* parent, SerialTerm* ser )
     connect( &m_uartBox, SIGNAL( valueChanged(int) ),
               m_serComp, SLOT( setUart(int) ));
 
-    connect( BaseProcessor::self(), SIGNAL( uartDataOut( int, int )),
-                              this, SLOT(   uartOut( int, int )) );
-
-    connect( BaseProcessor::self(), SIGNAL( uartDataIn( int, int )),
-                              this, SLOT(   uartIn( int, int )) );
+    m_proc = BaseProcessor::self(); // Bound to the MCU active at creation
+    if (m_proc) {
+        connect(m_proc, SIGNAL(uartDataOut(int, int)), this,
+                SLOT(uartOut(int, int)));
+        connect(m_proc, SIGNAL(uartDataIn(int, int)), this,
+                SLOT(uartIn(int, int)));
+    }
 }
 TerminalWidget::~TerminalWidget() { }
 
@@ -183,11 +185,14 @@ void TerminalWidget::onTextChanged()
     //qDebug()<< "TerminalWidget::onTextChanged" << text ;
     
     QByteArray array = text.toLatin1();
-    
-    for( int i=0; i<array.size(); i++ )
-        BaseProcessor::self()->uartIn( m_uart, array.at(i) );
 
-    if( m_addCR ) BaseProcessor::self()->uartIn( m_uart, 13 );
+    if (!m_proc)
+        return;
+    for( int i=0; i<array.size(); i++ )
+        m_proc->uartIn(m_uart, array.at(i));
+
+    if (m_addCR)
+        m_proc->uartIn(m_uart, 13);
     //if( m_addCR ) qDebug() << "CR";
 }
 
@@ -195,7 +200,8 @@ void TerminalWidget::onValueChanged()
 {
     QString text = m_sendValue.text();
 
-    BaseProcessor::self()->uartIn( m_uart, text.toInt() );
+    if (m_proc)
+        m_proc->uartIn(m_uart, text.toInt());
 }
 
 void TerminalWidget::valueButtonClicked()
@@ -248,7 +254,7 @@ void TerminalWidget::uartIn( int uart, int value ) // Receive one byte on Uart
     if( m_printASCII )
     {
         if( value == 0 ) return;
-        text.append( value );
+        text.append(QChar(value));
     }
     else text = QString::number( value )+" ";
 
@@ -264,7 +270,7 @@ void TerminalWidget::uartOut( int uart, int value ) // Send value to OutPanelTex
     if( m_printASCII )
     {
         //if( value == 0 ) return;
-        text.append( value );
+        text.append(QChar(value));
     }
     else text = QString::number( value )+" ";
 

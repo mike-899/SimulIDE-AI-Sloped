@@ -1,0 +1,69 @@
+# Maintainer: mike-899 <iresego81@gmail.com>
+pkgname=simulide-ai-sloped-git
+_pkgname=SimulIDE-AI-Sloped
+pkgver=0.4.13.r0.g0000000
+pkgrel=1
+pkgdesc='SimulIDE electronic circuit simulator fork (AI/MCP integration, themes, sloped wires)'
+arch=('x86_64')
+url='https://github.com/mike-899/SimulIDE-AI-Sloped'
+license=('GPL3')
+depends=('qt6-base' 'qt6-multimedia' 'qt6-serialport' 'qt6-svg' 'qt6-declarative' 'libelf')
+makedepends=('git' 'qt6-tools')
+optdepends=('mesa: hardware-accelerated rendering of the Qt Quick interface (software rendering is used otherwise)')
+provides=('simulide')
+conflicts=('simulide')
+source=("git+${url}.git")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "$_pkgname"
+  # Prefer the latest tag; fall back to the .pro VERSION + commit count.
+  if git describe --long --tags --match 'v[0-9]*' >/dev/null 2>&1; then
+    git describe --long --tags --match 'v[0-9]*' | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g'
+  else
+    printf '%s.r%s.g%s' \
+      "$(sed -n 's/^VERSION *= *"\([0-9.]*\)".*/\1/p' SimulIDE.pro)" \
+      "$(git rev-list --count HEAD)" \
+      "$(git rev-parse --short HEAD)"
+  fi
+}
+
+build() {
+  cd "$_pkgname"
+  rm -rf build
+  mkdir build
+  cd build
+  qmake6 ..
+  make
+}
+
+package() {
+  cd "$_pkgname"
+  local _out
+  _out=$(echo build/release/SimulIDE_*)
+
+  # SimulIDE finds its data at <exe dir>/../share/simulide, so the whole
+  # bin/ + share/ tree is kept together and /usr/bin gets a symlink
+  # (Qt resolves the symlink via /proc/self/exe).
+  local _dest="$pkgdir/usr/lib/simulide-ai-sloped"
+  install -dm755 "$_dest"
+  cp -a "$_out/bin" "$_out/share" "$_dest/"
+  # The tree's own icon copy is redundant, we install it system-wide below.
+  rm -rf "$_dest/share/icons"
+
+  install -dm755 "$pkgdir/usr/bin"
+  ln -s /usr/lib/simulide-ai-sloped/bin/simulide "$pkgdir/usr/bin/simulide-ai-sloped"
+  ln -s simulide-ai-sloped "$pkgdir/usr/bin/simulide"
+
+  # Data is also reachable under the conventional /usr/share path
+  install -dm755 "$pkgdir/usr/share"
+  ln -s /usr/lib/simulide-ai-sloped/share/simulide "$pkgdir/usr/share/simulide-ai-sloped"
+
+  install -Dm644 packaging/linux/simulide.desktop \
+    "$pkgdir/usr/share/applications/simulide-ai-sloped.desktop"
+  sed -i 's|^Exec=.*|Exec=simulide-ai-sloped|; s|^Icon=.*|Icon=simulide-ai-sloped|' \
+    "$pkgdir/usr/share/applications/simulide-ai-sloped.desktop"
+  install -Dm644 resources/icons/hicolor/256x256/simulide.png \
+    "$pkgdir/usr/share/icons/hicolor/256x256/apps/simulide-ai-sloped.png"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

@@ -18,9 +18,13 @@
  ***************************************************************************/
 
 #include "ledbase.h"
+
 #include "connector.h"
-#include "simulator.h"
+#include "partart.h"
 #include "pin.h"
+#include "simulator.h"
+
+#include <QPainterPath>
 
 static const char* LedBase_properties[] = {
     QT_TRANSLATE_NOOP("App::Property","MaxCurrent"),
@@ -136,6 +140,59 @@ void LedBase::remove()
     Component::remove();
 }
 
+QString LedBase::artRes() const
+{
+    // Per colour LED body art (mit/led_<colour>[_on].svg)
+    static const char *names[] = { "yellow", "red",    "green", "blue",
+                                   "orange", "purple", "white" };
+    int c                      = qBound(0, (int)m_ledColor, 6);
+    bool on                    = m_overCurrent || m_bright > 25;
+    return QString(":/parts/mit/led_%1%2.svg")
+        .arg(names[c])
+        .arg(on ? "_on" : "");
+}
+
+void LedBase::drawArtGlow(QPainter *p, QColor color)
+{
+    // Dome of mit/led.svg inside its art rect
+    QRectF ar = PartArt::artRect(m_type);
+    if (ar.isNull())
+        return;
+    QPointF c(ar.x() + ar.width() * 0.5, ar.y() + ar.height() * 0.24);
+    double rad = ar.width() * 0.42;
+
+    p->save();
+    p->setRenderHint(QPainter::Antialiasing);
+    p->setPen(Qt::NoPen);
+
+    int bright = m_overCurrent ? 255 : (int)m_bright;
+    if (bright > 25) {
+        static const QColor hues[] = {
+            QColor(255, 225, 40), QColor(255, 40, 40),  QColor(40, 255, 90),
+            QColor(60, 130, 255), QColor(255, 140, 20), QColor(190, 80, 255),
+            QColor(255, 255, 255)
+        };
+        Q_UNUSED(color);
+        QColor glow = m_overCurrent ? QColor(Qt::white)
+                                    : hues[qBound(0, (int)m_ledColor, 6)];
+        double gr   = rad * (1.4 + bright / 255.0);
+        QRadialGradient grad(c, gr);
+        QColor c0 = glow;
+        c0.setAlpha(qMin(255, 80 + bright));
+        QColor c1 = glow;
+        c1.setAlpha(bright / 3);
+        QColor c2 = glow;
+        c2.setAlpha(0);
+        grad.setColorAt(0.0, QColor(255, 255, 255, qMin(255, bright)));
+        grad.setColorAt(0.25, c0);
+        grad.setColorAt(0.6, c1);
+        grad.setColorAt(1.0, c2);
+        p->setBrush(grad);
+        p->drawEllipse(c, gr, gr);
+    }
+    p->restore();
+}
+
 void LedBase::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget )
 {
     Component::paint( p, option, widget );
@@ -173,6 +230,14 @@ void LedBase::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidge
         else if( m_ledColor == blue )   color = QColor( overBight, m_bright/2, m_bright );
         else if( m_ledColor == orange ) color = QColor( m_bright,  m_bright*2/3, overBight );
         else if( m_ledColor == purple ) color = QColor( m_bright,  overBight,  m_bright*2/3 );
+        else if (m_ledColor == white)
+            color = QColor(m_bright, m_bright, m_bright);
+    }
+    if (artActive()) // Realistic part art
+    {
+        paintArt(p);
+        drawArtGlow(p, color);
+        return;
     }
     p->setPen(pen);
     drawBackground( p );

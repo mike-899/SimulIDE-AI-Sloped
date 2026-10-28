@@ -31,10 +31,11 @@ SIMUAPI_AppPath *SIMUAPI_AppPath::self()
     return m_pSelf;
 }
 
-SIMUAPI_AppPath::SIMUAPI_AppPath()
-               : m_ROExamFolder( qApp->applicationDirPath() )
-               , m_RODataFolder( qApp->applicationDirPath() )
-               , m_RWDataFolder( QStandardPaths::writableLocation( QStandardPaths::DataLocation ))
+SIMUAPI_AppPath::SIMUAPI_AppPath() :
+    m_ROExamFolder(qApp->applicationDirPath()),
+    m_RODataFolder(qApp->applicationDirPath()),
+    m_RWDataFolder(
+        QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation))
 {
     m_ROExamFolder.cd( "../share/simulide/examples" );
     m_RODataFolder.cd( "../share/simulide/data" );

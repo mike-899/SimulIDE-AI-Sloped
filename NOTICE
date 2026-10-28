@@ -1,0 +1,57 @@
+SimulIDE - third party notices
+==============================
+
+ngspice
+-------
+The optional "Accurate analog (ngspice)" engine (src/simulator/spice) uses
+ngspice, the open source mixed-signal circuit simulator:
+
+    https://ngspice.sourceforge.io/
+
+ngspice is NOT bundled with SimulIDE. The shared library (libngspice,
+e.g. Debian/Ubuntu package "libngspice0") is loaded at runtime when it is
+installed; SimulIDE runs normally without it. The few API type declarations
+needed to talk to it (src/simulator/spice/ngspice-api.h) follow the public
+interface in ngspice's sharedspice.h.
+
+ngspice is distributed under the Modified BSD license (BSD-3-Clause), see the
+COPYING file in the ngspice sources for the full copyright notice:
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are
+    met:
+    1. Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
+    2. Redistributions in binary form must reproduce the above copyright
+       notice, this list of conditions and the following disclaimer in the
+       documentation and/or other materials provided with the distribution.
+    3. Neither the name of the copyright holder nor the names of its
+       contributors may be used to endorse or promote products derived from
+       this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+    PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER
+    OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+    EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+    PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+    PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Semiconductor model parameters
+------------------------------
+The device presets in src/simulator/elements/active/e-semimodel.cpp
+(1N4148, 1N4007, 1N5819, 2N2222, 2N2907, 2N3904, 2N3906, BC547, BC557, ...)
+use standard SPICE parameters taken from the widely published vendor SPICE
+models of those parts (or fitted to their datasheets where noted in the
+source). The convergence aids (pnjlim, fetlim, limvds) follow the
+algorithms described for Berkeley SPICE3 / ngspice.
+
+Realistic part artwork
+----------------------
+The SVG artwork in resources/parts is derived from the Fritzing parts library
+(CC BY-SA 3.0, resources/parts/fritzing/) and from wokwi-elements (MIT, resources/parts/mit/).
+See the NOTICE file in each of those folders for the files, authors and sources.

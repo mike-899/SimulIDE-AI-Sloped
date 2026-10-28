@@ -22,9 +22,11 @@ RELEASE = "-SR5-CE"
 
 TEMPLATE = app
 
+lessThan(QT_MAJOR_VERSION, 6): error("SimulIDE requires Qt 6 (use qmake6)")
+
 TARGET = simulide
 
-QT += core gui multimedia widgets serialport concurrent script xml svg
+QT += core gui multimedia widgets serialport concurrent qml quick quickwidgets xml svg network
 
 win32-g++{
     OS = Windows
@@ -45,6 +47,20 @@ macx {
 }
 
 include(./SimulIDE.pri)
+
+# Embedded MCP server (Model Context Protocol)
+INCLUDEPATH += ./src/mcp
+HEADERS += ./src/mcp/mcpserver.h ./src/mcp/mcptools.h
+SOURCES += ./src/mcp/mcpserver.cpp ./src/mcp/mcptools.cpp
+
+# QML (Qt Quick) application shell, see docs/QML_UI.md
+INCLUDEPATH += ./src/gui/qml
+HEADERS += ./src/gui/qml/qmlui.h ./src/gui/qml/themetokens.h \
+    ./src/gui/qml/componentmodel.h ./src/gui/qml/qmlcontrollers.h \
+    ./src/gui/qml/inspector.h
+SOURCES += ./src/gui/qml/qmlui.cpp ./src/gui/qml/themetokens.cpp \
+    ./src/gui/qml/componentmodel.cpp ./src/gui/qml/qmlcontrollers.cpp \
+    ./src/gui/qml/inspector.cpp
 
 QMAKE_CXXFLAGS += -Wno-unused-parameter
 QMAKE_CXXFLAGS += -Wno-missing-field-initializers
@@ -69,7 +85,7 @@ QMAKE_LIBS += -lelf
 CONFIG += qt 
 CONFIG += warn_on
 CONFIG += no_qml_debug
-CONFIG *= c++11
+CONFIG *= c++17
 
 
 DEFINES += MAINMODULE_EXPORT=
@@ -91,7 +107,12 @@ OBJECTS_DIR *= $$_OBJECTS_DIR
 MOC_DIR     *= $$OUT_PWD/build
 INCLUDEPATH += $$MOC_DIR
 
-runLrelease.commands = lrelease $$PWD/resources/translations/simulide.ts \
+LRELEASE = lrelease
+exists($$[QT_INSTALL_BINS]/lrelease-qt6*): LRELEASE = $$[QT_INSTALL_BINS]/lrelease-qt6
+else: exists($$[QT_INSTALL_BINS]/lrelease-qt5*): LRELEASE = $$[QT_INSTALL_BINS]/lrelease-qt5
+else: exists($$[QT_INSTALL_BINS]/lrelease*): LRELEASE = $$[QT_INSTALL_BINS]/lrelease
+
+runLrelease.commands = $$LRELEASE $$PWD/resources/translations/simulide.ts \
     $$PWD/resources/translations/simulide_en.ts \
     $$PWD/resources/translations/simulide_es.ts \
     $$PWD/resources/translations/simulide_fr.ts \
@@ -103,6 +124,15 @@ QMAKE_EXTRA_TARGETS += runLrelease
 POST_TARGETDEPS     += runLrelease
 
 RESOURCES = ./src/application.qrc
+RESOURCES += ./resources/themes/themes.qrc
+RESOURCES += ./resources/fonts/fonts.qrc
+RESOURCES += ./resources/parts/parts.qrc
+RESOURCES += ./resources/parts/modules.qrc
+RESOURCES += ./src/qml/qml.qrc
+HEADERS += ./src/gui/thememanager.h
+HEADERS += ./src/gui/circuitwidget/partart.h
+SOURCES += ./src/gui/circuitwidget/partart.cpp
+SOURCES += ./src/gui/thememanager.cpp
 
 win32 | linux {
     DESTDIR = $$TARGET_PREFIX/bin
@@ -129,6 +159,7 @@ macx {
         $(MOVE)     $$PWD/resources/translations/*.qm $$TARGET_PREFIX/simulide.app/Contents/share/simulide/translations ;
 }
 
+copy2dest.depends = runLrelease
 QMAKE_EXTRA_TARGETS += copy2dest
 POST_TARGETDEPS     += copy2dest
 

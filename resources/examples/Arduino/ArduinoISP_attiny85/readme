@@ -1,0 +1,38 @@
+ArduinoISP -> ATtiny85 (simulated ISP programming)
+==================================================
+
+An Arduino Uno runs ArduinoISP and programs a blank ATtiny85 through its
+ISP pins:  D10 -> RESET (PB5),  D11 -> MOSI (PB0),  D12 <- MISO (PB1),
+D13 -> SCK (PB2). A SerialPort component in TCP_Server mode links the
+Arduino UART to 127.0.0.1:5333 so a real avrdude can talk to it:
+
+  avrdude -c stk500v1 -P net:127.0.0.1:5333 -b 19200 -p t85 -U flash:w:blink_t85.hex:i
+
+Or right click the Arduino -> "Program target via ISP (STK500v1)...".
+After programming the ATtiny85 runs blink_t85.hex (PB3/PB4 toggle every 10 ms).
+See docs/ISP.md (Spanish) for the full guide.
+
+Files
+-----
+ArduinoISP.ino       ArduinoISP sketch, unmodified, from
+                     https://github.com/arduino/arduino-examples
+                     (examples/11.ArduinoISP/ArduinoISP/ArduinoISP.ino, main
+                     branch fetched 2026-10-27, sha256 9d6318e03dce7c12825fed3abe82a6c8a6d16842d2b38d64b278c37844d011e2)
+ArduinoISP.hex       That sketch built for Arduino Uno (ATmega328P, 16 MHz) with
+                     build_arduinoisp.sh, avr-gcc 7.3 and the Arduino AVR core
+                     1.8.6 (Debian package arduino-core-avr).
+build_arduinoisp.sh  Rebuilds ArduinoISP.hex:  sh build_arduinoisp.sh ArduinoISP.ino ArduinoISP.hex
+blink_t85.c/.hex     Test firmware for the ATtiny85 (avr-gcc -mmcu=attiny85 -Os).
+
+Licenses
+--------
+ArduinoISP.ino: "Copyright (c) 2008-2011 Randall Bohn. If you require a
+license, see https://opensource.org/licenses/bsd-license.php" (BSD license);
+the arduino-examples repository itself is released under CC0 1.0.
+
+ArduinoISP.hex also contains object code of the Arduino AVR core and SPI
+library (GNU LGPL 2.1 or later, https://github.com/arduino/ArduinoCore-avr).
+Its complete corresponding source is the sketch above plus that core
+(version 1.8.6); build_arduinoisp.sh relinks it.
+
+blink_t85.c and the .simu circuit: GPL v3 or later, like SimulIDE.

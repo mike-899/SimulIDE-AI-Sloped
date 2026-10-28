@@ -66,7 +66,7 @@ int AvrAsmDebugger::compile()
     QString command  = m_compilerPath+"avra";
     
     QProcess checkComp( this );
-    checkComp.start( command  );
+    checkComp.startCommand(command);
     checkComp.waitForFinished(-1);
     
     QString p_stdo = checkComp.readAllStandardOutput();
@@ -93,8 +93,8 @@ int AvrAsmDebugger::compile()
     m_outPane->appendText( "Exec: ");
     m_outPane->appendText( command );
     m_outPane->writeText( "\n\n" );
-    
-    m_compProcess.start( command );
+
+    m_compProcess.startCommand(command);
     m_compProcess.waitForFinished(-1);
     
     QString p_stderr = m_compProcess.readAllStandardError();

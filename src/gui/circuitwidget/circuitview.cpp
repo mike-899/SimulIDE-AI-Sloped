@@ -55,7 +55,8 @@ CircuitView::CircuitView( QWidget *parent )
     //setViewportUpdateMode( QGraphicsView::FullViewportUpdate );
     //setCacheMode( CacheBackground );
     //setRenderHint( QPainter::Antialiasing );
-    setRenderHints( QPainter::HighQualityAntialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
+    setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing |
+                   QPainter::SmoothPixmapTransform);
     //setRenderHint( QPainter::SmoothPixmapTransform );
     setTransformationAnchor( AnchorUnderMouse );
     setResizeAnchor( AnchorUnderMouse );
@@ -108,9 +109,13 @@ void CircuitView::setCircTime( uint64_t step)
     
     if( McuComponent::self() ) 
     {
-        QString device = McuComponent::self()->device();
-        QString freq = QString::number( McuComponent::self()->freq() );
-        strMcu = "      Mcu: "+device+" at "+freq+" MHz";
+        McuComponent *mcu = McuComponent::self();
+        QString freq      = QString::number(mcu->freq());
+        strMcu = "      Mcu: " + mcu->itemID() + " (" + mcu->device() +
+                 ") at " + freq + " MHz";
+        int n = McuComponent::mcuList().size();
+        if (n > 1)
+            strMcu += " [" + QString::number(n) + " MCUs]";
     }
     m_info->setPlainText( tr("Time: ")+strH+":"+strM+":"+strS+"."+strMS + strMcu );
 }
@@ -122,7 +127,7 @@ void CircuitView::clear()
         m_circuit->remove();
         m_circuit->deleteLater();
     }
-    resetMatrix();
+    resetTransform();
 
     m_enterItem = 0l;
     
@@ -132,10 +137,64 @@ void CircuitView::clear()
     //setCircTime( 0 );
 }
 
-void CircuitView::wheelEvent( QWheelEvent *event ) 
-{ 
-    qreal scaleFactor = pow( 2.0, event->delta() / 700.0);
+void CircuitView::wheelEvent(QWheelEvent *event)
+{
+    qreal scaleFactor = pow(2.0, event->angleDelta().y() / 700.0);
     scale( scaleFactor, scaleFactor );
+}
+
+QPointF CircuitView::visibleCenter()
+{
+    // The viewport is bigger than the widget, so use the widget rect
+    return mapToScene(rect().center());
+}
+
+void CircuitView::centerVisibleOn(QPointF scenePoint)
+{
+    QPointF delta = visibleCenter() - scenePoint;
+    centerOn(mapToScene(viewport()->rect().center()) - delta);
+}
+
+void CircuitView::zoomBy(qreal factor)
+{
+    QPointF center        = visibleCenter();
+    ViewportAnchor anchor = transformationAnchor();
+    setTransformationAnchor(NoAnchor);
+    scale(factor, factor);
+    setTransformationAnchor(anchor);
+    centerVisibleOn(center);
+}
+
+void CircuitView::zoomIn()
+{
+    zoomBy(1.25);
+}
+void CircuitView::zoomOut()
+{
+    zoomBy(0.8);
+}
+
+void CircuitView::zoomReset()
+{
+    QPointF center = visibleCenter();
+    resetTransform();
+    centerVisibleOn(center);
+}
+
+void CircuitView::zoomToFit()
+{
+    QRectF items = m_circuit->itemsBoundingRect();
+    if (items.isEmpty() || width() < 10 || height() < 10)
+        return;
+
+    qreal factor =
+        qMin(width() / items.width(), height() / items.height()) * 0.9;
+    if (factor > 4)
+        factor = 4;
+
+    resetTransform();
+    scale(factor, factor);
+    centerVisibleOn(items.center());
 }
 
 void CircuitView::dragEnterEvent(QDragEnterEvent *event)
@@ -192,8 +251,7 @@ void CircuitView::resizeEvent( QResizeEvent *event )
 
 void CircuitView::mousePressEvent( QMouseEvent* event )
 {
-    if( event->button() == Qt::MidButton )
-    {
+    if (event->button() == Qt::MiddleButton) {
         event->accept();
         setDragMode( QGraphicsView::ScrollHandDrag );
 
@@ -205,9 +263,7 @@ void CircuitView::mousePressEvent( QMouseEvent* event )
                 Qt::LeftButton, Qt::LeftButton, Qt::NoModifier   );
             QGraphicsView::mousePressEvent( &eve );
         }
-    }
-    else
-    {
+    } else {
         QGraphicsView::mousePressEvent( event );
         //viewport()->setCursor( Qt::ArrowCursor );
     }
@@ -215,16 +271,13 @@ void CircuitView::mousePressEvent( QMouseEvent* event )
 
 void CircuitView::mouseReleaseEvent( QMouseEvent* event )
 {
-    if( event->button() == Qt::MidButton )
-    {
+    if (event->button() == Qt::MiddleButton) {
         event->accept();
         QMouseEvent eve( QEvent::MouseButtonRelease, event->pos(),
             Qt::LeftButton, Qt::LeftButton, Qt::NoModifier   );
 
         QGraphicsView::mouseReleaseEvent( &eve );
-    }
-    else
-    {
+    } else {
         QGraphicsView::mouseReleaseEvent( event );
         //viewport()->setCursor( Qt::ArrowCursor );
     }

@@ -38,7 +38,7 @@ Node::Node( QObject* parent, QString type, QString id )
     {
         nodid = id;
         nodid.append(QString("-"));
-        nodid.append( uchar(48+i) );
+        nodid.append(QChar(48 + i));
         nodpos = QPoint( 0,0);
         m_pin[i] = new Pin( 90*i, nodpos, nodid, i, this);
         m_pin[i]->setLength( 0 );

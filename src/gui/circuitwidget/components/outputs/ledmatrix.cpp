@@ -129,7 +129,7 @@ void LedMatrix::createMatrix()
             lsmd->setColor( m_ledColor );
             //lsmd->setEnabled(false);
             lsmd->setFlag( QGraphicsItem::ItemIsSelectable, false );
-            lsmd->setAcceptedMouseButtons(0);
+            lsmd->setAcceptedMouseButtons(Qt::NoButton);
 
             m_led[row][col] = lsmd;
         }
@@ -310,8 +310,8 @@ void LedMatrix::remove()
 void LedMatrix::paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget )
 {
     Component::paint( p, option, widget );
-    
-    p->drawRoundRect( m_area, 4, 4 );
+
+    p->drawRoundedRect(m_area, 4, 4, Qt::RelativeSize);
 }
 
 #include "moc_ledmatrix.cpp"

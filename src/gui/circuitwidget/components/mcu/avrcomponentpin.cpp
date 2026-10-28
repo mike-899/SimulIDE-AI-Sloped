@@ -18,13 +18,18 @@
  ***************************************************************************/
 
 #include "avrcomponentpin.h"
+
+#include "avrcompbase.h"
 #include "baseprocessor.h"
 #include "simulator.h"
+#include "spicecosim.h"
 
 AVRComponentPin::AVRComponentPin( McuComponent* mcu, QString id, QString type, QString label, int pos, int xpos, int ypos, int angle )
                : McuComponentPin( mcu, id, type, label, pos, xpos, ypos, angle )
 {
     m_channel = -1;
+    m_ispRole     = 0;
+    m_resetLocked = false;
 }
 AVRComponentPin::~AVRComponentPin(){}
 
@@ -42,7 +47,7 @@ void AVRComponentPin::attach( avr_t*  AvrProcessor )
         QString portName = "PORT";
         portName.append( m_id.at(1) );
 
-        int portAddr = BaseProcessor::self()->getRegAddress( portName );
+        int portAddr = m_mcuComponent->processor()->getRegAddress(portName);
         if( portAddr < 0 )
         {
             qDebug()<<"PORT Register for"<<AvrProcessor->mmcu<<"Not found\nAVRComponentPin::attach"<<portName<<m_pinN;
@@ -58,7 +63,7 @@ void AVRComponentPin::attach( avr_t*  AvrProcessor )
         // DDRX Register change irq
         QString ddrName = "DDR";
         ddrName.append( m_id.at(1) );
-        int ddrAddr = BaseProcessor::self()->getRegAddress( ddrName );
+        int ddrAddr = m_mcuComponent->processor()->getRegAddress(ddrName);
         if( ddrAddr < 0 )
         {
             qDebug()<<"DDR Register for"<<AvrProcessor->mmcu<<"Not found\nAVRComponentPin::attach"<<ddrName<<m_pinN;
@@ -124,15 +129,33 @@ void AVRComponentPin::setVChanged()
     {
         if( volt  > 2.5 ) avr_raise_irq(m_Write_stat_irq, 1);
         else              avr_raise_irq(m_Write_stat_irq, 0);
+
+        if (m_ispRole) // RESET, SCK or MOSI of serial programming
+            static_cast<AvrCompBase *>(m_mcuComponent)
+                ->ispPinChanged(this, volt > 2.5);
     }
     else if( m_pinType == 21 ) // reset
     {
-        if( volt < 3 )  BaseProcessor::self()->hardReset( true );
-        else            BaseProcessor::self()->hardReset( false );
+        static_cast<AvrCompBase *>(m_mcuComponent)
+            ->ispPinChanged(this, volt >= 3);
     }
     else if( m_pinType == 22 ) { m_avrProcessor->vcc  = volt*1000;}
     else if( m_pinType == 23 ) { m_avrProcessor->avcc = volt*1000;}
     else if( m_pinType == 24 ) { m_avrProcessor->aref = volt*1000;}
+}
+
+void AVRComponentPin::setResetPullup(bool up)
+{
+    if (m_pinType != 1)
+        return;
+    if (!up && !m_resetLocked)
+        return; // GPIO: pull-up belongs to the firmware
+
+    m_resetLocked = up;
+    if (up && !m_isInput)
+        setDirection(false);
+    m_pupAdmit = up ? 1 / 1e5 : 0;
+    update();
 }
 
 void AVRComponentPin::resetState()
@@ -161,6 +184,8 @@ void AVRComponentPin::pullupNotConnected( bool up )
 void AVRComponentPin::adcread()
 {
     //qDebug() << "ADC Read channel:    pin: " << m_id <<m_ePin[0]->getVolt()*1000 ;
+    if (SpiceCosim::s_active) // ngspice: sample at the present MCU time
+        SpiceCosim::self()->inputSync(m_mcuComponent->processor(), 0);
     avr_raise_irq( m_Write_adc_irq, m_ePin[0]->getVolt()*1000 );
 }
 

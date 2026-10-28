@@ -18,18 +18,21 @@
  ***************************************************************************/
 
 #include "circuit.h"
+
+#include "circuitwidget.h"
+#include "connectorline.h"
 #include "itemlibrary.h"
 #include "mainwindow.h"
-#include "circuitwidget.h"
-#include "propertieswidget.h"
-#include "subpackage.h"
-#include "connectorline.h"
 #include "mcucomponent.h"
-#include "simuapi_apppath.h"
 #include "node.h"
+#include "propertieswidget.h"
+#include "simuapi_apppath.h"
+#include "subpackage.h"
+#include "thememanager.h"
 #include "utils.h"
 
 #include <QCoreApplication>
+#include <cmath>
 
 static const char* Circuit_properties[] = {
     QT_TRANSLATE_NOOP("App::Property","Speed"),
@@ -50,6 +53,8 @@ Circuit::Circuit( qreal x, qreal y, qreal width, qreal height, QGraphicsView*  p
     Q_UNUSED( Circuit_properties );
     
     setObjectName( "Circuit" );
+    connect(ThemeManager::self(), &ThemeManager::themeChanged, this,
+            [this](bool) { update(); });
     setParent( parent );
     m_graphicView = parent;
     m_scenerect.setRect( x, y, width, height );
@@ -382,7 +387,8 @@ void Circuit::loadDomDoc( QDomDocument* doc )
 
                     if( docType != "simulide_0.4" )
                     {
-                        if( type == "SerialPort") item->setPos( McuComponent::self()->pos() );
+                        if (type == "SerialPort" && McuComponent::self())
+                            item->setPos(McuComponent::self()->pos());
                     }
                     if( m_pasting ) item->setSelected( true );
                 }
@@ -478,9 +484,10 @@ void Circuit::objectToDom( QDomDocument* doc, QObject* object )
         {
             QStringList list= value.toStringList();
             elm.setAttribute( name, list.join(",") );
-        }
-        else if( (QString(name)=="Mem") || (QString(name)=="eeprom") )
+        } else if (metaproperty.isEnumType()) // Qt6 would save the key name
         {
+            elm.setAttribute(name, QString::number(value.toInt()));
+        } else if ((QString(name) == "Mem") || (QString(name) == "eeprom")) {
             QVector<int> vmem = value.value<QVector<int>>();
 
             QStringList list;
@@ -493,15 +500,12 @@ void Circuit::objectToDom( QDomDocument* doc, QObject* object )
             //qDebug() << "Data:\n" << list;
             //qDebug() << "type" << value.type()<< "typename" << value.typeName()<< "name " << name
             //     << "   value " << value << "saved" << value.toString();
-        }
-        else
-        {
+        } else {
             elm.setAttribute( name, value.toString() );
             if( QString(name)=="Text" )
             qDebug() << "type:" << value.type()<< "typename:" << value.typeName()<< "name:" << name
                  << "   value:" << value << "saved:" << value.toString();
         }
-
     }
     QDomText blank = m_domDoc.createTextNode( "\n \n" );
     QDomText objNme = m_domDoc.createTextNode( object->objectName() );
@@ -524,7 +528,7 @@ bool Circuit::saveDom( QString &fileName, QDomDocument* doc )
         return false;
     }
     QTextStream out(&file);
-    out.setCodec("UTF-8");
+    out.setEncoding(QStringConverter::Utf8);
     out << doc->toString();
     file.close();
 
@@ -651,13 +655,17 @@ void Circuit::loadObjectProperties( QDomElement element, QObject* Item )
         else if( metaproperty.type() == QVariant::Double ) Item->setProperty( chName, value.toDouble() );
         else if( metaproperty.type() == QVariant::PointF ) Item->setProperty( chName, value.toPointF() );
         else if( metaproperty.type() == QVariant::Bool   ) Item->setProperty( chName, value.toBool() );
-        else if( metaproperty.type() == QVariant::StringList )
-        {
+        else if (metaproperty.isEnumType()) { // Qt6: enums are not Int
+            bool isInt  = false;
+            int enumVal = value.toString().toInt(&isInt);
+            if (isInt)
+                Item->setProperty(chName, enumVal);
+            else
+                Item->setProperty(chName, value); // Key name
+        } else if (metaproperty.type() == QVariant::StringList) {
             QStringList list= value.toString().split(",");
             Item->setProperty( chName, list );
-        }
-        else if( (lowN=="mem") || (lowN=="eeprom") )
-        {
+        } else if ((lowN == "mem") || (lowN == "eeprom")) {
             QStringList list = value.toString().split(",");
             
             QVector<int> vmem;
@@ -672,8 +680,8 @@ void Circuit::loadObjectProperties( QDomElement element, QObject* Item )
             }
             QVariant value = QVariant::fromValue( vmem );
             Item->setProperty( chName, value );
-        }
-        else Item->setProperty( chName, value );
+        } else
+            Item->setProperty(chName, value);
         //else qDebug() << "    ERROR!!! Circuit::loadObjectProperties\n  unknown type:  "<<"name "<<name<<"   value "<<value ;
     }
 }
@@ -1094,7 +1102,7 @@ void Circuit::convertSubCircs() // Convert old subcircuits:
               continue;
         }
         QTextStream out(&fileS);
-        out.setCodec("UTF-8");
+        out.setEncoding(QStringConverter::Utf8);
         out << text;
         fileS.close();
 
@@ -1324,7 +1332,7 @@ void Circuit::createSubcircuit()
           tr("Cannot write file %1:\n%2.").arg(fileName).arg(file.errorString()));
     }
     QTextStream out( &file );
-    out.setCodec("UTF-8");
+    out.setEncoding(QStringConverter::Utf8);
     out << subcircuit;
     file.close();
     //qDebug() <<"Circuit::createSubcircuit\n" << subcircuit;
@@ -1365,7 +1373,7 @@ void Circuit::bom()
     bom.sort();
 
     QTextStream out(&file);
-    out.setCodec("UTF-8");
+    out.setEncoding(QStringConverter::Utf8);
     out <<  "\nCircuit: ";
     out <<  QFileInfo( m_filePath ).fileName();
     out <<  "\n\n";
@@ -1394,9 +1402,7 @@ void Circuit::mousePressEvent( QGraphicsSceneMouseEvent* event )
     {
         if( m_con_started ) event->accept();
         else                QGraphicsScene::mousePressEvent( event );
-    }
-    else if( event->button() == Qt::MidButton )
-    {
+    } else if (event->button() == Qt::MiddleButton) {
         QGraphicsScene::mousePressEvent( event );
     }
 }
@@ -1560,32 +1566,27 @@ void Circuit::dropEvent( QGraphicsSceneDragDropEvent* event )
 
 void Circuit::drawBackground ( QPainter*  painter, const QRectF & rect )
 {
-    Q_UNUSED( rect );
-    /*painter->setBrush(QColor( 255, 255, 255 ) );
-    painter->drawRect( m_scenerect );
-    return;*/
-
-    painter->setBrush( QColor( 240, 240, 210 ) );
-    painter->drawRect( m_scenerect );
-    painter->setPen( QColor( 210, 210, 210 ) );
+    ThemeManager *tm = ThemeManager::self();
+    painter->fillRect(rect, tm->canvasBackground());
 
     if( m_hideGrid ) return;
+    if (painter->transform().m11() < 0.4)
+        return; // too dense when zoomed out
 
-    int startx = int(m_scenerect.x());///2;
-    int endx   = int(m_scenerect.width())/2;
-    int starty = int(m_scenerect.y());///2;
-    int endy   = int(m_scenerect.height())/2;
-
-    for( int i = 4; i<endx; i+=8 )
-    {
-        painter->drawLine( i, starty, i, endy );
-        painter->drawLine(-i, starty,-i, endy );
-    }
-    for( int i = 4; i<endy; i+=8 )
-    {
-        painter->drawLine( startx, i, endx, i);
-        painter->drawLine( startx,-i, endx,-i);
-    }
+    // Subtle dot grid (8px pitch, aligned to the original 4+8n grid lines)
+    QRectF r = rect.intersected(m_scenerect);
+    int x0   = int(std::floor((r.left() - 4) / 8)) * 8 + 4;
+    int y0   = int(std::floor((r.top() - 4) / 8)) * 8 + 4;
+    QPen pen(tm->gridDot());
+    pen.setWidthF(1.5);
+    pen.setCapStyle(Qt::RoundCap);
+    pen.setCosmetic(true);
+    painter->setPen(pen);
+    QVector<QPointF> pts;
+    for (int x = x0; x <= r.right(); x += 8)
+        for (int y = y0; y <= r.bottom(); y += 8)
+            pts.append(QPointF(x, y));
+    painter->drawPoints(pts.constData(), pts.size());
 }
 
 void Circuit::updatePin(ePin* epin, std::string newId )

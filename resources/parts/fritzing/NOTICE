@@ -1,0 +1,58 @@
+Realistic part artwork - Fritzing parts, CC-BY-SA 3.0
+
+These SVGs are adapted from the Fritzing parts library
+(https://github.com/fritzing/fritzing-parts, commit 27535f2, svg/core/breadboard/),
+licensed under Creative Commons Attribution-ShareAlike 3.0 Unported
+(see LICENSE-CC-BY-SA-3.0.txt, https://creativecommons.org/licenses/by-sa/3.0/).
+Modifications: Inkscape filters removed, editor metadata/comments stripped, file renamed. These adaptations are
+distributed under the same CC-BY-SA 3.0 licence (they are artwork only; the
+SimulIDE source code keeps its own licence).
+
+File            Fritzing source                              Author (from .fzp)
+capacitor.svg   ceramic_capacitor_blue_leg.svg               Fritzing Team
+elcapacitor.svg electrolytic_capacitor_small_leg.svg         Mr.T / Fritzing
+diode.svg       diode.svg                                    Mr.T / Fritzing
+inductor.svg    inductor_leg.svg                             Mr.T / Fritzing
+bjt.svg         transistor_npn.svg                           Mr.T / Fritzing
+bjt_pnp.svg     transistor_pnp.svg                           Mr.T / Fritzing
+mosfet.svg      mosfet_n_channel.svg                         Mr.T / Fritzing
+voltreg.svg     voltage_regulator_vreg.svg                   Mr.T / Fritzing
+battery.svg     Battery_block_9V85_leg.svg                   Fritzing Team (www.fritzing.org)
+relay.svg       basic-relay-6p_1c569ac_002.svg               Fritzing Team (www.fritzing.org)
+lm555.svg       555timerbreadboard.svg                       Dirk van Oosterbosch
+audio_out.svg   loudspeaker.svg                              Lionel Michel
+ledbar.svg      sparkfun-led_led_bargaph_10_breadboard.svg   SparkFun / www.fritzing.org
+
+Added with the realistic board / driver / display art (source file names are in
+svg/core/breadboard/ of the same commit; the .fzp files are in core/):
+
+File                 Fritzing source (breadboard/)                     Author (from .fzp)
+arduino_uno.svg      arduino_Uno_Rev3_breadboard.svg                   althaus
+arduino_mega.svg     Arduino_MEGA_2560-Rev3_breadboard.svg             althaus
+arduino_leonardo.svg Arduino_Leonardo_Rev3_breadboard.svg              althaus
+arduino_nano.svg     Arduino Nano3_breadboard.svg                      Althaus
+l293d.svg            L293D_breadboard.svg                              Revolution Education Ltd
+memory.svg           24LC128_breadboard.svg                            Revolution Education Ltd
+dcmotor.svg          gear-motor_2_breadboard.svg                       admin, modified by vanepp (2019)
+servo.svg            Dagu_DGServo_9g_Top_view_breadboard.svg           Stephen Parry
+keypad.svg           sparkfun-electromechanical_buttonpad-4x4_breadboard.svg   SparkFun / www.fritzing.org
+hd44780.svg          sparkfun-displays_lcd-16x2_breadboard.svg         SparkFun / www.fritzing.org
+sevensegment.svg     sparkfun-displays_7-segment-1_pth_breadboard.svg  SparkFun / www.fritzing.org
+glcd_128x64.svg      sparkfun-displays_lcd-g12864_breadboard.svg       SparkFun / www.fritzing.org
+
+Source URL of each: https://github.com/fritzing/fritzing-parts/blob/27535f2/svg/core/breadboard/<file>
+Licence: CC BY-SA 3.0 (LICENSE.txt of the fritzing-parts repository; the .fzp files carry no
+per-part licence field). The SparkFun parts were generated from SparkFun Eagle libraries and the
+Revolution Education parts from the PICAXE range; both ship in fritzing-parts under that
+repository licence, which is what is relied upon here.
+
+Further modifications:
+ - arduino_*.svg: the board art is drawn rotated by 90 degrees and scaled in the code
+   (src/gui/circuitwidget/partart.cpp) so that every header hole lands on its SimulIDE pin;
+   a few header strips are moved at paint time for the same reason. The SVG files are
+   otherwise unchanged. The Arduino name and logo that appear on the boards are trademarks of
+   Arduino; they are part of the board artwork and are shown only to identify the board.
+ - servo.svg: the three wires were removed and the view box cropped to the body (wires and
+   the moving horn are drawn by the code).
+ - glcd_128x64.svg: the 8192 pixel-grid rectangles and the demo bitmap were removed
+   (1.8 MB -> 17 KB); the pixels are drawn by the component.

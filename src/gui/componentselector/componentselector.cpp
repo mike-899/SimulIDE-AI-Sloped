@@ -17,65 +17,298 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <QDomDocument>
-
 #include "componentselector.h"
+
 #include "mainwindow.h"
+#include "partart.h"
 #include "simuapi_apppath.h"
+#include "thememanager.h"
+
+#include <QDomDocument>
+#include <QGraphicsView>
+#include <QTimer>
+
+// Item data roles used in the (hidden) model tree
+static const int TypeRole = ComponentSelector::TypeRole; // "" for categories
+static const int NameRole = ComponentSelector::NameRole; // name without info
+static const int InfoRole = ComponentSelector::InfoRole; // extra description
+
+static const int CardIconW = 40;
+
+// Combo box entries that are not real categories
+static const QString BasicCat = "__basic__";
+static const QString AllCat   = "__all__";
+
+// Tinkercad-like "Basic" set: most used components, by type
+static const QStringList BasicTypes = {
+    "Resistor", "Potentiometer", "Capacitor",   "Led",    "Push",
+    "Switch",   "Fixed Voltage", "Rail",        "Ground", "Voltage Source",
+    "Clock",    "Diode",         "BJT",         "Mosfet", "Seven Segment",
+    "Servo",    "Voltimeter",    "Amperimeter", "Probe",  "Oscope",
+    "Arduino"
+};
+static const int CardIconH = 30;
+
+//------------------------------------------------------------------------
+// ComponentCard
+
+ComponentCard::ComponentCard(QWidget *parent, const QString &name,
+                             const QString &info, const QIcon &icon,
+                             const QString &type, const QString &dragId) :
+    QFrame(parent)
+{
+    m_name   = name;
+    m_type   = type;
+    m_dragId = dragId;
+
+    setObjectName("componentCard");
+    setProperty("componentType", type);
+    setFrameShape(QFrame::StyledPanel);
+    setCursor(Qt::OpenHandCursor);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    setMinimumWidth(72);
+
+    QString tip = name;
+    if (!info.trimmed().isEmpty())
+        tip += "\n" + info.trimmed();
+    tip += "\n" + tr("Drag into the circuit to add it");
+    setToolTip(tip);
+
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    layout->setContentsMargins(4, 6, 4, 4);
+    layout->setSpacing(2);
+
+    QLabel *iconLabel = new QLabel(this);
+    iconLabel->setObjectName("componentCardIcon");
+    iconLabel->setAlignment(Qt::AlignCenter);
+    iconLabel->setPixmap(icon.pixmap(CardIconW, CardIconH));
+    iconLabel->setMinimumHeight(CardIconH + 4);
+    layout->addWidget(iconLabel);
+
+    QLabel *nameLabel = new QLabel(this);
+    nameLabel->setObjectName("componentCardLabel");
+    nameLabel->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
+    nameLabel->setWordWrap(true);
+    QFont font = nameLabel->font();
+    font.setPixelSize(int(10 * MainWindow::self()->fontScale()));
+    nameLabel->setFont(font);
+    QFontMetrics fm(font);
+    nameLabel->setFixedHeight(fm.lineSpacing() * 2 + 2); // max 2 lines
+    // Break very long single words (eg. "7SegmentBCD") so they fit
+    QString text = name;
+    if (!text.contains(' ') && text.size() > 11)
+        text.insert(11, QChar(0x200B));
+    nameLabel->setText(text);
+    layout->addWidget(nameLabel);
+
+    setFixedHeight(CardIconH + fm.lineSpacing() * 2 + 22);
+}
+
+void ComponentCard::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton)
+        m_pressPos = event->pos();
+    setCursor(Qt::ClosedHandCursor);
+    QFrame::mousePressEvent(event);
+}
+
+void ComponentCard::mouseMoveEvent(QMouseEvent *event)
+{
+    if (!(event->buttons() & Qt::LeftButton))
+        return;
+    if ((event->pos() - m_pressPos).manhattanLength() <
+        QApplication::startDragDistance())
+        return;
+    if (m_type.isEmpty())
+        return;
+
+    QLabel *icon = findChild<QLabel *>("componentCardIcon");
+    ComponentSelector::execDrag(this, m_dragId, m_type,
+                                icon ? icon->pixmap() : QPixmap());
+    setCursor(Qt::OpenHandCursor);
+}
+
+void ComponentCard::mouseReleaseEvent(QMouseEvent *event)
+{
+    setCursor(Qt::OpenHandCursor);
+    QFrame::mouseReleaseEvent(event);
+}
+
+//------------------------------------------------------------------------
+// ComponentSelector
+
+void ComponentSelector::execDrag(QObject *source, const QString &dragId,
+                                 const QString &type, const QPixmap &icon)
+{
+    if (type.isEmpty() || dragId.isEmpty())
+        return;
+
+    QMimeData *mimeData = new QMimeData;
+    mimeData->setText(dragId);
+    mimeData->setHtml(type);
+
+    QDrag *drag = new QDrag(source);
+    drag->setMimeData(mimeData);
+
+    // The drag pixmap itself is transparent: over the canvas the circuit
+    // shows the real component preview, so a second "ghost" would look
+    // duplicated. Outside the canvas a small floating card follows the
+    // cursor instead.
+    QPixmap empty(1, 1);
+    empty.fill(Qt::transparent);
+    drag->setPixmap(empty);
+    drag->setHotSpot(QPoint(0, 0));
+
+    QLabel *ghost   = 0l;
+    QTimer *tracker = 0l;
+    if (!icon.isNull()) {
+        ghost = new QLabel(0l, Qt::ToolTip | Qt::FramelessWindowHint |
+                                   Qt::WindowStaysOnTopHint);
+        ghost->setAttribute(Qt::WA_TransparentForMouseEvents);
+        ghost->setAttribute(Qt::WA_ShowWithoutActivating);
+        ghost->setAttribute(Qt::WA_TranslucentBackground);
+        ghost->setPixmap(icon);
+        ghost->setStyleSheet("background: transparent;");
+        ghost->adjustSize();
+
+        tracker     = new QTimer();
+        auto follow = [ghost]() {
+            QPoint pos  = QCursor::pos();
+            QWidget *w  = QApplication::widgetAt(pos);
+            bool canvas = false;
+            for (QWidget *p = w; p; p = p->parentWidget())
+                if (qobject_cast<QGraphicsView *>(p)) {
+                    canvas = true;
+                    break;
+                }
+            ghost->move(pos + QPoint(14, 14));
+            ghost->setVisible(!canvas);
+        };
+        QObject::connect(tracker, &QTimer::timeout, ghost, follow);
+        follow();
+        tracker->start(16);
+    }
+
+    drag->exec(Qt::CopyAction | Qt::MoveAction, Qt::CopyAction);
+
+    if (tracker)
+        tracker->deleteLater();
+    if (ghost)
+        ghost->deleteLater();
+}
 
 ComponentSelector* ComponentSelector::m_pSelf = 0l;
 
-ComponentSelector::ComponentSelector( QWidget* parent )
-                 : QTreeWidget( parent )
-                 , m_pluginsdDialog( this )
-                 , m_itemLibrary()
+ComponentSelector::ComponentSelector(QWidget *parent) :
+    QWidget(parent), m_pluginsdDialog(this), m_itemLibrary()
 {
     m_pSelf = this;
+    m_columns        = 3;
+    m_row            = 0;
+    m_col            = 0;
+    m_refreshPending = false;
+    m_gridEnabled    = true;
 
-    m_pluginsdDialog.setVisible( false );
+    setObjectName("componentPanel");
 
-    setDragEnabled(true);
-    setDragDropMode( QAbstractItemView::DragOnly );
-    //setAlternatingRowColors(true);
-    setIndentation( 12 );
-    setRootIsDecorated( true );
-    setCursor( Qt::OpenHandCursor );
-    headerItem()->setHidden( true );
-    setIconSize( QSize( 32, 24));
-    
-    //QWhatsThis::add( this, QString::fromUtf8( gettext("Drag a Component and drop it into the Circuit." ) ) );
+    m_pluginsdDialog.setVisible(false);
 
+    createWidgets();
     LoadLibraryItems();
-    //LoadCompSet();
 
-    setContextMenuPolicy( Qt::CustomContextMenu );
-
-    connect( this, SIGNAL(customContextMenuRequested(const QPoint&)),
-             this, SLOT  (slotContextMenu(const QPoint&)));
-
-    connect( this, SIGNAL(itemPressed(QTreeWidgetItem*, int)),
-             this, SLOT  (slotItemClicked(QTreeWidgetItem*, int)) );
+    setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), this,
+            SLOT(slotContextMenu(const QPoint &)));
 }
 ComponentSelector::~ComponentSelector()
 {
 }
 
+void ComponentSelector::createWidgets()
+{
+    // Hidden model
+    m_tree = new QTreeWidget(this);
+    m_tree->setObjectName("componentModel");
+    m_tree->headerItem()->setHidden(true);
+    m_tree->setVisible(false);
+
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    layout->setContentsMargins(8, 8, 8, 0);
+    layout->setSpacing(6);
+
+    // Header: category dropdown + manage button
+    QWidget *header = new QWidget(this);
+    header->setObjectName("componentPanelHeader");
+    QHBoxLayout *headerLayout = new QHBoxLayout(header);
+    headerLayout->setContentsMargins(0, 0, 0, 0);
+    headerLayout->setSpacing(4);
+
+    QLabel *title = new QLabel(tr("Components"), header);
+    title->setObjectName("componentPanelTitle");
+    QFont tf = title->font();
+    tf.setBold(true);
+    title->setFont(tf);
+    headerLayout->addWidget(title);
+    headerLayout->addStretch();
+
+    m_manageButton = new QToolButton(header);
+    m_manageButton->setObjectName("manageComponentsButton");
+    m_manageButton->setIcon(ThemeManager::icon("tune"));
+    m_manageButton->setToolTip(tr("Manage Components (show/hide)"));
+    m_manageButton->setAutoRaise(true);
+    connect(m_manageButton, SIGNAL(clicked()), this,
+            SLOT(slotManageComponents()));
+    headerLayout->addWidget(m_manageButton);
+    layout->addWidget(header);
+
+    m_categoryBox = new QComboBox(this);
+    m_categoryBox->setObjectName("componentCategoryBox");
+    m_categoryBox->setToolTip(tr("Component category"));
+    m_categoryBox->setSizeAdjustPolicy(
+        QComboBox::AdjustToMinimumContentsLengthWithIcon);
+    m_categoryBox->setMinimumContentsLength(10);
+    layout->addWidget(m_categoryBox);
+
+    m_searchEdit = new QLineEdit(this);
+    m_searchEdit->setObjectName("componentSearch");
+    m_searchEdit->setPlaceholderText(tr("Search components"));
+    m_searchEdit->setClearButtonEnabled(true);
+    m_searchEdit->addAction(ThemeManager::icon("search"),
+                            QLineEdit::LeadingPosition);
+    layout->addWidget(m_searchEdit);
+
+    // Card grid
+    m_scrollArea = new QScrollArea(this);
+    m_scrollArea->setObjectName("componentScroll");
+    m_scrollArea->setWidgetResizable(true);
+    m_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_scrollArea->setFrameShape(QFrame::NoFrame);
+
+    m_gridHost = new QWidget(m_scrollArea);
+    m_gridHost->setObjectName("componentGrid");
+    m_gridLayout = new QGridLayout(m_gridHost);
+    m_gridLayout->setContentsMargins(0, 0, 4, 8);
+    m_gridLayout->setHorizontalSpacing(6);
+    m_gridLayout->setVerticalSpacing(6);
+    m_scrollArea->setWidget(m_gridHost);
+    layout->addWidget(m_scrollArea, 1);
+
+    connect(m_categoryBox, SIGNAL(currentIndexChanged(int)), this,
+            SLOT(slotCategoryChanged(int)));
+
+    connect(m_searchEdit, SIGNAL(textChanged(const QString &)), this,
+            SLOT(slotSearchChanged(const QString &)));
+}
+
 void ComponentSelector::LoadLibraryItems()
 {
     QList<LibraryItem*> itemList = m_itemLibrary.items();
-    
+
     for( LibraryItem* libItem : itemList )
     {
         this->addItem( libItem );
     }
 }
-
-/*void ComponentSelector::LoadCompSet()
-{
-    QDir compSetDir = SIMUAPI_AppPath::self()->RODataFolder();
-
-    if( compSetDir.exists() ) LoadCompSetAt( compSetDir );
-}*/
 
 void ComponentSelector::LoadCompSetAt( QDir compSetDir )
 {
@@ -169,6 +402,12 @@ QString ComponentSelector::getXmlFile( QString compName )
     return m_xmlFileList[ compName ];
 }
 
+QList<QTreeWidgetItem *>
+ComponentSelector::findItems(const QString &text, Qt::MatchFlags flags) const
+{
+    return m_tree->findItems(text, flags);
+}
+
 void ComponentSelector::addLibraryItem( LibraryItem* libItem ) // Used By Plugins
 {
     m_itemLibrary.addItem( libItem );
@@ -191,13 +430,13 @@ void ComponentSelector::addItem( const QString &caption, const QString &_categor
     QString         name = nameFull.first();
     QString info = "";
     if( nameFull.size() > 1 ) info = nameFull.last();
-    
-    //qDebug()<<name<<info;
-    
-    bool hidden = MainWindow::self()->settings()->value( name+"/hidden" ).toBool();
+
+    QSettings *settings = MainWindow::self()->settings();
+
+    bool hidden = settings->value(name + "/hidden").toBool();
 
     QTreeWidgetItem* catItem = 0l;
-    
+
     QStringList catPath = _category.split( "/" );
     bool      isRootCat = (catPath.size() == 1);
     QString    category = catPath.takeLast();
@@ -206,24 +445,15 @@ void ComponentSelector::addItem( const QString &caption, const QString &_categor
     if( !m_categories.contains( category, Qt::CaseSensitive ))  // Create new Category
     {
         bool c_hidden = false;
-        bool expanded = false;
 
-        if( isRootCat )                              // Is Main Category
-        {
-            catItem = new QTreeWidgetItem( this );
-            catItem->setIcon( 0, QIcon(":/null-0.png") );
-            catItem->setTextColor( 0, QColor( 110, 95, 50 )/*QColor(255, 230, 200)*/ );
-            catItem->setBackground( 0, QBrush(QColor(240, 235, 245)) );
-            expanded = true;
-        }
-        else catItem = new QTreeWidgetItem(0);
+        if (isRootCat)
+            catItem = new QTreeWidgetItem(m_tree); // Is Main Category
+        else
+            catItem = new QTreeWidgetItem(0);
 
-        catItem->setFlags( QFlag(32) );
-        QFont font = catItem->font(0);
-        font.setPixelSize( 13*MainWindow::self()->fontScale() );
-        font.setWeight(75);
-        catItem->setFont( 0, font );
+        catItem->setFlags(QFlag(32));
         catItem->setText( 0, category );
+        catItem->setData(0, NameRole, category);
         catItem->setChildIndicatorPolicy( QTreeWidgetItem::ShowIndicator );
         m_categories.append( category );
 
@@ -231,7 +461,8 @@ void ComponentSelector::addItem( const QString &caption, const QString &_categor
         {
             QString topCat = catPath.takeLast();
 
-            QList<QTreeWidgetItem*> list = findItems( topCat, Qt::MatchExactly | Qt::MatchRecursive );
+            QList<QTreeWidgetItem *> list = m_tree->findItems(
+                topCat, Qt::MatchExactly | Qt::MatchRecursive);
 
             if( !list.isEmpty() )
             {
@@ -239,20 +470,17 @@ void ComponentSelector::addItem( const QString &caption, const QString &_categor
                 topItem->addChild( catItem );
             }
         }
-        else if( name != "" ) addTopLevelItem( catItem );
 
-        if( MainWindow::self()->settings()->contains( category+"/hidden" ) )
-            c_hidden =  MainWindow::self()->settings()->value( category+"/hidden" ).toBool();
+        if (settings->contains(category + "/hidden"))
+            c_hidden = settings->value(category + "/hidden").toBool();
 
-        if( MainWindow::self()->settings()->contains( category+"/collapsed" ) )
-            expanded = !MainWindow::self()->settings()->value( category+"/collapsed" ).toBool();
-
-        catItem->setExpanded( expanded );
+        catItem->setExpanded(true);
         catItem->setHidden( c_hidden );
     }
     else                                                                // Find Category
     {
-        QList<QTreeWidgetItem*> list = findItems( category, Qt::MatchExactly | Qt::MatchRecursive );
+        QList<QTreeWidgetItem *> list =
+            m_tree->findItems(category, Qt::MatchExactly | Qt::MatchRecursive);
 
         if( !list.isEmpty() ) catItem = list.first();
     }
@@ -261,20 +489,14 @@ void ComponentSelector::addItem( const QString &caption, const QString &_categor
     if( !m_categories.contains( name, Qt::CaseSensitive ) )
         m_categories.append( name );
 
-    QTreeWidgetItem* item =  new QTreeWidgetItem(0);
-    QFont font = item->font(0);
-    
-    double fontScale = MainWindow::self()->fontScale();
-    if( type == "" ) font.setPixelSize( 12*fontScale );
-    else             font.setPixelSize( 11*fontScale );
-    font.setWeight( QFont::Bold );
-    
-    item->setFont( 0, font );
+    QTreeWidgetItem *item = new QTreeWidgetItem(0);
     item->setFlags( QFlag(32) );
-    item->setIcon( 0, QIcon(icon) );
+    item->setIcon(0, PartArt::cardIcon(type, name, _category, icon));
     item->setText( 0, name+info );
-    item->setData( 0, Qt::UserRole, type );
-    
+    item->setData(0, TypeRole, type);
+    item->setData(0, NameRole, name);
+    item->setData(0, InfoRole, info);
+
     if( ( type == "Subcircuit" )
       ||( type == "PIC" )
       ||( type == "AVR" )
@@ -283,169 +505,329 @@ void ComponentSelector::addItem( const QString &caption, const QString &_categor
          item->setData( 0, Qt::WhatsThisRole, name );
     }
     else item->setData( 0, Qt::WhatsThisRole, type );
-    
+
     catItem->addChild( item );
     item->setHidden( hidden );
-    if( MainWindow::self()->settings()->contains( name+"/collapsed" ) )
-    {
-        bool expanded = !MainWindow::self()->settings()->value( name+"/collapsed" ).toBool();
-        item->setExpanded( expanded );
+
+    refresh();
+}
+
+//------------------------------------------------------------------------
+// Grid view
+
+void ComponentSelector::refresh()
+{
+    if (m_refreshPending)
+        return;
+    m_refreshPending = true;
+    QTimer::singleShot(0, this, SLOT(doRefresh()));
+}
+
+bool ComponentSelector::isEffectivelyHidden(QTreeWidgetItem *item) const
+{
+    while (item) {
+        if (item->isHidden())
+            return true;
+        item = item->parent();
+    }
+    return false;
+}
+
+void ComponentSelector::updateCategoryBox()
+{
+    QStringList cats;
+    for (int i = 0; i < m_tree->topLevelItemCount(); i++) {
+        QTreeWidgetItem *cat = m_tree->topLevelItem(i);
+        if (cat->isHidden())
+            continue;
+        cats.append(cat->text(0));
+    }
+    QStringList current;
+    for (int i = 2; i < m_categoryBox->count(); i++)
+        current.append(m_categoryBox->itemData(i).toString());
+
+    if (current == cats && m_categoryBox->count() > 0)
+        return;
+
+    QString selected = m_categoryBox->currentData().toString();
+    if (m_categoryBox->count() == 0) // First time: restore from settings
+        selected = MainWindow::self()
+                       ->settings()
+                       ->value("componentPanel/category", BasicCat)
+                       .toString();
+
+    m_categoryBox->blockSignals(true);
+    m_categoryBox->clear();
+    m_categoryBox->addItem(ThemeManager::icon("widgets"), tr("Basic"),
+                           BasicCat);
+    m_categoryBox->addItem(ThemeManager::icon("widgets"), tr("All Components"),
+                           AllCat);
+    for (QString cat : cats)
+        m_categoryBox->addItem(cat, cat);
+
+    int index = m_categoryBox->findData(selected);
+    if (index < 0)
+        index = 0;
+    m_categoryBox->setCurrentIndex(index);
+    m_categoryBox->blockSignals(false);
+}
+
+void ComponentSelector::clearGrid()
+{
+    QLayoutItem *child;
+    while ((child = m_gridLayout->takeAt(0)) != 0l) {
+        if (child->widget())
+            delete child->widget();
+        delete child;
+    }
+    for (int r = 0; r < m_gridLayout->rowCount(); r++)
+        m_gridLayout->setRowStretch(r, 0);
+    for (int c = 0; c < m_columns; c++)
+        m_gridLayout->setColumnStretch(c, 1);
+    m_row = 0;
+    m_col = 0;
+}
+
+void ComponentSelector::addSection(const QString &title)
+{
+    if (m_col != 0) {
+        m_row++;
+        m_col = 0;
+    }
+
+    QLabel *label = new QLabel(title, m_gridHost);
+    label->setObjectName("componentSection");
+    QFont font = label->font();
+    font.setBold(true);
+    label->setFont(font);
+    label->setContentsMargins(2, (m_row > 0) ? 8 : 0, 0, 0);
+    m_gridLayout->addWidget(label, m_row, 0, 1, m_columns);
+    m_row++;
+}
+
+void ComponentSelector::addCard(QTreeWidgetItem *item)
+{
+    ComponentCard *card =
+        new ComponentCard(m_gridHost, item->data(0, NameRole).toString(),
+                          item->data(0, InfoRole).toString(), item->icon(0),
+                          item->data(0, TypeRole).toString(),
+                          item->data(0, Qt::WhatsThisRole).toString());
+    m_gridLayout->addWidget(card, m_row, m_col);
+    m_col++;
+    if (m_col >= m_columns) {
+        m_col = 0;
+        m_row++;
     }
 }
 
-/*void ComponentSelector::removeLibItem( LibraryItem* libItem )
+void ComponentSelector::collectCategory(QTreeWidgetItem *cat,
+                                        const QString &title,
+                                        QList<CardSection> *out) const
 {
-    QString category = libItem->category();
-    QString     name = libItem->name();
+    if (cat->isHidden())
+        return;
 
-    QTreeWidgetItem* cat = 0l;
+    CardSection section;
+    section.title = title;
+    QList<QTreeWidgetItem *> subCats;
 
-    for( int i=0; i<topLevelItemCount(); i++ )
-    {
-        cat = topLevelItem( i );
-        if( cat->text(0) == category ) break;
+    for (int i = 0; i < cat->childCount(); i++) {
+        QTreeWidgetItem *child = cat->child(i);
+        if (child->isHidden())
+            continue;
+
+        if (!child->data(0, TypeRole).toString().isEmpty())
+            section.items.append(child);
+        if (child->childCount() > 0)
+            subCats.append(child);
     }
-    if( cat == 0l ) return;
+    if (!section.items.isEmpty())
+        out->append(section);
+    for (QTreeWidgetItem *sub : subCats)
+        collectCategory(sub, sub->data(0, NameRole).toString(), out);
+}
 
-    for( int i=0; i<cat->childCount(); i++ )
+static void collectMatches(QTreeWidgetItem *parent, const QString &text,
+                           QList<QTreeWidgetItem *> *list)
+{
+    for (int i = 0; i < parent->childCount(); i++) {
+        QTreeWidgetItem *child = parent->child(i);
+        if (child->isHidden())
+            continue;
+
+        QString type = child->data(0, TypeRole).toString();
+        if (!type.isEmpty()) {
+            if (child->text(0).contains(text, Qt::CaseInsensitive) ||
+                type.contains(text, Qt::CaseInsensitive))
+                list->append(child);
+        }
+        if (child->childCount() > 0)
+            collectMatches(child, text, list);
+    }
+}
+
+QList<QPair<QString, QString>> ComponentSelector::categories() const
+{
+    QList<QPair<QString, QString>> list;
+    for (int i = 0; i < m_categoryBox->count(); i++)
+        list.append(qMakePair(m_categoryBox->itemData(i).toString(),
+                              m_categoryBox->itemText(i)));
+    return list;
+}
+
+QString ComponentSelector::currentCategory() const
+{
+    return m_categoryBox->currentData().toString();
+}
+
+void ComponentSelector::setCurrentCategory(const QString &key)
+{
+    int index = m_categoryBox->findData(key);
+    if (index >= 0 && index != m_categoryBox->currentIndex())
+        m_categoryBox->setCurrentIndex(index);
+}
+
+QString ComponentSelector::searchText() const
+{
+    return m_searchEdit->text();
+}
+
+void ComponentSelector::setSearchText(const QString &text)
+{
+    if (text != m_searchEdit->text())
+        m_searchEdit->setText(text);
+}
+
+QTreeWidgetItem *ComponentSelector::itemByName(const QString &name) const
+{
+    QList<QTreeWidgetItem *> all =
+        m_tree->findItems("", Qt::MatchStartsWith | Qt::MatchRecursive);
+    for (QTreeWidgetItem *item : all)
+        if (!item->data(0, TypeRole).toString().isEmpty() &&
+            item->data(0, NameRole).toString() == name)
+            return item;
+    return 0l;
+}
+
+QList<ComponentSelector::CardSection> ComponentSelector::sections() const
+{
+    QList<CardSection> out;
+    QString search = m_searchEdit->text().trimmed();
+    QString catKey = m_categoryBox->currentData().toString();
+
+    if (!search.isEmpty()) // Search all categories
     {
-        if( cat->child( i )->text( 0 ) == name )
-        {
-            cat->takeChild( i );
-            delete libItem;
-            break;
+        for (int i = 0; i < m_tree->topLevelItemCount(); i++) {
+            QTreeWidgetItem *cat = m_tree->topLevelItem(i);
+            if (cat->isHidden())
+                continue;
+            CardSection section;
+            section.title = cat->text(0);
+            collectMatches(cat, search, &section.items);
+            if (!section.items.isEmpty())
+                out.append(section);
+        }
+    } else if (catKey == BasicCat) // Most used
+    {
+        CardSection section;
+        QList<QTreeWidgetItem *> all =
+            m_tree->findItems("", Qt::MatchStartsWith | Qt::MatchRecursive);
+        for (const QString &type : BasicTypes) {
+            for (QTreeWidgetItem *item : all) {
+                if (item->data(0, TypeRole).toString() != type)
+                    continue;
+                if (isEffectivelyHidden(item))
+                    continue;
+                section.items.append(item);
+            }
+        }
+        if (!section.items.isEmpty())
+            out.append(section);
+    } else if (catKey == AllCat) // All categories
+    {
+        for (int i = 0; i < m_tree->topLevelItemCount(); i++) {
+            QTreeWidgetItem *cat = m_tree->topLevelItem(i);
+            collectCategory(cat, cat->text(0), &out);
+        }
+    } else // One category, its own title is the combo text
+    {
+        for (int i = 0; i < m_tree->topLevelItemCount(); i++) {
+            QTreeWidgetItem *cat = m_tree->topLevelItem(i);
+            if (cat->text(0) == catKey) {
+                collectCategory(cat, "", &out);
+                break;
+            }
         }
     }
-
-}*/
-
-void ComponentSelector::mouseReleaseEvent( QMouseEvent* event )
-{
-    setCursor( Qt::OpenHandCursor );
+    return out;
 }
 
-void ComponentSelector::slotItemClicked( QTreeWidgetItem* item, int column )
+void ComponentSelector::doRefresh()
 {
-    Q_UNUSED( column );
-    
-    if( !item ) return;
-    
-    QString type = item->data(0, Qt::UserRole).toString();
-    
-    if( type == "" ) return;
-    
-    QMimeData* mimeData = new QMimeData;
-    
-    QString name = item->data(0, Qt::WhatsThisRole).toString(); //item->text(0);
-    //qDebug() <<"ComponentSelector::slotItemClicked"<<name<<type;
-    mimeData->setText( name );
-    mimeData->setHtml( type );              // esto hay que revisarlo
-    
-    QDrag *drag = new QDrag(this);
-    drag->setMimeData(mimeData);
+    m_refreshPending = false;
 
-    drag->exec( Qt::CopyAction | Qt::MoveAction, Qt::CopyAction );
+    updateCategoryBox();
+
+    if (m_gridEnabled) {
+        m_gridHost->setUpdatesEnabled(false);
+        clearGrid();
+
+        for (const CardSection &section : sections()) {
+            if (!section.title.isEmpty())
+                addSection(section.title);
+            for (QTreeWidgetItem *item : section.items)
+                addCard(item);
+        }
+        if (m_row == 0 && m_col == 0) {
+            QLabel *empty = new QLabel(tr("No components found"), m_gridHost);
+            empty->setObjectName("componentEmpty");
+            empty->setAlignment(Qt::AlignCenter);
+            m_gridLayout->addWidget(empty, 0, 0, 1, m_columns);
+            m_row = 1;
+        }
+        if (m_col != 0)
+            m_row++;
+        m_gridLayout->setRowStretch(m_row, 1);
+
+        m_gridHost->setUpdatesEnabled(true);
+    }
+    emit contentChanged();
 }
 
-void ComponentSelector::slotContextMenu( const QPoint& point )
+void ComponentSelector::slotCategoryChanged(int)
+{
+    m_scrollArea->verticalScrollBar()->setValue(0);
+    refresh();
+}
+
+void ComponentSelector::slotSearchChanged(const QString &)
+{
+    m_scrollArea->verticalScrollBar()->setValue(0);
+    refresh();
+}
+
+void ComponentSelector::writeSettings()
+{
+    MainWindow::self()->settings()->setValue(
+        "componentPanel/category", m_categoryBox->currentData().toString());
+}
+
+void ComponentSelector::slotContextMenu(const QPoint &point)
 {
     QMenu menu;
-    
-    QAction* managePluginAction = menu.addAction( QIcon(":/fileopen.png"),tr("Manage Components") );
-    connect( managePluginAction, SIGNAL(triggered()), this, SLOT(slotManageComponents()) );
-    
-    //QAction* installAction = menu.addAction( QIcon(":/fileopen.png"),tr("Install New Component") );
-    //connect( installAction, SIGNAL(triggered()), this, SLOT(slotIstallItem()) );
 
-    //menu->addSeparator();
-    
-    menu.exec( mapToGlobal(point) );
+    QAction *managePluginAction =
+        menu.addAction(ThemeManager::icon("tune"), tr("Manage Components"));
+    connect(managePluginAction, SIGNAL(triggered()), this,
+            SLOT(slotManageComponents()));
+
+    menu.exec(mapToGlobal(point));
 }
 
 void ComponentSelector::slotManageComponents()
 {
     m_pluginsdDialog.setPluginList();
-    m_pluginsdDialog.setVisible( true );
+    m_pluginsdDialog.setVisible(true);
 }
-
-
-/*void ComponentSelector::unistallPlugin( QString item )
-{
-    qDebug() << "    Unloading Plugin:" << item;
-    
-    QFile fIn( "data/plugins/"+item+"uninstall" );
-    if( fIn.open( QFile::ReadOnly | QFile::Text ) ) // Read unistall file
-    {
-        QTextStream sIn(&fIn);
-        while (!sIn.atEnd())                    // Remove installed files
-        {
-            QString pluginPath = sIn.readLine();
-            if( pluginPath.contains("plugin") )
-            {
-                QString pluginName = pluginPath.split("/").last().split(".").first().remove("lib").remove("plugin").toUpper();
-                MainWindow::self()->unLoadPugin( pluginName );
-            }
-            QFile file( pluginPath );
-            file.remove();
-        }
-        fIn.close();
-        fIn.remove();
-        //reLoadItems();
-        qDebug() << "        Plugin Unloaded Successfully:\t" << item << "\n";
-    } 
-    else 
-    { 
-        qDebug() << "ComponentSelector::slotUnistallItem:\n Error Opening UnInstall File\n";
-        qDebug()<<fIn.errorString();
-    }
-}*/
-
-/*void ComponentSelector::istallPlugin( QString item )
-{
-    //qDebug() << "ComponentSelector::istallItem" << item;
-
-    QString dir = "plugins/"+item+"plugin";
-
-    QFile fOut("data/plugins/"+item+"uninstall");      // Create unistall File
-    if( fOut.open( QFile::WriteOnly | QFile::Text ) )
-    {
-        QTextStream fileList(&fOut);
-    
-        QDirIterator it(dir, QDirIterator::Subdirectories);
-        while(it.hasNext()) 
-        {
-            QString origFile = it.next();
-            if( it.fileInfo().isFile() )           // Copy Plugin Files to data/
-            {
-                QString destFile = origFile;
-                destFile = destFile.remove(dir+"/");
-                
-                QFileInfo fi( destFile );
-                QDir destDir = fi.dir();
-
-                destDir.mkpath( destDir.absolutePath() );
-                
-                QFile::copy( origFile, destFile );
-                
-                fileList << destFile << '\n';
-                //qDebug() << destFile;
-            }
-        }
-        fOut.close();
-        MainWindow::self()->loadPlugins();
-        //reLoadItems();
-    }
-    else { qDebug() << "ComponentSelector::slotIstallItem:\n Error Opening Output File\n"; }
-}*/
-
-/*void ComponentSelector::reLoadItems()
-{
-    clear();
-    m_categories.clear();
-    m_itemLibrary.loadItems();
-    //m_itemLibrary.loadPlugins();
-    LoadLibraryItems();
-    LoadCompSet();
-}*/
 
 #include "moc_componentselector.cpp"

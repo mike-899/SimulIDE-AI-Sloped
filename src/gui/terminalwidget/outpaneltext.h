@@ -20,9 +20,10 @@
 #ifndef OUTPANELTEXT_H
 #define OUTPANELTEXT_H
 
-#include <QPlainTextEdit>
-#include <QSyntaxHighlighter>
 #include <QObject>
+#include <QPlainTextEdit>
+#include <QRegularExpression>
+#include <QSyntaxHighlighter>
 
 class OutHighlighter;
 
@@ -63,7 +64,7 @@ class OutHighlighter : public QSyntaxHighlighter
     private:
         struct HighlightingRule
         {
-            QRegExp pattern;
+            QRegularExpression pattern;
             QTextCharFormat format;
         };
         QVector<HighlightingRule> highlightingRules;

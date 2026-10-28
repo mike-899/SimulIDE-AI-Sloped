@@ -18,14 +18,17 @@
  ***************************************************************************/
 
 #include "component.h"
-#include "mainwindow.h"
+
+#include "circuit.h"
 #include "connector.h"
 #include "connectorline.h"
-#include "propertieswidget.h"
 #include "itemlibrary.h"
-#include "circuit.h"
-#include "utils.h"
+#include "mainwindow.h"
+#include "partart.h"
+#include "propertieswidget.h"
 #include "simuapi_apppath.h"
+#include "thememanager.h"
+#include "utils.h"
 
 #include <math.h>
 
@@ -94,7 +97,11 @@ Component::Component( QObject* parent, QString type, QString id )
     f.setPixelSize(9);
     m_valLabel->setFont(f);
     setShowVal( false );
-    
+
+    applyThemeColors();
+    connect(ThemeManager::self(), &ThemeManager::themeChanged, this,
+            [this](bool) { applyThemeColors(); });
+
     setObjectName( id );
     setIdLabel( id );
     setId(id);
@@ -291,7 +298,7 @@ void Component::slotProperties()
 {
     QPropertyEditorWidget::self()->setObject( this );
     PropertiesWidget::self()->setHelpText( m_help );
-    MainWindow::self()->m_sidepanel->setCurrentIndex( 2 ); // Open Properties tab
+    MainWindow::self()->showProperties(); // Open Properties tab
 }
 
 void Component::H_flip()
@@ -526,6 +533,71 @@ QString Component::print()
     str += m_mult+m_unit+"\n";
     
     return str;
+}
+
+QRectF Component::boundingRect() const
+{
+    QRectF br(m_area.x() - 2, m_area.y() - 2, m_area.width() + 4,
+              m_area.height() + 4);
+    if (artActive()) {
+        QRectF ar = PartArt::artRect(m_type);
+        if (!ar.isNull())
+            br = br.united(ar.adjusted(-2, -2, 2, 2));
+    }
+    return br;
+}
+
+void Component::applyThemeColors()
+{
+    // Theme-aware id / value labels (readable on light and dark canvas)
+    // Only default colours are replaced (some parts set their own)
+    static const QColor idLight(Qt::darkBlue), idDark(130, 180, 255);
+    static const QColor valLight("#1B1B1F"), valDark("#E3E3E8");
+    bool dark = ThemeManager::self()->isDark();
+
+    QColor c = m_idLabel->defaultTextColor();
+    if (c == idLight || c == idDark)
+        m_idLabel->setDefaultTextColor(dark ? idDark : idLight);
+
+    c = m_valLabel->defaultTextColor();
+    if (c == QColor(Qt::black) || c == valLight || c == valDark)
+        m_valLabel->setDefaultTextColor(dark ? valDark : valLight);
+}
+
+bool Component::artActive() const
+{
+    return PartArt::enabled() && PartArt::has(m_type);
+}
+
+bool Component::artNoLegs() const
+{
+    return artActive() && PartArt::noLegs(m_type);
+}
+
+bool Component::paintArt(QPainter *p)
+{
+    if (!artActive())
+        return false;
+
+    p->save();
+    p->setRenderHint(QPainter::Antialiasing);
+    p->setRenderHint(QPainter::SmoothPixmapTransform);
+    QRectF r;
+    const PartArtInfo *inf = PartArt::info(m_type);
+    QString res            = artRes();
+    if (inf->rect.isNull())
+        r = PartArt::paintRes(p, res.isEmpty() ? inf->res : res, m_area,
+                              inf->rot);
+    else
+        r = PartArt::paint(p, m_type, res);
+
+    if (isSelected()) {
+        p->setPen(QPen(QColor(60, 130, 230), 1, Qt::DashLine));
+        p->setBrush(QColor(60, 130, 230, 50));
+        p->drawRoundedRect(r.adjusted(-1, -1, 1, 1), 2, 2);
+    }
+    p->restore();
+    return true;
 }
 
 void Component::paint( QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget )

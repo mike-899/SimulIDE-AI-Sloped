@@ -44,6 +44,9 @@ class EditorWindow : public QWidget
 
     CodeEditor *getCodeEditor();
 
+    // Widget (QML empty state) shown over the tabs while no file is open
+    void setEmptyState(QWidget *w);
+
   public slots:
     void loadFile(const QString &fileName);
     void pause();
@@ -87,6 +90,8 @@ class EditorWindow : public QWidget
     void enableDebugActs(bool enable);
     void setStepActs();
     void keyPressEvent(QKeyEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event) override;
+    void updateEmptyState();
 
     bool maybeSave();
     bool saveFile(const QString &fileName);
@@ -95,6 +100,7 @@ class EditorWindow : public QWidget
 
     QGridLayout *baseWidgetLayout;
     QTabWidget *m_docWidget;
+    QPointer<QWidget> m_emptyState;
 
     FindReplaceDialog *findRepDiaWidget;
 

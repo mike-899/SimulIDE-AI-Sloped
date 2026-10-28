@@ -33,7 +33,7 @@
 #include <QStyleOption>
 #include <QVariant>
 #include <QSpinBox>
-//#include <QScriptEngine>
+// #include <QJSEngine>
 
 /**
  * The Property class is the base class for all properties in the QPropertyEditor
@@ -162,12 +162,12 @@ protected:
 
 public:
     SpinBox( QWidget *parent );
-    
+
     int valueFromText(const QString &text) const override;
     QString textFromValue(int value) const override;
-    
+
 private:
-    QScriptEngine m_sEngine;
+    QJSEngine m_sEngine;
 };*/
 
 #endif

@@ -30,13 +30,35 @@ class AvrCompBase : public McuComponent
 {
     Q_OBJECT
     Q_PROPERTY( bool Init_gdb READ initGdb WRITE setInitGdb DESIGNABLE true  USER true )
+    Q_PROPERTY(bool Reset_Pin READ resetPin WRITE setResetPin
+                   DESIGNABLE true USER true)
 
-    public:
-        AvrCompBase( QObject* parent, QString type, QString id );
-        ~AvrCompBase();
+  public:
+    AvrCompBase(QObject *parent, QString type, QString id);
+    ~AvrCompBase();
 
-        bool initGdb();
-        void setInitGdb( bool init );
+    bool initGdb();
+    void setInitGdb(bool init);
+
+    // Reset pin function on a GPIO/RESET pin (PB5 on ATtiny85, PC6 on
+    // ATmega328...). Always active while the chip has no firmware file.
+    bool resetPin()
+    {
+        return m_resetPinEn;
+    }
+    void setResetPin(bool en);
+    bool resetFunction();
+
+    virtual void attach();
+    virtual void reset();
+
+    // Called from the simulation thread when RESET/SCK/MOSI change
+    void ispPinChanged(AVRComponentPin *pin, bool high);
+
+    AvrProcessor *avrProcessor()
+    {
+        return &m_avr;
+    }
 
         //int getRamValue( int address );
         
@@ -74,8 +96,16 @@ class AvrCompBase : public McuComponent
     public slots:
         //virtual void remove();
 
+    public slots:
+      void slotIspProgram();
+
+    protected:
+      virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
+
     private:
         void attachPins();
+        void setupIsp();
+        void applyResetPullup();
         void addPin( QString id, QString type, QString label, int pos, int xpos, int ypos, int angle );
         QString getType( QString type , QString t );
 
@@ -89,7 +119,17 @@ class AvrCompBase : public McuComponent
 
         avr_irq_t* m_i2cInIrq;
 
-        AvrProcessor m_avr;
+        // Serial programming (ISP) pins
+        AVRComponentPin *m_ispRst;
+        AVRComponentPin *m_ispSck;
+        AVRComponentPin *m_ispMosi;
+        AVRComponentPin *m_ispMiso;
+        bool m_rstLow;
+        bool m_misoDriven;
+        bool m_resetPinEn;
+
+      protected:
+        AvrProcessor m_avr; // This MCU's own simavr core
 };
 
 #endif

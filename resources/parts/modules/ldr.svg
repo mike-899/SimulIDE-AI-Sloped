@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- LDR photoresistor (GL5528). Original art, MIT License (SimulIDE-AI-Sloped contributors) -->
+<svg xmlns="http://www.w3.org/2000/svg" version="1.2" baseProfile="tiny" width="32" height="20" viewBox="0 0 32 20"><title>LDR photoresistor (GL5528)</title>
+<defs>
+<linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f5f7"/><stop offset="0.5" stop-color="#b9bdc2"/><stop offset="1" stop-color="#7d8186"/></linearGradient>
+<linearGradient id="metalh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8d9196"/><stop offset="0.45" stop-color="#eceff1"/><stop offset="1" stop-color="#7a7e83"/></linearGradient>
+<linearGradient id="blk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a4a50"/><stop offset="1" stop-color="#1b1b1e"/></linearGradient>
+<linearGradient id="blkh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2a2a2d"/><stop offset="0.4" stop-color="#4b4b51"/><stop offset="1" stop-color="#1a1a1c"/></linearGradient>
+<radialGradient id="dome" cx="0.4" cy="0.35" r="0.75"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#cfd6d8"/></radialGradient>
+<radialGradient id="knob" cx="0.4" cy="0.35" r="0.8"><stop offset="0" stop-color="#6a6a70"/><stop offset="1" stop-color="#18181a"/></radialGradient>
+<linearGradient id="screw" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2f2f2"/><stop offset="1" stop-color="#8e9296"/></linearGradient>
+</defs>
+<line x1="0" y1="10" x2="11" y2="10" stroke="#9aa0a6" stroke-width="1.6" stroke-linecap="butt"/>
+<line x1="21" y1="10" x2="32" y2="10" stroke="#9aa0a6" stroke-width="1.6" stroke-linecap="butt"/>
+<circle cx="16" cy="10" r="9.5" fill="#c9a063" stroke="#7a5a2a" stroke-width="0.8"/>
+<circle cx="16" cy="10" r="8" fill="#e8d6a8" stroke="none" stroke-width="0.5"/>
+<path d="M9,6 L23,6 L23,8 L9,8 L9,10 L23,10 L23,12 L9,12 L9,14 L23,14" fill="none" stroke="#8d4b24" stroke-width="1.1"/>
+<rect x="14.7" y="3" width="2.6" height="14" rx="0" fill="none" stroke="none" stroke-width="0.5"/>
+</svg>

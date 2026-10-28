@@ -18,8 +18,10 @@
  ***************************************************************************/
 
 #include "filewidget.h"
+
 #include "mainwindow.h"
 #include "simuapi_apppath.h"
+#include "thememanager.h"
 
 FileWidget* FileWidget::m_pSelf = 0l;
 
@@ -39,7 +41,7 @@ FileWidget::FileWidget( QWidget* parent )
     vLayout->addLayout( hLayout );
     
     m_cdUpButton = new QPushButton( this );
-    m_cdUpButton->setIcon( QIcon(":/cdup.png") );
+    m_cdUpButton->setIcon(ThemeManager::icon("arrow_upward"));
     m_cdUpButton->setToolTip( tr("cd Up") );
     hLayout->addWidget( m_cdUpButton );
     
@@ -111,10 +113,24 @@ void FileWidget::addEntry( QString name, QString path )
     
     QFont font;
     font.setPixelSize( 11*MainWindow::self()->fontScale() );
-    font.setWeight(70);
+    font.setWeight(QFont::Medium);
     item->setFont( font );
-    item->setIcon( QIcon(":/open.png") );
-    
+
+    QString icon = "folder";
+    if (name == "FileSystem")
+        icon = "hard_drive";
+    else if (name == "Home")
+        icon = "home";
+    else if (name == "Examples")
+        icon = "menu_book";
+    else if (name == "Data")
+        icon = "database";
+    else if (name == "Settings")
+        icon = "settings";
+    else if (name.contains(" ("))
+        icon = "bookmark";
+    item->setIcon(ThemeManager::icon(icon));
+
     resizeToItems();
 }
 
@@ -165,10 +181,21 @@ void FileWidget::pathChanged()
     FileBrowser::self()->setPath( path );
 }
 
+void FileWidget::showEvent(QShowEvent *event)
+{
+    QWidget::showEvent(event);
+    resizeToItems(); // Row height is only known once styled
+}
+
 void FileWidget::resizeToItems()
 {
-    int size = m_bookmarks->count()*22+17;
+    // Row height follows the (styled) delegate
+    int rowH = m_bookmarks->count() > 0 ? m_bookmarks->sizeHintForRow(0) : 22;
+    if (rowH < 22)
+        rowH = 22;
+    int size = m_bookmarks->count() * rowH + 2 * m_bookmarks->frameWidth() + 6;
     m_bookmarks->setFixedHeight( size );
+    m_bookmarks->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 }
 
 void FileWidget::contextMenuEvent( QContextMenuEvent* event )
@@ -181,7 +208,8 @@ void FileWidget::contextMenuEvent( QContextMenuEvent* event )
 
         QMenu menu;
 
-        QAction* remBookMarkAction = menu.addAction(QIcon(":/remove.png"),tr("Remove Bookmark"));
+        QAction *remBookMarkAction =
+            menu.addAction(ThemeManager::icon("delete"), tr("Remove Bookmark"));
         connect( remBookMarkAction, SIGNAL( triggered()), 
                  this,              SLOT(   remBookMark() ) );
                  

@@ -112,8 +112,8 @@ int InoDebugger::compile()
           return -1;
     }
     QTextStream out(&file);
-    out.setCodec("UTF-8");
-    
+    out.setEncoding(QStringConverter::Utf8);
+
     QStringList inoLines = fileToStringList( filePath, "InoDebugger::compile" );
     QString line;
     int inoLineNumber = 0;
@@ -172,8 +172,8 @@ int InoDebugger::compile()
     
     m_outPane->appendText( command );
     m_outPane->writeText( "\n\n" );
-    
-    m_compProcess.start( command );
+
+    m_compProcess.startCommand(command);
     m_compProcess.waitForFinished(-1);
     
     QString p_stderr = m_compProcess.readAllStandardError();
@@ -225,12 +225,12 @@ void InoDebugger::getVariables()
     QString command  = objdump+" -S -j .text "+elfPath;
     QProcess compIno( 0l );
     compIno.setStandardOutputFile( buildPath+"/"+m_fileName+".ino.lst" );
-    compIno.start( command );
+    compIno.startCommand(command);
     compIno.waitForFinished(-1);
                          
     QProcess getBss( 0l );      // Get var address from .bss section
     command  = objdump+" -t -j.bss "+elfPath;
-    getBss.start( command );
+    getBss.startCommand(command);
     getBss.waitForFinished(-1);
 
     QString  p_stdout = getBss.readAllStandardOutput();
@@ -257,7 +257,7 @@ void InoDebugger::getVariables()
                 if( ok )
                 {
                     address -= 0x800000;          // 0x800000 offset
-                    BaseProcessor* proc = BaseProcessor::self();
+                    BaseProcessor *proc = this->proc();
                     if( proc ) proc->addWatchVar( varName, address, i.value() );
                     //qDebug() << "InoDebugger::compile  variable "<<addr<<varName<<address<<i.value();
                 }
@@ -274,20 +274,20 @@ void InoDebugger::mapFlashToSource()
     m_flashToSource.clear();
     m_sourceToFlash.clear();
     QString buildPath = SIMUAPI_AppPath::self()->RWDataFolder().absoluteFilePath("codeeditor/buildIno");
-    
+
     /*QString elfFileName = buildPath+"/"+ m_fileName + ".ino.elf";
     QProcess flashToLine( 0l );
     for( int i=0; i<10000; i++ )
     {
         QString addr = val2hex( i );
-        QString command  = m_compilerPath+"hardware/tools/avr/bin/avr-addr2line -e "+ elfFileName+" "+addr;
-        flashToLine.start( command );
+        QString command  = m_compilerPath+"hardware/tools/avr/bin/avr-addr2line
+    -e "+ elfFileName+" "+addr; flashToLine.startCommand( command );
         flashToLine.waitForFinished(-1);
-        
+
         QString p_stdout = flashToLine.readAllStandardOutput();
         if( p_stdout.contains(".ino") ) qDebug() << p_stdout;
     }*/
-    
+
     QString lstFileName = buildPath+"/"+ m_fileName + ".ino.lst";
     QStringList lstLines = fileToStringList( lstFileName, "InoDebugger::mapInoToFlash" );
 
@@ -329,23 +329,22 @@ void InoDebugger::mapFlashToSource()
             readFlasAddr = true;
         }
         /*QHashIterator<QString, QString> i( m_varList );
-        while (i.hasNext())                             // Find Variable 
+        while (i.hasNext())                             // Find Variable
         {
             i.next();
             QString varName = "<"+i.key()+">";
             if( line.contains( varName ) )       // Get variable address
             {
-                line = line.remove( " "+varName ).split( " " ).last().remove( "0x80" );
-                bool ok = false;
-                int address = line.toInt( &ok, 16 );
-                if( ok ) BaseProcessor::self()->addWatchVar( i.key(), address, i.value() );
-                
-                qDebug() << "InoDebugger::mapInoToFlash  variable "<<line<<i.key()<<address<<i.value();
-                
+                line = line.remove( " "+varName ).split( " " ).last().remove(
+        "0x80" ); bool ok = false; int address = line.toInt( &ok, 16 ); if( ok
+        && proc() ) proc()->addWatchVar( i.key(), address, i.value() );
+
+                qDebug() << "InoDebugger::mapInoToFlash  variable
+        "<<line<<i.key()<<address<<i.value();
+
                 break;
             }
         }*/
-        
     }
 }
 

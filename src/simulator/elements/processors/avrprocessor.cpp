@@ -38,9 +38,9 @@ int elf_read_firmware_ext(const char * file, elf_firmware_t * firmware);
 AvrProcessor::AvrProcessor( QObject* parent ) 
             : BaseProcessor( parent )
 {
-    m_pSelf = this;
     m_avrProcessor = 0l;
     m_initGdb = false;
+    m_blank        = false;
     setSteps( 16 );
 }
 AvrProcessor::~AvrProcessor() {}
@@ -153,36 +153,12 @@ bool AvrProcessor::loadFirmware( QString fileN )
         }
         strcpy( f.mmcu, name );
     }
-    if( !m_avrProcessor )
-    {
-        m_avrProcessor = avr_make_mcu_by_name(f.mmcu);
+    if (!m_avrProcessor && !createCpu(f.mmcu))
+        return false;
 
-        if( !m_avrProcessor )
-        {
-            QMessageBox::warning( 0, tr("Unkown Error:")
-                                   , tr("Could not Create AVR Processor: \"%1\"").arg(f.mmcu) );
-            return false;
-        }
-        int started = avr_init( m_avrProcessor );
+    // Start from an erased flash (it may hold an ISP programmed image)
+    memset(m_avrProcessor->flash, 0xFF, m_avrProcessor->flashend + 1);
 
-        m_uartInIrq.resize( 6 );
-        m_uartInIrq.fill(0);
-        for( int i=0; i<6; i++ )// Uart interface
-        {
-            avr_irq_t* src = avr_io_getirq(m_avrProcessor, AVR_IOCTL_UART_GETIRQ('0'+i), UART_IRQ_OUTPUT);
-            if( src )
-            {
-                qDebug() << "    UART"<<i;
-                intptr_t uart = i;
-                avr_irq_register_notify( src, uart_pty_out_hook, (void*)uart ); // Irq to get data coming from AVR
-
-                // Irq to send data to AVR:
-                m_uartInIrq[i] = avr_io_getirq(m_avrProcessor, AVR_IOCTL_UART_GETIRQ('0'+i), UART_IRQ_INPUT);
-            }
-        }
-        qDebug() << "\nAvrProcessor::loadFirmware Avr Init: "<< name << (started==0);
-    }
-    
     /// TODO: Catch possible abort signal here, otherwise application will crash on the invalid firmware load
     /// Done: Modified simavr to not call abort(), instead it returns error code.
     if( avr_load_firmware( m_avrProcessor, &f ) != 0 )
@@ -198,6 +174,7 @@ bool AvrProcessor::loadFirmware( QString fileN )
     m_avrProcessor->cycle = 0;
     m_avrProcessor->gdb_port = 1212;
     m_symbolFile = fileN;
+    m_blank                   = false;
 
     if( m_initGdb )
     {
@@ -209,6 +186,76 @@ bool AvrProcessor::loadFirmware( QString fileN )
     initialized();
 
     return true;
+}
+
+bool AvrProcessor::createCpu(const char *mmcu, bool quiet)
+{
+    m_avrProcessor = avr_make_mcu_by_name(mmcu);
+
+    if (!m_avrProcessor) {
+        if (quiet)
+            return false;
+        QMessageBox::warning(
+            0, tr("Unkown Error:"),
+            tr("Could not Create AVR Processor: \"%1\"").arg(mmcu));
+        return false;
+    }
+    int started = avr_init(m_avrProcessor);
+
+    m_uartInIrq.resize(6);
+    m_uartInIrq.fill(0);
+    for (int i = 0; i < 6; i++) // Uart interface
+    {
+        avr_irq_t *src = avr_io_getirq(
+            m_avrProcessor, AVR_IOCTL_UART_GETIRQ('0' + i), UART_IRQ_OUTPUT);
+        if (src) {
+            qDebug() << "    UART" << i;
+            m_uartHooks[i].proc = this;
+            m_uartHooks[i].uart = i;
+            avr_irq_register_notify(
+                src, uart_pty_out_hook,
+                &m_uartHooks[i]); // Irq to get data coming from AVR
+
+            // Irq to send data to AVR:
+            m_uartInIrq[i] = avr_io_getirq(
+                m_avrProcessor, AVR_IOCTL_UART_GETIRQ('0' + i), UART_IRQ_INPUT);
+        }
+    }
+    m_isp.setCpu(m_avrProcessor); // Serial programming mode (ISP)
+
+    qDebug() << "\nAvrProcessor::createCpu Avr Init: " << mmcu
+             << (started == 0);
+    return true;
+}
+
+bool AvrProcessor::createBlank()
+{
+    if (m_avrProcessor)
+        return true;
+    if (m_device.isEmpty())
+        return false;
+
+    if (!createCpu(m_device.toLatin1().constData(), true))
+        return false;
+
+    // Erased chip (flash = 0xFF): the core is kept idle until it gets a
+    // firmware, either from a file or through ISP programming.
+    m_blank = true;
+    setEeprom(m_eeprom);
+    m_avrProcessor->frequency = 16000000;
+    m_avrProcessor->cycle     = 0;
+    m_symbolFile              = "";
+
+    initialized();
+    return true;
+}
+
+void AvrProcessor::stepCpu()
+{
+    if (m_blank)
+        m_avrProcessor->cycle++; // Nothing to execute
+    else
+        m_avrProcessor->run(m_avrProcessor);
 }
 
 void AvrProcessor::reset()
@@ -230,7 +277,7 @@ void AvrProcessor::stepOne()
     //qDebug() <<"AvrProcessor::stepOne()"<<m_avrProcessor->cycle << m_nextCycle;
 
     if( m_avrProcessor->state < cpu_Done )
-        m_avrProcessor->run( m_avrProcessor );
+        stepCpu();
 
     while( m_avrProcessor->cycle >= m_nextCycle )
     {

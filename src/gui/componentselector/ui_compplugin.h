@@ -20,8 +20,8 @@
 #ifndef UI_COMPPLUGIN_H
 #define UI_COMPPLUGIN_H
 
+#include <QAction>
 #include <QtCore/QVariant>
-#include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
 #include <QtWidgets/QDialog>

@@ -33,12 +33,23 @@ class MAINMODULE_EXPORT eLed : public eDiode
 
         void setVChanged();
 
+        // LED colour (Semi::LedColor), selects the "Auto" model
+        void setLedColor(int color);
+        int ledColor()
+        {
+            return m_ledColorIdx;
+        }
+
         virtual void initialize();
         virtual void resetState();
 
     protected:
         void updateBright();
         virtual void updateVI();
+        void integrateBright();
+        virtual Semi::DiodeParams autoParams();
+
+        int m_ledColorIdx;
 
         uint64_t m_prevStep;
 

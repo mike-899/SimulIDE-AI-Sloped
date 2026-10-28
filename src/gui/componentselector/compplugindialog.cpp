@@ -61,7 +61,7 @@ void CompPluginDialog::addItem( QTreeWidgetItem* item )
     int childCount = item->childCount();
     if( childCount > 0 )
     {
-        listItem->setBackgroundColor( QColor(240, 235, 245));
+        listItem->setBackground(QColor(240, 235, 245));
         listItem->setForeground( QBrush( QColor( 110, 95, 50 )));
 
         for( int i=0; i<childCount; i++ )
@@ -154,6 +154,7 @@ void CompPluginDialog::reject()
 
         MainWindow::self()->settings()->setValue( listItem->text()+"/hidden", hidden );
     }
+    ComponentSelector::self()->refresh(); // Update component grid
 }
 
 #include "moc_compplugindialog.cpp"

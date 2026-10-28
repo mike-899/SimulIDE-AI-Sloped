@@ -76,9 +76,9 @@ QWidget* EnumProperty::createEditor(QWidget* parent, const QStyleOptionViewItem&
     // create a QComboBox and fill it with the QStringList values
     QComboBox* editor = new QComboBox(parent);
     editor->addItems(m_enum);
-    
-    connect(editor, SIGNAL(currentIndexChanged(const QString)), 
-        this, SLOT(valueChanged(const QString)));
+
+    connect(editor, SIGNAL(currentTextChanged(const QString)), this,
+            SLOT(valueChanged(const QString)));
     return editor;
 }
 

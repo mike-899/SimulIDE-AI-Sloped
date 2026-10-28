@@ -27,15 +27,40 @@
 
 class RamTable;
 
+class McuComponent;
+
 class MAINMODULE_EXPORT BaseProcessor : public QObject
 {
     Q_OBJECT
     public:
         BaseProcessor( QObject* parent=0 );
         ~BaseProcessor();
-        
- static BaseProcessor* self() { return m_pSelf; }
- 
+
+        // Processor of the active (selected) MCU, or null.
+        static BaseProcessor *self();
+
+        void setComponent(McuComponent *comp)
+        {
+            m_component = comp;
+        }
+        McuComponent *component()
+        {
+            return m_component;
+        }
+
+        void setStepNS(double ns)
+        {
+            m_mcuStepNS = ns;
+        }
+        double stepNS()
+        {
+            return m_mcuStepNS;
+        }
+        bool inReset()
+        {
+            return m_resetStatus;
+        }
+
         QString getFileName();
 
         virtual void    setDevice( QString device );
@@ -82,31 +107,32 @@ class MAINMODULE_EXPORT BaseProcessor : public QObject
         void uartDataIn(  int uart, int value );
     
     protected:
- static BaseProcessor* m_pSelf;
-        
-        virtual int  validate( int address )=0;
-        
-        void runSimuStep();
+      McuComponent *m_component;
+      double m_mcuStepNS;
 
-        QString m_symbolFile;
-        QString m_dataFile;
-        QString m_device;
-        
-        double   m_nextCycle;
-        double   m_mcuStepsPT;
-        int      m_msimStep;
-        uint64_t m_extraCycle;
+      virtual int validate(int address) = 0;
 
-        RamTable* m_ramTable;
-        QStringList m_regList;
-        QHash<QString, int> m_regsTable;     // int max 32 bits
-        QHash<QString, float> m_floatTable;  // float 32 bits
-        QHash<QString, QString> m_typeTable;
+      void runSimuStep();
 
-        QVector<int> m_eeprom;
+      QString m_symbolFile;
+      QString m_dataFile;
+      QString m_device;
 
-        bool m_resetStatus;
-        bool m_loadStatus;
+      double m_nextCycle;
+      double m_mcuStepsPT;
+      int m_msimStep;
+      uint64_t m_extraCycle;
+
+      RamTable *m_ramTable;
+      QStringList m_regList;
+      QHash<QString, int> m_regsTable;    // int max 32 bits
+      QHash<QString, float> m_floatTable; // float 32 bits
+      QHash<QString, QString> m_typeTable;
+
+      QVector<int> m_eeprom;
+
+      bool m_resetStatus;
+      bool m_loadStatus;
 };
 
 

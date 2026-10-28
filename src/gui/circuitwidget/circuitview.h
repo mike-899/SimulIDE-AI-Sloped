@@ -50,23 +50,32 @@ class CircuitView : public QGraphicsView
         
         void setCircTime( uint64_t step);
 
-    public slots:
+        QPointF visibleCenter(); // Scene point at center of visible area
+
+      public slots:
         void saveImage();
         void slotPaste();
         void importCirc();
-        
-    protected:
+        void zoomIn();
+        void zoomOut();
+        void zoomToFit();
+        void zoomReset();
+
+      protected:
         void contextMenuEvent( QContextMenuEvent* event );
 
     private:
- static CircuitView*  m_pSelf;
- 
-        QPlainTextEdit* m_info;
- 
-        Component*  m_enterItem;
-        Circuit*    m_circuit;
+      static CircuitView *m_pSelf;
 
-        QPointF m_eventpoint;
+      void zoomBy(qreal factor);
+      void centerVisibleOn(QPointF scenePoint);
+
+      QPlainTextEdit *m_info;
+
+      Component *m_enterItem;
+      Circuit *m_circuit;
+
+      QPointF m_eventpoint;
 };
 
 #endif

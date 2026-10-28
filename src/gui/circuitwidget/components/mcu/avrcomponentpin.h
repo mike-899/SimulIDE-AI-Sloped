@@ -50,12 +50,34 @@ class AVRComponentPin : public McuComponentPin
         void adcread();
         void enableIO( bool en );
 
+        // Role of this pin in serial programming (AvrIsp::Signal)
+        void setIspRole(int role)
+        {
+            m_ispRole = role;
+        }
+        int ispRole()
+        {
+            return m_ispRole;
+        }
+        bool isResetType()
+        {
+            return m_pinType == 21;
+        }
+        bool inputHigh()
+        {
+            return m_ePin[0]->getVolt() > 2.5;
+        }
+        // Pin works as RESET: internal pull-up, firmware can not drive it
+        void setResetPullup(bool up);
+
         static void ddr_hook( struct avr_irq_t* irq, uint32_t value, void* param )
         {
             Q_UNUSED(irq);
             // get the pointer out of param and asign it to AVRComponentPin*
             AVRComponentPin* ptrAVRComponentPin = reinterpret_cast<AVRComponentPin*> (param);
 
+            if (ptrAVRComponentPin->m_resetLocked)
+                return; // Pin works as RESET
             ptrAVRComponentPin->setDirection( value>0 );
         }
 
@@ -65,6 +87,8 @@ class AVRComponentPin : public McuComponentPin
             // get the pointer out of param and asign it to AVRComponentPin*
             AVRComponentPin* ptrAVRComponentPin = reinterpret_cast<AVRComponentPin*> (param);
 
+            if (ptrAVRComponentPin->m_resetLocked)
+                return; // Pin works as RESET
             ptrAVRComponentPin->setState( value>0 );
         }
         
@@ -74,6 +98,8 @@ class AVRComponentPin : public McuComponentPin
             // get the pointer out of param and asign it to AVRComponentPin*
             AVRComponentPin* ptrAVRComponentPin = reinterpret_cast<AVRComponentPin*> (param);
 
+            if (ptrAVRComponentPin->m_resetLocked)
+                return; // Pin works as RESET
             ptrAVRComponentPin->setPullup( value>0 );
         }
 
@@ -81,6 +107,8 @@ class AVRComponentPin : public McuComponentPin
         //void setPullup( uint32_t value );
 
         int  m_channel;
+        int m_ispRole;
+        bool m_resetLocked;
 
         //from simavr
         avr_t*     m_avrProcessor;

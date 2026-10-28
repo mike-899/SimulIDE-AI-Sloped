@@ -1,0 +1,22 @@
+pkgbase = simulide-ai-sloped-git
+	pkgdesc = SimulIDE electronic circuit simulator fork (AI/MCP integration, themes, sloped wires)
+	pkgver = 0.4.13.r0.g0000000
+	pkgrel = 1
+	url = https://github.com/mike-899/SimulIDE-AI-Sloped
+	arch = x86_64
+	license = GPL3
+	makedepends = git
+	makedepends = qt6-tools
+	optdepends = mesa: hardware-accelerated rendering of the Qt Quick interface (software rendering is used otherwise)
+	depends = qt6-base
+	depends = qt6-multimedia
+	depends = qt6-serialport
+	depends = qt6-svg
+	depends = qt6-declarative
+	depends = libelf
+	provides = simulide
+	conflicts = simulide
+	source = git+https://github.com/mike-899/SimulIDE-AI-Sloped.git
+	sha256sums = SKIP
+
+pkgname = simulide-ai-sloped-git

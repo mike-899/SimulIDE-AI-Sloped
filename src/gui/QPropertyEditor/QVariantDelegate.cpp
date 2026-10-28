@@ -31,14 +31,19 @@
 #include "Property.h"
 
 #include <QAbstractItemView>
+#include <QRegularExpression>
 #include <QtCore/QSignalMapper>
 //#include <QDebug>
 
 QVariantDelegate::QVariantDelegate(QObject* parent) : QItemDelegate(parent)
 {
     m_finishedMapper = new QSignalMapper(this);
-    connect(m_finishedMapper, SIGNAL(mapped(QWidget*)), this, SIGNAL(commitData(QWidget*)));
-    connect(m_finishedMapper, SIGNAL(mapped(QWidget*)), this, SIGNAL(closeEditor(QWidget*)));
+    connect(m_finishedMapper, &QSignalMapper::mappedObject, this,
+            [this](QObject *obj) {
+                QWidget *editor = qobject_cast<QWidget *>(obj);
+                emit commitData(editor);
+                emit closeEditor(editor);
+            });
 }
 
 QVariantDelegate::~QVariantDelegate(){}
@@ -125,14 +130,14 @@ void QVariantDelegate::parseEditorHints(QWidget* editor, const QString& editorHi
     {
         editor->blockSignals(true);
         // Parse for property values
-        QRegExp rx("(.*)(=\\s*)(.*)(;{1})");
-        rx.setMinimal(true);
-        int pos = 0;
-        while ((pos = rx.indexIn(editorHints, pos)) != -1) 
-        {
-            //qDebug("Setting %s to %s", qPrintable(rx.cap(1)), qPrintable(rx.cap(3)));
-            editor->setProperty(qPrintable(rx.cap(1).trimmed()), rx.cap(3).trimmed());                
-            pos += rx.matchedLength();
+        QRegularExpression rx("(.*?)(=\\s*)(.*?)(;{1})");
+        QRegularExpressionMatchIterator it = rx.globalMatch(editorHints);
+        while (it.hasNext()) {
+            QRegularExpressionMatch m = it.next();
+            // qDebug("Setting %s to %s", qPrintable(m.captured(1)),
+            // qPrintable(m.captured(3)));
+            editor->setProperty(qPrintable(m.captured(1).trimmed()),
+                                m.captured(3).trimmed());
         }
         editor->blockSignals(false);
     }

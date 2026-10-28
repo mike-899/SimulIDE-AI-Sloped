@@ -9,7 +9,7 @@
     <pin side="left" pos="3"  type="" id="C"   label="C"/><!-- packagePin3 -->
     <pin side="left" pos="4"  type="" id="A"   label="A" /><!-- packagePin4 -->
     <pin side="left" pos="5"  type="" id="QA"  label="QA"/><!-- packagePin5 -->
-    <pin side="left" pos="6"  type="" id="CLK2"label="CLK2"/><!-- packagePin6 -->
+    <pin side="left" pos="6"  type="" id="CLK2" label="CLK2"/><!-- packagePin6 -->
 
     <pin side="left" pos="7"  type="unused" id="Gnd" label="Gnd"/><!-- packagePin7 -->
 

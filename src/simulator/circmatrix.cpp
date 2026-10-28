@@ -44,6 +44,9 @@ void CircMatrix::createMatrix(QList<eNode *> &eNodeList)
 
     m_circMatrix.resize(m_numEnodes, d_vector_t(m_numEnodes, 0));
     m_coefVect.resize(m_numEnodes, 0);
+    m_nodeGroup.assign(m_numEnodes, -1);
+    m_grpAdmit.clear();
+    m_grpCurr.clear();
 
     m_circChanged  = true;
     m_admitChanged = false;
@@ -57,16 +60,28 @@ void CircMatrix::createMatrix(QList<eNode *> &eNodeList)
 
 void CircMatrix::stampMatrix(int row, int col, double value)
 {
-    m_admitChanged = true;
+    double &cell = m_circMatrix[row - 1][col - 1]; // eNode numbers start at 1
+    if (cell == value)
+        return; // Nothing changed: no need to factor again
+    cell = value;
 
-    m_circMatrix[row - 1][col - 1] = value; // eNode numbers start at 1
+    m_admitChanged = true;
+    int group      = m_nodeGroup[row - 1];
+    if (group >= 0)
+        m_grpAdmit[group] = 1;
 }
 
 void CircMatrix::stampCoef(int row, double value)
 {
-    m_currChanged = true;
+    double &coef = m_coefVect[row - 1];
+    if (coef == value)
+        return;
+    coef = value;
 
-    m_coefVect[row - 1] = value;
+    m_currChanged = true;
+    int group     = m_nodeGroup[row - 1];
+    if (group >= 0)
+        m_grpCurr[group] = 1;
 }
 
 void CircMatrix::addConnections(int enodNum, QList<int> *nodeGroup,
@@ -108,6 +123,9 @@ bool CircMatrix::solveMatrix()
         m_bList.clear();
         m_ipvtList.clear();
         m_eNodeActList.clear();
+        m_nodeGroup.assign(m_numEnodes, -1);
+        m_grpAdmit.clear();
+        m_grpCurr.clear();
         int group = 0;
 
         while (
@@ -168,6 +186,10 @@ bool CircMatrix::solveMatrix()
                 m_ipvtList.append(ipvt);
                 m_eNodeActList.append(eNodeActive);
                 m_eNodeActive = &eNodeActive;
+                for (int num : nodeGroup)
+                    m_nodeGroup[num - 1] = group;
+                m_grpAdmit.push_back(0);
+                m_grpCurr.push_back(0);
 
                 factorMatrix(ny, group);
                 isOk &= luSolve(ny, group);
@@ -179,13 +201,18 @@ bool CircMatrix::solveMatrix()
         // qDebug() <<"CircMatrix::solveMatrix"<<group<<"Circuits";
     } else {
         for (int i = 0; i < m_bList.size(); i++) {
+            // Only groups whose matrix or currents changed are solved
+            if (!m_grpAdmit[i] && !m_grpCurr[i])
+                continue;
             m_eNodeActive = &(m_eNodeActList[i]);
             int n         = m_eNodeActive->size();
 
-            if (m_admitChanged)
+            if (m_grpAdmit[i])
                 factorMatrix(n, i);
 
             isOk &= luSolve(n, i);
+            m_grpAdmit[i] = 0;
+            m_grpCurr[i]  = 0;
         }
     }
     m_currChanged  = false;

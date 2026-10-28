@@ -308,3 +308,16 @@ Bug Fixes:
       
     - Keys (Sergey Roenko)
         L293.
+
+BREAKING CHANGE (Arduino Mega pin layout):
+    - The pins of the "Arduino Mega" board (resources/data/arduino/mega.package) were moved so that
+      every pin sits exactly on its header hole of the realistic board art: digital D0-D21 incl. the
+      communication header, D8-D13/GND/AREF, analog A0-A15, the power header (Vin..RST) and the
+      2x18 D22-D53 header. The board is one pitch wider (package width 21), the analog and power
+      headers moved one pitch up and the D8-D13 group 0.4 pitch up. Pin ids, names and MCU port
+      mappings are unchanged.
+    - Circuits saved with an older Mega still load, but wires on the moved pins will be displaced
+      (end points follow the pins, intermediate bends do not): re-route them.
+    - Package files accept fractional "pos" values (e.g. pos="23.6") for off-grid pins.
+    - With the realistic board art on, the Arduino boards no longer draw their own pin labels
+      (the art already prints the header names).

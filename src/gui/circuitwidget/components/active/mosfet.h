@@ -33,24 +33,43 @@ class MAINMODULE_EXPORT Mosfet : public Component, public eMosfet
     Q_PROPERTY( double Threshold READ threshold  WRITE setThreshold DESIGNABLE true USER true )
     Q_PROPERTY( bool   P_Channel READ pChannel   WRITE setPchannel  DESIGNABLE true USER true )
     Q_PROPERTY( bool   Depletion READ depletion  WRITE setDepletion DESIGNABLE true USER true )
-    
-    public:
+    Q_PROPERTY(
+        MosModel Model READ model WRITE setModel DESIGNABLE true USER true)
 
-        Mosfet( QObject* parent, QString type, QString id );
-        ~Mosfet();
+  public:
+    Mosfet(QObject *parent, QString type, QString id);
+    ~Mosfet();
 
-        static Component* construct( QObject* parent, QString type, QString id );
-        static LibraryItem* libraryItem();
-        
-        void updateStep();
-        
-        void setPchannel( bool pc );
-        void setDepletion( bool dep );
-        
-        virtual void paint( QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget );
-        
-    public slots:
-        void remove();
+    static Component *construct(QObject *parent, QString type, QString id);
+    static LibraryItem *libraryItem();
+
+    // Custom uses Threshold (VTO) and RDSon (at Vgs = 10 V).
+    // Append new presets at the end (saved as an integer).
+    enum MosModel {
+        Custom = 0,
+        M2N7000,
+        BS170,
+        IRF520,
+        IRF540N,
+        IRLZ44N,
+        IRF9540,
+        BS250
+    };
+    Q_ENUMS(MosModel)
+
+    MosModel model();
+    void setModel(MosModel model);
+
+    void updateStep();
+
+    void setPchannel(bool pc);
+    void setDepletion(bool dep);
+
+    virtual void paint(QPainter *p, const QStyleOptionGraphicsItem *option,
+                       QWidget *widget);
+
+  public slots:
+    void remove();
 };
 
 #endif

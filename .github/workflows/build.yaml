@@ -1,53 +1,212 @@
 name: Build
 
-on: [push, pull_request]
+on:
+  push:
+    branches: ['**']
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  unix:
-    strategy:
-      matrix:
-        qt_version: [5.15.1]
-        platform: [ubuntu-18.04, ubuntu-20.04]
-        arch: [x64]
-      fail-fast: false
-    runs-on: ${{ matrix.platform }}
+  linux:
+    name: Linux (AppImage + tar.gz)
+    runs-on: ubuntu-24.04
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          submodules: 'recursive'
+      - uses: actions/checkout@v4
 
-      - name: Installing Qt
-        uses: jurplel/install-qt-action@v2.10.0
-        with:
-          version: ${{ matrix.qt_version }}
-          arch: ${{ matrix.qtarch }}
-          modules: qtscript
-          
-      - name: Build
-        shell: bash
+      - name: Install dependencies
         run: |
-          sudo apt install libelf-dev libgl-dev libx11-dev libxkbcommon-x11-dev libpulse-dev
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential qt6-base-dev qt6-base-dev-tools qt6-tools-dev \
+            qt6-tools-dev-tools qt6-l10n-tools qt6-multimedia-dev \
+            qt6-serialport-dev qt6-svg-dev qt6-declarative-dev \
+            qt6-declarative-dev-tools qt6-qpa-plugins \
+            qml6-module-qtquick qml6-module-qtquick-controls \
+            qml6-module-qtquick-layouts qml6-module-qtquick-window \
+            qml6-module-qtquick-templates qml6-module-qtquick-shapes \
+            qml6-module-qtqml-workerscript qml6-module-qtqml-models \
+            libelf-dev libgl-dev libx11-dev libxkbcommon-x11-dev libpulse-dev \
+            libfuse2t64 file desktop-file-utils
+
+      - name: Read version
+        id: ver
+        run: |
+          V=$(sed -n 's/^VERSION *= *"\(.*\)"/\1/p' SimulIDE.pro)
+          R=$(sed -n 's/^RELEASE *= *"\(.*\)"/\1/p' SimulIDE.pro)
+          echo "version=${V}${R}" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: |
           mkdir build
           cd build
-          qmake ..
-          make
-          
-  windows:       
+          qmake6 ..
+          make -j"$(nproc)"
+
+      - name: Locate build output
+        run: |
+          OUT=$(ls -d build/release/SimulIDE_*/ | head -n1)
+          echo "OUT=${OUT%/}" >> "$GITHUB_ENV"
+          ls -R "$OUT" | head -50
+
+      - name: Create AppImage
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: '1'
+          NO_STRIP: '1'
+          QMAKE: /usr/lib/qt6/bin/qmake6
+          EXTRA_QT_PLUGINS: svg;multimedia
+          # The QML shell (src/qml) is compiled into the binary, so the
+          # plugin cannot discover its imports: scan the sources instead.
+          QML_SOURCES_PATHS: ${{ github.workspace }}/src/qml
+        run: |
+          set -e
+          # The app looks for ../share/simulide relative to its binary,
+          # so the AppDir keeps the same bin/ + share/ layout.
+          mkdir -p AppDir/usr
+          cp -a "$OUT/bin" AppDir/usr/bin
+          cp -a "$OUT/share" AppDir/usr/share
+          install -Dm644 resources/icons/hicolor/256x256/simulide.png \
+            AppDir/usr/share/icons/hicolor/256x256/apps/simulide.png
+          BASE=https://github.com/linuxdeploy
+          curl -fsSL -o linuxdeploy "$BASE/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
+          curl -fsSL -o linuxdeploy-plugin-qt "$BASE/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage"
+          chmod +x linuxdeploy linuxdeploy-plugin-qt
+          ./linuxdeploy --appdir AppDir \
+            --executable AppDir/usr/bin/simulide \
+            --desktop-file packaging/linux/simulide.desktop \
+            --icon-file resources/icons/hicolor/256x256/simulide.png \
+            --plugin qt --output appimage
+          mkdir -p dist
+          mv SimulIDE*.AppImage "dist/SimulIDE-${{ steps.ver.outputs.version }}-x86_64.AppImage"
+
+      - name: Create tar.gz
+        run: |
+          mkdir -p dist
+          tar -C "$OUT" -czf "dist/SimulIDE-${{ steps.ver.outputs.version }}-linux-x86_64.tar.gz" bin share
+          ls -l dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: simulide-linux
+          path: dist/*
+          if-no-files-found: error
+
+  windows:
+    name: Windows (installer + portable zip)
     runs-on: windows-latest
     defaults:
       run:
         shell: msys2 {0}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+
       - uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW64
           update: true
-          install: base-devel mingw-w64-x86_64-toolchain mingw-w64-x86_64-qt5 mingw-w64-x86_64-libelf libelf-devel
-      - name: win-build
+          install: >-
+            make
+            zip
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-qt6-base
+            mingw-w64-x86_64-qt6-multimedia
+            mingw-w64-x86_64-qt6-serialport
+            mingw-w64-x86_64-qt6-svg
+            mingw-w64-x86_64-qt6-declarative
+            mingw-w64-x86_64-qt6-tools
+            mingw-w64-x86_64-libelf
+            mingw-w64-x86_64-nsis
+
+      - name: Read version
+        id: ver
         run: |
+          V=$(sed -n 's/^VERSION *= *"\(.*\)"/\1/p' SimulIDE.pro)
+          R=$(sed -n 's/^RELEASE *= *"\(.*\)"/\1/p' SimulIDE.pro)
+          echo "version=${V}${R}" >> "$GITHUB_OUTPUT"
+          echo "numver=${V}" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: |
+          QMAKE=$(command -v qmake6 || command -v qmake-qt6 || command -v qmake)
+          echo "Using $QMAKE"
           mkdir build
           cd build
-          qmake ..
-          make
+          "$QMAKE" ..
+          make -j"$(nproc)"
+
+      - name: Assemble distribution
+        run: |
+          set -e
+          OUT=$(ls -d build/release/SimulIDE_*/ | head -n1)
+          OUT=${OUT%/}
+          SRCROOT=$PWD
+          rm -rf dist-root && mkdir -p dist-root/SimulIDE dist
+          cp -a "$OUT/bin" dist-root/SimulIDE/bin
+          cp -a "$OUT/share" dist-root/SimulIDE/share
+          cp LICENSE dist-root/SimulIDE/
+          cd dist-root/SimulIDE
+          WDQ=$(command -v windeployqt6 || command -v windeployqt-qt6 || command -v windeployqt)
+          # windeployqt may exit non-zero on optional pieces it cannot find
+          # after deploying everything else; the ldd loop below copies any
+          # DLL it still misses.
+          # --qmldir: the QML shell is embedded in the exe, so windeployqt
+          # needs the sources to find the Qt Quick modules it imports.
+          "$WDQ" --release --no-translations --no-opengl-sw \
+            --qmldir "$SRCROOT/src/qml" \
+            bin/simulide.exe || echo "windeployqt exited $?, continuing"
+          # Copy remaining MinGW runtime DLLs (a DLL can pull in more DLLs)
+          for pass in 1 2 3; do
+            find bin \( -name '*.dll' -o -name '*.exe' \) | while read -r f; do
+              ldd "$f" | awk '/=> \/mingw64\//{print $3}'
+            done | sort -u | while read -r dll; do
+              [ -e "bin/$(basename "$dll")" ] || cp -v "$dll" bin/
+            done
+          done
+          ls bin
+
+      - name: Portable zip
+        run: |
+          cd dist-root
+          zip -rq "../dist/SimulIDE-${{ steps.ver.outputs.version }}-win64-portable.zip" SimulIDE
+
+      - name: NSIS installer
+        run: |
+          makensis -V2 \
+            -DVERSION="${{ steps.ver.outputs.version }}" \
+            -DSRCDIR="$(cygpath -w "$PWD/dist-root/SimulIDE")" \
+            -DOUTFILE="$(cygpath -w "$PWD/dist/SimulIDE-${{ steps.ver.outputs.version }}-win64-setup.exe")" \
+            packaging/windows/simulide.nsi
+          ls -l dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: simulide-windows
+          path: dist/*
+          if-no-files-found: error
+
+  release:
+    name: GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [linux, windows]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - run: ls -l artifacts
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          generate_release_notes: true

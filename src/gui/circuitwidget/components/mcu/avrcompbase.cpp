@@ -17,17 +17,27 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <math.h>
-
 #include "avrcompbase.h"
-#include "avr_twi.h"
 
+#include "avr_twi.h"
+#include "ispuploader.h"
+#include "simulator.h"
+
+#include <iostream>
+#include <math.h>
 
 AvrCompBase::AvrCompBase( QObject* parent, QString type, QString id )
            : McuComponent( parent, type, id )
            , m_avrI2C("avrI2C")
 {
     m_avrI2C.setEnabled( false );
+    m_ispRst     = 0l;
+    m_ispSck     = 0l;
+    m_ispMosi    = 0l;
+    m_ispMiso    = 0l;
+    m_rstLow     = false;
+    m_misoDriven = false;
+    m_resetPinEn = false;
     m_avrI2C.setComponent( this );
     m_sda = 0l;
     m_scl = 0l;
@@ -63,7 +73,7 @@ void AvrCompBase::attachPins()
         avr_irq_register_notify( i2cOutIrq, i2c_out_hook, this );
 
         // TWEN change irq
-        int twcrAddr = BaseProcessor::self()->getRegAddress( "TWCR" );
+        int twcrAddr = m_processor->getRegAddress("TWCR");
         if( twcrAddr < 0 ) qDebug()<<"AvrCompBase::attachPins: TWCR Register Not found";
         else
         {
@@ -77,7 +87,175 @@ void AvrCompBase::attachPins()
             m_i2cInIrq = avr_io_getirq( cpu, AVR_IOCTL_TWI_GETIRQ(0), TWI_IRQ_INPUT);
         }
     }
+    setupIsp();
     m_attached = true;
+}
+
+void AvrCompBase::setupIsp()
+{
+    const AvrIspDevice *dev = AvrIsp::device(m_device.toLatin1().constData());
+
+    m_ispRst = m_ispSck = m_ispMosi = m_ispMiso = 0l;
+    for (McuComponentPin *mcuPin : m_pinList) {
+        AVRComponentPin *pin = static_cast<AVRComponentPin *>(mcuPin);
+        pin->setIspRole(AvrIsp::None);
+        if (pin->isResetType())
+            m_ispRst = pin; // Dedicated RESET pin
+    }
+    if (!dev)
+        return;
+
+    for (McuComponentPin *mcuPin : m_pinList) {
+        AVRComponentPin *pin = static_cast<AVRComponentPin *>(mcuPin);
+        QString id           = pin->id();
+        if (id == dev->sck) {
+            m_ispSck = pin;
+            pin->setIspRole(AvrIsp::Sck);
+        }
+        if (id == dev->mosi) {
+            m_ispMosi = pin;
+            pin->setIspRole(AvrIsp::Mosi);
+        }
+        if (id == dev->miso) {
+            m_ispMiso = pin;
+            pin->setIspRole(AvrIsp::Miso);
+        }
+        if (!m_ispRst && id == dev->rst) {
+            m_ispRst = pin;
+            pin->setIspRole(AvrIsp::Reset);
+        }
+    }
+}
+
+void AvrCompBase::setResetPin(bool en)
+{
+    m_resetPinEn = en;
+    applyResetPullup();
+}
+
+bool AvrCompBase::resetFunction()
+{
+    if (!m_ispRst)
+        return false;
+    if (m_ispRst->isResetType())
+        return true;
+    if (m_avr.isp()->resetDisabled())
+        return false; // RSTDISBL fuse programmed
+
+    // Without a firmware file the chip is waiting to be programmed (ISP)
+    return m_resetPinEn || m_symbolFile.isEmpty();
+}
+
+void AvrCompBase::applyResetPullup()
+{
+    if (m_ispRst && !m_ispRst->isResetType())
+        m_ispRst->setResetPullup(resetFunction());
+}
+
+void AvrCompBase::attach()
+{
+    // A chip without firmware file is an erased chip: create its core so it
+    // can be programmed through its ISP pins.
+    if (!m_avr.getLoadStatus() && m_symbolFile.isEmpty()) {
+        if (m_avr.createBlank()) {
+            if (!m_attached)
+                attachPins();
+            McuComponent::reset();
+        }
+    }
+    m_rstLow     = false;
+    m_misoDriven = false;
+    m_avr.isp()->setReset(false);
+    applyResetPullup();
+}
+
+void AvrCompBase::reset()
+{
+    McuComponent::reset();
+    m_misoDriven = false;
+    applyResetPullup();
+}
+
+void AvrCompBase::ispPinChanged(AVRComponentPin *pin, bool high)
+{
+    AvrIsp *isp = m_avr.isp();
+    int role    = pin->isResetType() ? AvrIsp::Reset : pin->ispRole();
+
+    if (role == AvrIsp::Reset) {
+        if (!resetFunction())
+            return;
+        bool low = !high;
+        if (low == m_rstLow)
+            return;
+        m_rstLow = low;
+
+        if (low) // Hold the core in reset: ISP mode
+        {
+            m_avr.hardReset(true); // Stops the core and resets the pins
+            isp->setReset(true);
+            m_misoDriven = false;
+            // Programming signals are inputs while in reset
+            if (m_ispSck)
+                m_ispSck->setDirection(false);
+            if (m_ispMosi)
+                m_ispMosi->setDirection(false);
+        } else // Release: run the (new) firmware
+        {
+            bool changed = isp->memChanged();
+            int pages    = isp->pagesWritten();
+            isp->setReset(false);
+
+            if (changed) {
+                if (pages)
+                    m_avr.setBlank(false);
+                std::cout << "    " << m_id.toStdString()
+                          << ": ISP programming done, " << pages
+                          << " flash pages written" << std::endl;
+            }
+            reset(); // Pins to input, pc = 0
+            m_avr.hardReset(false);
+        }
+        return;
+    }
+    if (!m_rstLow)
+        return;
+
+    if (role == AvrIsp::Sck) {
+        bool mosi = m_ispMosi ? m_ispMosi->inputHigh() : false;
+        isp->sckEdge(high, mosi);
+
+        if (isp->misoEnabled() && m_ispMiso) {
+            bool bit = isp->misoBit();
+            if (!m_misoDriven) {
+                m_misoDriven = true;
+                m_ispMiso->setDirection(true);
+                m_ispMiso->setState(!bit); // Force a real output update
+            }
+            m_ispMiso->setState(bit);
+        }
+    }
+}
+
+void AvrCompBase::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
+{
+    if (!acceptedMouseButtons()) {
+        event->ignore();
+        return;
+    }
+
+    event->accept();
+    QMenu *menu        = new QMenu();
+    QAction *ispAction = menu->addAction(
+        QIcon(":/load.png"), tr("Program target via ISP (STK500v1)..."));
+    connect(ispAction, SIGNAL(triggered()), this, SLOT(slotIspProgram()));
+    menu->addSeparator();
+    contextMenu(event, menu);
+    menu->deleteLater();
+}
+
+void AvrCompBase::slotIspProgram()
+{
+    IspUploader::runDialog(this);
 }
 
 void AvrCompBase::addPin( QString id, QString type, QString label, int pos, int xpos, int ypos, int angle )
@@ -198,8 +376,8 @@ void AvrCompBase::twenChanged( uint32_t value )
 
         double i2cFreq = 4e5;
 
-        int twbr = BaseProcessor::self()->getRamValue( "TWBR" );
-        int twsr = BaseProcessor::self()->getRamValue( "TWSR" );
+        int twbr = m_processor->getRamValue("TWBR");
+        int twsr = m_processor->getRamValue("TWSR");
 
         if( (twbr<0) || (twsr<0) ) qDebug() << "AvrCompBase::twenChanged: TWBR or TWSR not found";
         else                       // Calculate Prescaler and Frequency

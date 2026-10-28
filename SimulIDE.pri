@@ -9,6 +9,7 @@ INCLUDEPATH += \
     ./src/gui/circuitwidget/components/meters \
     ./src/gui/circuitwidget/components/other \
     ./src/gui/circuitwidget/components/outputs \
+    ./src/gui/circuitwidget/components/modules \
     ./src/gui/circuitwidget/components/passive \
     ./src/gui/circuitwidget/components/sources \
     ./src/gui/circuitwidget/components/switches \
@@ -23,6 +24,7 @@ INCLUDEPATH += \
     ./src/simulator \
     ./src/simulator/elements \
     ./src/simulator/elements/active \
+    ./src/simulator/spice \
     ./src/simulator/elements/logic \
     ./src/simulator/elements/outputs \
     ./src/simulator/elements/passive \
@@ -168,6 +170,8 @@ HEADERS += \
     ./src/gui/circuitwidget/components/mcu/piccomponent.h \
     ./src/gui/circuitwidget/components/mcu/piccomponentpin.h \
     ./src/gui/circuitwidget/components/mcu/serialport.h \
+    ./src/gui/circuitwidget/components/mcu/uartfeeder.h \
+    ./src/gui/circuitwidget/components/mcu/ispuploader.h \
     ./src/gui/circuitwidget/components/mcu/serialterm.h \
     ./src/gui/circuitwidget/components/mcu/shield.h \
     ./src/gui/circuitwidget/components/mcu/sr04.h \
@@ -184,6 +188,14 @@ HEADERS += \
     ./src/gui/circuitwidget/components/other/rectangle.h \
     ./src/gui/circuitwidget/components/other/textcomponent.h \
     ./src/gui/circuitwidget/components/outputs/audio_out.h \
+    ./src/gui/circuitwidget/components/outputs/dcmotor.h \
+    ./src/gui/circuitwidget/components/outputs/hbridge.h \
+    ./src/gui/circuitwidget/components/modules/modulebase.h \
+    ./src/gui/circuitwidget/components/modules/sensors.h \
+    ./src/gui/circuitwidget/components/modules/powerparts.h \
+    ./src/gui/circuitwidget/components/modules/switchparts.h \
+    ./src/gui/circuitwidget/components/modules/icmodules.h \
+    ./src/gui/circuitwidget/components/modules/moduleitems.h \
     ./src/gui/circuitwidget/components/outputs/hd44780.h \
     ./src/gui/circuitwidget/components/outputs/ks0108.h \
     ./src/gui/circuitwidget/components/outputs/led.h \
@@ -209,6 +221,7 @@ HEADERS += \
     ./src/gui/circuitwidget/components/sources/clock.h \
     ./src/gui/circuitwidget/components/sources/currsource.h \
     ./src/gui/circuitwidget/components/sources/ground.h \
+    ./src/gui/circuitwidget/components/sources/netlabel.h \
     ./src/gui/circuitwidget/components/sources/logicinput.h \
     ./src/gui/circuitwidget/components/sources/rail.h \
     ./src/gui/circuitwidget/components/sources/voltsource.h \
@@ -257,6 +270,7 @@ HEADERS += \
     ./src/gui/ramtable.h \
     ./src/gui/terminalwidget/outpaneltext.h \
     ./src/gui/terminalwidget/terminalwidget.h \
+    ./src/gui/terminalwidget/serialmonitor.h \
     ./src/gui/topwidget.h \
     ./src/gui/voltwidget.h \
     ./src/mainwindow.h \
@@ -350,6 +364,12 @@ HEADERS += \
     ./src/simulator/e-source.h \
     ./src/simulator/elements/active/e-bjt.h \
     ./src/simulator/elements/active/e-diode.h \
+    ./src/simulator/spice/ngspice-api.h \
+    ./src/simulator/spice/spicenetlist.h \
+    ./src/simulator/spice/spiceengine.h \
+    ./src/simulator/spice/spicecosim.h \
+    ./src/simulator/elements/active/e-semimodel.h \
+    ./src/simulator/elements/active/e-nlstamp.h \
     ./src/simulator/elements/active/e-mosfet.h \
     ./src/simulator/elements/active/e-mux_analog.h \
     ./src/simulator/elements/active/e-op_amp.h \
@@ -384,6 +404,8 @@ HEADERS += \
     ./src/simulator/elements/passive/e-resistor.h \
     ./src/simulator/elements/passive/e-resistordip.h \
     ./src/simulator/elements/processors/avrprocessor.h \
+    ./src/simulator/elements/processors/avrisp.h \
+    ./src/simulator/elements/processors/stk500client.h \
     ./src/simulator/elements/processors/baseprocessor.h \
     ./src/simulator/elements/processors/picprocessor.h \
     ./src/simulator/matrixsolver.h \
@@ -513,6 +535,8 @@ SOURCES += \
     ./src/gui/circuitwidget/components/mcu/piccomponent.cpp \
     ./src/gui/circuitwidget/components/mcu/piccomponentpin.cpp \
     ./src/gui/circuitwidget/components/mcu/serialport.cpp \
+    ./src/gui/circuitwidget/components/mcu/uartfeeder.cpp \
+    ./src/gui/circuitwidget/components/mcu/ispuploader.cpp \
     ./src/gui/circuitwidget/components/mcu/serialterm.cpp \
     ./src/gui/circuitwidget/components/mcu/shield.cpp \
     ./src/gui/circuitwidget/components/mcu/sr04.cpp \
@@ -529,6 +553,14 @@ SOURCES += \
     ./src/gui/circuitwidget/components/other/rectangle.cpp \
     ./src/gui/circuitwidget/components/other/textcomponent.cpp \
     ./src/gui/circuitwidget/components/outputs/audio_out.cpp \
+    ./src/gui/circuitwidget/components/outputs/dcmotor.cpp \
+    ./src/gui/circuitwidget/components/outputs/hbridge.cpp \
+    ./src/gui/circuitwidget/components/modules/modulebase.cpp \
+    ./src/gui/circuitwidget/components/modules/sensors.cpp \
+    ./src/gui/circuitwidget/components/modules/powerparts.cpp \
+    ./src/gui/circuitwidget/components/modules/switchparts.cpp \
+    ./src/gui/circuitwidget/components/modules/icmodules.cpp \
+    ./src/gui/circuitwidget/components/modules/moduleitems.cpp \
     ./src/gui/circuitwidget/components/outputs/hd44780.cpp \
     ./src/gui/circuitwidget/components/outputs/ks0108.cpp \
     ./src/gui/circuitwidget/components/outputs/led.cpp \
@@ -554,6 +586,7 @@ SOURCES += \
     ./src/gui/circuitwidget/components/sources/clock.cpp \
     ./src/gui/circuitwidget/components/sources/currsource.cpp \
     ./src/gui/circuitwidget/components/sources/ground.cpp \
+    ./src/gui/circuitwidget/components/sources/netlabel.cpp \
     ./src/gui/circuitwidget/components/sources/logicinput.cpp \
     ./src/gui/circuitwidget/components/sources/rail.cpp \
     ./src/gui/circuitwidget/components/sources/voltsource.cpp \
@@ -598,6 +631,7 @@ SOURCES += \
     ./src/gui/ramtable.cpp \
     ./src/gui/terminalwidget/outpaneltext.cpp \
     ./src/gui/terminalwidget/terminalwidget.cpp \
+    ./src/gui/terminalwidget/serialmonitor.cpp \
     ./src/gui/topwidget.cpp \
     ./src/gui/voltwidget.cpp \
     ./src/main.cpp \
@@ -675,6 +709,10 @@ SOURCES += \
     ./src/simulator/e-source.cpp \
     ./src/simulator/elements/active/e-bjt.cpp \
     ./src/simulator/elements/active/e-diode.cpp \
+    ./src/simulator/spice/spicenetlist.cpp \
+    ./src/simulator/spice/spiceengine.cpp \
+    ./src/simulator/spice/spicecosim.cpp \
+    ./src/simulator/elements/active/e-semimodel.cpp \
     ./src/simulator/elements/active/e-mosfet.cpp \
     ./src/simulator/elements/active/e-mux_analog.cpp \
     ./src/simulator/elements/active/e-op_amp.cpp \
@@ -709,6 +747,8 @@ SOURCES += \
     ./src/simulator/elements/passive/e-resistor.cpp \
     ./src/simulator/elements/passive/e-resistordip.cpp \
     ./src/simulator/elements/processors/avrprocessor.cpp \
+    ./src/simulator/elements/processors/avrisp.cpp \
+    ./src/simulator/elements/processors/stk500client.cpp \
     ./src/simulator/elements/processors/baseprocessor.cpp \
     ./src/simulator/elements/processors/picprocessor.cpp \
     ./src/simulator/elements/processors/read_elf.c \

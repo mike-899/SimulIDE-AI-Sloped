@@ -65,7 +65,7 @@ TextComponent::TextComponent( QObject* parent, QString type, QString id )
 
     m_text = new QGraphicsTextItem( this );
     //m_text->setTextInteractionFlags( Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::TextEditable);
-    m_text->setTextInteractionFlags( 0 );
+    m_text->setTextInteractionFlags(Qt::NoTextInteraction);
     m_text->setTextWidth( 90 );
     m_text->setFont( sansFont );
     m_text->setPlainText("... TEXT ...");
@@ -193,7 +193,7 @@ void TextComponent::paint( QPainter *p, const QStyleOptionGraphicsItem *option, 
 {
     if( !m_text->hasFocus() )
     {
-        m_text->setTextInteractionFlags( 0 );
+        m_text->setTextInteractionFlags(Qt::NoTextInteraction);
         m_text->setCursor( Qt::OpenHandCursor );
     }
     p->setOpacity( m_opac );

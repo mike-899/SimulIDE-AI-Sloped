@@ -19,28 +19,62 @@
 
 #include "mainwindow.h"
 
+#include "QPropertyEditorWidget.h"
 #include "appiface.h"
 #include "circuit.h"
 #include "circuitwidget.h"
+#include "codeeditor.h"
+#include "component.h"
 #include "componentselector.h"
 #include "editorwindow.h"
 #include "filewidget.h"
+#include "inspector.h"
+#include "mcpserver.h"
+#include "mcucomponent.h"
+#include "partart.h"
 #include "propertieswidget.h"
+#include "qmlui.h"
+#include "serialmonitor.h"
 #include "simuapi_apppath.h"
+#include "spiceengine.h"
+#include "thememanager.h"
 #include "utils.h"
+
+#include <QGraphicsDropShadowEffect>
+#include <QMenuBar>
+#include <QQuickItem>
+#include <QQuickWidget>
+#include <QScreen>
 
 MainWindow *MainWindow::m_pSelf = 0l;
 
 MainWindow::MainWindow() :
-    QMainWindow(),
-    m_settings(QStandardPaths::standardLocations(QStandardPaths::DataLocation)
-                       .first() +
-                   "/simulide.ini",
-               QSettings::IniFormat, this)
+    QMainWindow(), m_settings(QStandardPaths::standardLocations(
+                                  QStandardPaths::AppLocalDataLocation)
+                                      .first() +
+                                  "/simulide.ini",
+                              QSettings::IniFormat, this)
 {
     setWindowIcon(QIcon(":/simulide.png"));
     m_pSelf   = this;
     m_circuit = 0l;
+    m_simButton        = 0l;
+    m_projectLabel     = 0l;
+    m_codeButton       = 0l;
+    m_componentsButton = 0l;
+    m_mcuSelector      = 0l;
+    m_inspector        = 0l;
+    m_qmlInspector     = 0l;
+    m_qmlToolbar       = 0l;
+    m_sideHost         = 0l;
+    m_qml = QmlUi::enabled(m_settings.value("ui/qml", true).toBool());
+    if (m_qml) {
+        QString err;
+        if (!QmlUi::preflight(&err)) { // Qt Quick missing/broken: classic UI
+            qWarning() << "QML UI unavailable, using the Widgets UI:" << err;
+            m_qml = false;
+        }
+    }
     m_version = "SimulIDE-" + QString(APP_VERSION);
 
     this->setWindowTitle(m_version);
@@ -59,15 +93,17 @@ MainWindow::MainWindow() :
         if (m_fontScale == 0)
             m_fontScale = 1;
     } else {
-        double dpiX = qApp->desktop()->logicalDpiX();
+        double dpiX = qApp->primaryScreen()->logicalDotsPerInchX();
         m_fontScale = dpiX / 96.0;
     }
     // qDebug()<<dpiX;
+    ThemeManager::self()->init(&m_settings);
     loadCircHelp();
     createWidgets();
     readSettings();
 
     loadPlugins();
+    McpServer::startDefault(this); // MCP server (see docs/MCP.md)
 
     QString backPath = m_settings.value("backupPath").toString();
     if (!backPath.isEmpty()) {
@@ -96,10 +132,28 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::readSettings()
 {
-    restoreGeometry(m_settings.value("geometry").toByteArray());
+    if (!restoreGeometry(m_settings.value("geometry").toByteArray())) {
+        // No (valid) saved geometry: 80% of the screen, at least 1280x720
+        QRect avail = qApp->primaryScreen()->availableGeometry();
+        int w       = qMin(qMax(int(avail.width() * 0.8), 1280), avail.width());
+        int h = qMin(qMax(int(avail.height() * 0.8), 720), avail.height());
+        resize(w, h);
+        move(avail.center() - QPoint(w / 2, h / 2));
+    }
     restoreState(m_settings.value("windowState").toByteArray());
-    m_Centralsplitter->restoreState(
-        m_settings.value("Centralsplitter/geometry").toByteArray());
+
+    if (m_settings.contains("mainSplitter/state"))
+        m_Centralsplitter->restoreState(
+            m_settings.value("mainSplitter/state").toByteArray());
+    if (m_settings.contains("codeSplitter/state"))
+        m_codeSplitter->restoreState(
+            m_settings.value("codeSplitter/state").toByteArray());
+
+    setComponentPanelVisible(
+        m_settings.value("componentPanel/visible", true).toBool());
+    setCodePanelVisible(m_settings.value("codePanel/visible", false).toBool());
+    setSerialMonitorExpanded(
+        m_settings.value("serialMonitor/expanded", false).toBool());
 
     int autoBck = 15;
     if (m_settings.contains("autoBck"))
@@ -113,14 +167,15 @@ void MainWindow::writeSettings()
     m_settings.setValue("fontScale", m_fontScale);
     m_settings.setValue("geometry", saveGeometry());
     m_settings.setValue("windowState", saveState());
-    m_settings.setValue("Centralsplitter/geometry",
-                        m_Centralsplitter->saveState());
+    m_settings.setValue("mainSplitter/state", m_Centralsplitter->saveState());
+    m_settings.setValue("codeSplitter/state", m_codeSplitter->saveState());
+    bool sideVisible =
+        m_codePanel->isHidden() ? !m_sideHost->isHidden() : m_sideWasVisible;
+    m_settings.setValue("componentPanel/visible", sideVisible);
+    m_settings.setValue("codePanel/visible", !m_codePanel->isHidden());
+    m_settings.setValue("serialMonitor/expanded", m_serialToggle->isChecked());
 
-    QList<QTreeWidgetItem *> list =
-        m_components->findItems("", Qt::MatchStartsWith | Qt::MatchRecursive);
-
-    for (QTreeWidgetItem *item : list)
-        m_settings.setValue(item->text(0) + "/collapsed", !item->isExpanded());
+    m_components->writeSettings();
 
     FileWidget::self()->writeSettings();
 }
@@ -150,32 +205,58 @@ void MainWindow::setTitle(QString title)
     setWindowTitle(m_version + "  -  " + title);
 }
 
+void MainWindow::updateProjectLabel(const QString &windowTitle)
+{
+    if (!m_projectLabel)
+        return;
+    QString project = windowTitle.section("  -  ", 1);
+    m_projectLabel->setText(project);
+    m_projectLabel->setToolTip(project);
+}
+
+static QIcon materialIcon(const QString &name)
+{
+    return ThemeManager::icon(name);
+}
+
 void MainWindow::createWidgets()
 {
     QWidget *centralWidget = new QWidget(this);
     centralWidget->setObjectName("centralWidget");
     setCentralWidget(centralWidget);
 
-    QGridLayout *baseWidgetLayout = new QGridLayout(centralWidget);
+    QVBoxLayout *baseWidgetLayout = new QVBoxLayout(centralWidget);
     baseWidgetLayout->setSpacing(0);
     baseWidgetLayout->setContentsMargins(0, 0, 0, 0);
-    baseWidgetLayout->setObjectName("gridLayout");
+    baseWidgetLayout->setObjectName("baseLayout");
 
+    // ---- Main area: canvas | code panel | side panel -------------------
     m_Centralsplitter = new QSplitter(this);
-    m_Centralsplitter->setObjectName("Centralsplitter");
+    m_Centralsplitter->setObjectName("mainSplitter");
     m_Centralsplitter->setOrientation(Qt::Horizontal);
+    m_Centralsplitter->setChildrenCollapsible(false);
 
+    // Right side panel: Components (grid), Properties, RAM table, Files
     m_sidepanel = new QTabWidget(this);
-    m_sidepanel->setObjectName("sidepanel");
-    m_sidepanel->setTabPosition(QTabWidget::West);
-    QString fontSize = QString::number(int(11 * m_fontScale));
-    m_sidepanel->tabBar()->setStyleSheet("QTabBar { font-size:" + fontSize +
-                                         "px; }");
-    m_Centralsplitter->addWidget(m_sidepanel);
+    m_sidepanel->setObjectName("sidePanel");
+    m_sidepanel->setTabPosition(QTabWidget::North);
+    m_sidepanel->setDocumentMode(true);
+    m_sidepanel->setUsesScrollButtons(false);
+    m_sidepanel->setMinimumWidth(250);
+    m_sidepanel->tabBar()->setDrawBase(false);
+    m_sidepanel->tabBar()->setExpanding(false);
+    m_sidepanel->setIconSize(QSize(24, 24));
+    m_sidepanel->tabBar()->setFocusPolicy(Qt::NoFocus);
 
     m_components = new ComponentSelector(m_sidepanel);
-    m_components->setObjectName("components");
-    m_sidepanel->addTab(m_components, tr("Components"));
+    if (m_qml) {
+        // Still the data model (and plugin dialog) of the QML panel
+        m_components->setGridEnabled(false);
+        m_components->setParent(this);
+        m_components->hide();
+        m_sidepanel->tabBar()->hide(); // QML header switches pages
+    } else
+        m_sidepanel->addTab(m_components, tr("Components"));
 
     m_ramTabWidget = new QWidget(this);
     m_ramTabWidget->setObjectName("ramTabWidget");
@@ -183,31 +264,892 @@ void MainWindow::createWidgets()
     m_ramTabWidgetLayout->setSpacing(0);
     m_ramTabWidgetLayout->setContentsMargins(0, 0, 0, 0);
     m_ramTabWidgetLayout->setObjectName("ramTabWidgetLayout");
-    m_sidepanel->addTab(m_ramTabWidget, tr("RamTable"));
-
-    m_itemprop = new PropertiesWidget(this);
-    m_itemprop->setObjectName("properties");
-    m_sidepanel->addTab(m_itemprop, tr("Properties"));
+    int ramTab =
+        m_sidepanel->addTab(m_ramTabWidget, materialIcon("memory"), "");
+    m_sidepanel->setTabToolTip(ramTab, tr("RamTable"));
 
     m_fileSystemTree = new FileWidget(this);
     m_fileSystemTree->setObjectName("fileExplorer");
-    m_sidepanel->addTab(m_fileSystemTree, tr("File explorer"));
+    int filesTab =
+        m_sidepanel->addTab(m_fileSystemTree, materialIcon("folder"), "");
+    m_sidepanel->setTabToolTip(filesTab, tr("File explorer"));
+    connect(m_sidepanel, &QTabWidget::currentChanged, this,
+            &MainWindow::panelsChanged);
 
     m_circuit = new CircuitWidget(this);
     m_circuit->setObjectName("circuit");
     m_Centralsplitter->addWidget(m_circuit);
 
-    m_editor = new EditorWindow(this);
-    m_editor->setObjectName(QString::fromUtf8("editor"));
-    m_Centralsplitter->addWidget(m_editor);
+    if (m_qml) {
+        // The QML inspector replaces the floating QPropertyEditor, but the
+        // classic editor still exists (hidden): components talk to it.
+        m_itemprop = new PropertiesWidget(this);
+        m_itemprop->setObjectName("propertiesPanel");
+        m_itemprop->hide();
+    } else
+        createInspector();
 
-    baseWidgetLayout->addWidget(m_Centralsplitter, 0, 0);
+    createCodePanel();
+    m_Centralsplitter->addWidget(m_codePanel);
+
+    if (m_qml) {
+        m_sideHost = new QWidget(this);
+        m_sideHost->setObjectName("sidePanelHost");
+        m_sideHost->setMinimumWidth(250);
+        QVBoxLayout *sideLayout = new QVBoxLayout(m_sideHost);
+        sideLayout->setContentsMargins(0, 0, 0, 0);
+        sideLayout->setSpacing(0);
+        sideLayout->addWidget(m_sidepanel, 1);
+    } else
+        m_sideHost = m_sidepanel;
+    m_Centralsplitter->addWidget(m_sideHost);
+
+    m_Centralsplitter->setStretchFactor(0, 1);
+    m_Centralsplitter->setStretchFactor(1, 0);
+    m_Centralsplitter->setStretchFactor(2, 0);
+
+    // ---- Top bar + edit toolbar ----------------------------------------
+    createMenus();
+    if (m_qml)
+        createQmlChrome(baseWidgetLayout);
+    else {
+        createTopBar();
+        createEditToolBar();
+        baseWidgetLayout->addWidget(m_topBar);
+        baseWidgetLayout->addWidget(m_editToolBar);
+    }
+    baseWidgetLayout->addWidget(m_Centralsplitter, 1);
 
     QList<int> sizes;
-    sizes << 150 << 350 << 500;
+    sizes << 900 << 450 << (m_qml ? 340 : 300);
     m_Centralsplitter->setSizes(sizes);
 
-    this->showMaximized();
+    m_sideWasVisible = true;
+    m_codePanel->setVisible(false);
+
+    connect(this, SIGNAL(windowTitleChanged(const QString &)), this,
+            SLOT(updateProjectLabel(const QString &)));
+    updateProjectLabel(windowTitle());
+
+    connect(m_circuit, SIGNAL(simStateChanged(const QString &)), this,
+            SLOT(updateSimButton()));
+    connect(m_circuit->powerCircAct, SIGNAL(changed()), this,
+            SLOT(updateSimButton()));
+    updateSimButton();
+}
+
+void MainWindow::createTopBar()
+{
+    m_topBar = new QWidget(this);
+    m_topBar->setObjectName("topBar");
+    m_topBar->setAttribute(Qt::WA_StyledBackground, true);
+
+    QHBoxLayout *layout = new QHBoxLayout(m_topBar);
+    layout->setContentsMargins(8, 6, 8, 6);
+    layout->setSpacing(6);
+
+    // Hamburger menu with all the classic menus
+    m_menuButton = new QToolButton(m_topBar);
+    m_menuButton->setObjectName("menuButton");
+    m_menuButton->setIcon(materialIcon("menu"));
+    m_menuButton->setIconSize(QSize(24, 24));
+    m_menuButton->setToolTip(tr("Menu"));
+    m_menuButton->setPopupMode(QToolButton::InstantPopup);
+    m_menuButton->setAutoRaise(true);
+    m_menuButton->setMenu(m_mainMenu);
+    layout->addWidget(m_menuButton);
+
+    QLabel *logo = new QLabel(m_topBar);
+    logo->setObjectName("appLogo");
+    logo->setPixmap(QIcon(":/simulide.png").pixmap(24, 24));
+    layout->addWidget(logo);
+
+    QLabel *appName = new QLabel("SimulIDE", m_topBar);
+    appName->setObjectName("appTitle");
+    QFont nameFont = appName->font();
+    nameFont.setBold(true);
+    nameFont.setPixelSize(int(20 * m_fontScale));
+    appName->setFont(nameFont);
+    layout->addWidget(appName);
+
+    QFrame *sep = new QFrame(m_topBar);
+    sep->setObjectName("topBarSeparator");
+    sep->setFrameShape(QFrame::VLine);
+    sep->setFrameShadow(QFrame::Sunken);
+    layout->addWidget(sep);
+
+    m_projectLabel = new QLabel(m_topBar);
+    m_projectLabel->setObjectName("projectName");
+    QFont projFont = m_projectLabel->font();
+    projFont.setPixelSize(int(14 * m_fontScale));
+    m_projectLabel->setFont(projFont);
+    m_projectLabel->setMinimumWidth(80);
+    m_projectLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
+    layout->addWidget(m_projectLabel, 1);
+
+    // Theme toggle (placeholder)
+    m_themeButton = new QToolButton(m_topBar);
+    m_themeButton->setObjectName("themeToggleButton");
+    m_themeButton->setDefaultAction(m_themeToggleAct);
+    m_themeButton->setIconSize(QSize(22, 22));
+    m_themeButton->setAutoRaise(true);
+    layout->addWidget(m_themeButton);
+
+    // File actions
+    QList<QPair<QAction *, QString>> fileActs;
+    fileActs << qMakePair(m_circuit->newCircAct, QString("newCircuitButton"))
+             << qMakePair(m_circuit->openCircAct, QString("openCircuitButton"))
+             << qMakePair(m_circuit->saveCircAct, QString("saveCircuitButton"));
+    for (auto &pair : fileActs) {
+        QToolButton *button = new QToolButton(m_topBar);
+        button->setObjectName(pair.second);
+        button->setProperty("topBarFileButton", true);
+        button->setDefaultAction(pair.first);
+        button->setIconSize(QSize(22, 22));
+        button->setAutoRaise(true);
+        layout->addWidget(button);
+    }
+    layout->addSpacing(8);
+
+    // Big action buttons
+    m_componentsButton =
+        new QPushButton(materialIcon("widgets"), tr("Components"), m_topBar);
+    m_componentsButton->setObjectName("componentsButton");
+    m_componentsButton->setCheckable(true);
+    m_componentsButton->setChecked(true);
+    m_componentsButton->setToolTip(tr("Show / hide the component panel"));
+    m_componentsButton->setIconSize(QSize(20, 20));
+    connect(m_componentsButton, SIGNAL(toggled(bool)), this,
+            SLOT(setComponentPanelVisible(bool)));
+    QHBoxLayout *segment = new QHBoxLayout();
+    segment->setSpacing(0);
+    segment->addWidget(m_componentsButton);
+    layout->addLayout(segment);
+
+    m_codeButton = new QPushButton(materialIcon("code"), tr("Code"), m_topBar);
+    m_codeButton->setObjectName("codeButton");
+    m_codeButton->setCheckable(true);
+    m_codeButton->setToolTip(tr("Show / hide the code editor"));
+    m_codeButton->setIconSize(QSize(20, 20));
+    connect(m_codeButton, SIGNAL(toggled(bool)), this,
+            SLOT(setCodePanelVisible(bool)));
+    segment->addWidget(m_codeButton);
+    layout->addSpacing(8);
+
+    m_simButton = new QPushButton(m_topBar);
+    m_simButton->setObjectName("simButton");
+    m_simButton->setIconSize(QSize(20, 20));
+    m_simButton->setMinimumWidth(150);
+    m_simButton->setDefault(false);
+    m_simButton->setAutoDefault(false);
+    // Fallback colour so the button stands out even without a theme;
+    // the QSS theme can override it with #simButton[simState="..."].
+    QPalette pal = m_simButton->palette();
+    pal.setColor(QPalette::Button, QColor(0x2E, 0x7D, 0x32));
+    pal.setColor(QPalette::ButtonText, Qt::white);
+    m_simButton->setPalette(pal);
+    connect(m_simButton, SIGNAL(clicked()), m_circuit, SLOT(powerCirc()));
+    layout->addWidget(m_simButton);
+}
+
+void MainWindow::createEditToolBar()
+{
+    m_editToolBar = new QToolBar(this);
+    m_editToolBar->setObjectName("editToolBar");
+    m_editToolBar->setIconSize(QSize(20, 20));
+    m_editToolBar->setMovable(false);
+    m_editToolBar->setFloatable(false);
+
+    m_editToolBar->addAction(m_circuit->copyAct);
+    m_editToolBar->addAction(m_circuit->pasteAct);
+    m_editToolBar->addAction(m_circuit->deleteAct);
+    m_editToolBar->addSeparator();
+    m_editToolBar->addAction(m_circuit->undoAct);
+    m_editToolBar->addAction(m_circuit->redoAct);
+    m_editToolBar->addSeparator();
+    m_editToolBar->addAction(m_circuit->rotateCWAct);
+    m_editToolBar->addAction(m_circuit->rotateCCWAct);
+    m_editToolBar->addAction(m_circuit->hFlipAct);
+    m_editToolBar->addAction(m_circuit->vFlipAct);
+    m_editToolBar->addSeparator();
+    m_editToolBar->addAction(m_circuit->zoomInAct);
+    m_editToolBar->addAction(m_circuit->zoomOutAct);
+    m_editToolBar->addAction(m_circuit->zoomFitAct);
+    m_editToolBar->addSeparator();
+    m_editToolBar->addAction(m_circuit->pauseSimAct);
+
+    QWidget *spacer = new QWidget(m_editToolBar);
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    m_editToolBar->addWidget(spacer);
+    m_editToolBar->addWidget(m_circuit->rateLabel());
+
+    QWidget *pad = new QWidget(m_editToolBar);
+    pad->setFixedWidth(8);
+    m_editToolBar->addWidget(pad);
+}
+
+void MainWindow::updateMcuSelector()
+{
+    if (!m_mcuSelector)
+        return;
+    QSignalBlocker blocker(m_mcuSelector);
+    m_mcuSelector->clear();
+    QList<McuComponent *> mcus = McuComponent::mcuList();
+    if (mcus.isEmpty()) {
+        m_mcuSelector->addItem(tr("No MCU"));
+        m_mcuSelector->setEnabled(false);
+        return;
+    }
+    m_mcuSelector->setEnabled(true);
+    for (McuComponent *mcu : mcus) {
+        QString text = mcu->itemID() + " (" + mcu->device() + ")";
+        m_mcuSelector->addItem(text, mcu->itemID());
+        if (mcu == McuComponent::self())
+            m_mcuSelector->setCurrentIndex(m_mcuSelector->count() - 1);
+    }
+}
+
+void MainWindow::mcuSelected(int index)
+{
+    selectMcu(m_mcuSelector->itemData(index).toString());
+}
+
+void MainWindow::selectMcu(const QString &id)
+{
+    McuComponent *mcu = McuComponent::findMcu(id);
+    if (!mcu)
+        return;
+    McuComponent::setSelf(mcu);
+    // Bind the current editor tab to this MCU
+    if (CodeEditor *ce = m_editor->getCodeEditor())
+        ce->setTargetMcuId(mcu->itemID());
+}
+
+void MainWindow::createCodePanel()
+{
+    m_codePanel = new QWidget(this);
+    m_codePanel->setObjectName("codePanel");
+    m_codePanel->setMinimumWidth(300);
+
+    QVBoxLayout *layout = new QVBoxLayout(m_codePanel);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
+
+    if (!m_qml) {
+        QWidget *header = new QWidget(m_codePanel);
+        header->setObjectName("codePanelHeader");
+        header->setAttribute(Qt::WA_StyledBackground, true);
+        QHBoxLayout *headerLayout = new QHBoxLayout(header);
+        headerLayout->setContentsMargins(8, 4, 4, 4);
+        QLabel *title = new QLabel(tr("Code"), header);
+        title->setObjectName("codePanelTitle");
+        QFont tf = title->font();
+        tf.setBold(true);
+        title->setFont(tf);
+        headerLayout->addWidget(title);
+        headerLayout->addStretch();
+
+        // Target MCU: upload/debug, RAM table and Serial Monitor follow it.
+        QLabel *mcuLabel = new QLabel(tr("Target:"), header);
+        headerLayout->addWidget(mcuLabel);
+        m_mcuSelector = new QComboBox(header);
+        m_mcuSelector->setObjectName("mcuSelector");
+        m_mcuSelector->setToolTip(tr(
+            "MCU targeted by upload, debugger, RAM table and Serial Monitor"));
+        m_mcuSelector->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+        headerLayout->addWidget(m_mcuSelector);
+        connect(McuSignals::self(), SIGNAL(mcuListChanged()), this,
+                SLOT(updateMcuSelector()));
+        connect(McuSignals::self(), SIGNAL(activeMcuChanged(McuComponent *)),
+                this, SLOT(updateMcuSelector()));
+        connect(m_mcuSelector, SIGNAL(activated(int)), this,
+                SLOT(mcuSelected(int)));
+        updateMcuSelector();
+
+        QToolButton *closeButton = new QToolButton(header);
+        closeButton->setObjectName("codePanelClose");
+        closeButton->setIcon(materialIcon("close"));
+        closeButton->setToolTip(tr("Close code panel"));
+        closeButton->setAutoRaise(true);
+        headerLayout->addWidget(closeButton);
+        layout->addWidget(header);
+        connect(closeButton, &QToolButton::clicked,
+                [this]() { setCodePanelVisible(false); });
+    }
+
+    m_codeSplitter = new QSplitter(Qt::Vertical, m_codePanel);
+    m_codeSplitter->setObjectName("codeSplitter");
+    m_codeSplitter->setChildrenCollapsible(false);
+    layout->addWidget(m_codeSplitter, 1);
+
+    m_editor = new EditorWindow(m_codeSplitter);
+    m_editor->setObjectName("editor");
+    m_codeSplitter->addWidget(m_editor);
+
+    // Collapsible serial monitor at the bottom
+    m_serialPanel = new QWidget(m_codeSplitter);
+    m_serialPanel->setObjectName("serialMonitorPanel");
+    m_serialPanel->setAttribute(Qt::WA_StyledBackground, true);
+    QVBoxLayout *serialLayout = new QVBoxLayout(m_serialPanel);
+    serialLayout->setContentsMargins(0, 0, 0, 0);
+    serialLayout->setSpacing(0);
+
+    m_serialToggle = new QToolButton(m_serialPanel);
+    m_serialToggle->setObjectName("serialMonitorToggle");
+    m_serialToggle->setText(tr("Serial Monitor"));
+    m_serialToggle->setIcon(materialIcon("terminal"));
+    m_serialToggle->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    m_serialToggle->setCheckable(true);
+    m_serialToggle->setAutoRaise(true);
+    m_serialToggle->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    serialLayout->addWidget(m_serialToggle);
+
+    m_serialMonitor = new SerialMonitor(m_serialPanel);
+    serialLayout->addWidget(m_serialMonitor, 1);
+    m_codeSplitter->addWidget(m_serialPanel);
+    m_codeSplitter->setStretchFactor(0, 1);
+    m_codeSplitter->setStretchFactor(1, 0);
+
+    connect(m_serialToggle, SIGNAL(toggled(bool)), this,
+            SLOT(setSerialMonitorExpanded(bool)));
+
+    setSerialMonitorExpanded(false);
+}
+
+void MainWindow::createMenus()
+{
+    m_themeToggleAct =
+        new QAction(materialIcon(ThemeManager::self()->isDark() ? "light_mode"
+                                                                : "dark_mode"),
+                    tr("Toggle Theme"), this);
+    connect(ThemeManager::self(), &ThemeManager::themeChanged, this,
+            [this](bool dark) {
+                m_themeToggleAct->setIcon(
+                    materialIcon(dark ? "light_mode" : "dark_mode"));
+            });
+    m_themeToggleAct->setObjectName("themeToggleAction");
+    m_themeToggleAct->setToolTip(tr("Switch light / dark theme"));
+    connect(m_themeToggleAct, SIGNAL(triggered()), this, SLOT(toggleTheme()));
+
+    m_componentPanelAct =
+        new QAction(materialIcon("widgets"), tr("Components Panel"), this);
+    m_componentPanelAct->setCheckable(true);
+    m_componentPanelAct->setChecked(true);
+    connect(m_componentPanelAct, SIGNAL(toggled(bool)), this,
+            SLOT(setComponentPanelVisible(bool)));
+
+    m_codePanelAct = new QAction(materialIcon("code"), tr("Code Panel"), this);
+    m_codePanelAct->setCheckable(true);
+    connect(m_codePanelAct, SIGNAL(toggled(bool)), this,
+            SLOT(setCodePanelVisible(bool)));
+
+    m_mainMenu = new QMenu(this);
+    m_mainMenu->setObjectName("mainMenu");
+
+    QMenu *fileMenu = m_mainMenu->addMenu(tr("&File"));
+    fileMenu->addAction(m_circuit->newCircAct);
+    fileMenu->addAction(m_circuit->openCircAct);
+    fileMenu->addAction(m_circuit->saveCircAct);
+    fileMenu->addAction(m_circuit->saveCircAsAct);
+    fileMenu->addSeparator();
+    fileMenu->addAction(m_circuit->importCircAct);
+    fileMenu->addAction(m_circuit->saveImageAct);
+    fileMenu->addSeparator();
+    QAction *quitAct = fileMenu->addAction(materialIcon("close"), tr("&Quit"));
+    connect(quitAct, SIGNAL(triggered()), this, SLOT(close()));
+
+    QMenu *editMenu = m_mainMenu->addMenu(tr("&Edit"));
+    editMenu->addAction(m_circuit->undoAct);
+    editMenu->addAction(m_circuit->redoAct);
+    editMenu->addSeparator();
+    editMenu->addAction(m_circuit->copyAct);
+    editMenu->addAction(m_circuit->pasteAct);
+    editMenu->addAction(m_circuit->deleteAct);
+    editMenu->addSeparator();
+    editMenu->addAction(m_circuit->rotateCWAct);
+    editMenu->addAction(m_circuit->rotateCCWAct);
+    editMenu->addAction(m_circuit->hFlipAct);
+    editMenu->addAction(m_circuit->vFlipAct);
+
+    QMenu *viewMenu = m_mainMenu->addMenu(tr("&View"));
+    viewMenu->addAction(m_componentPanelAct);
+    viewMenu->addAction(m_codePanelAct);
+    viewMenu->addSeparator();
+    QAction *propAct =
+        viewMenu->addAction(materialIcon("tune"), tr("Properties"));
+    connect(propAct, &QAction::triggered, [this]() { showProperties(); });
+    QAction *ramAct =
+        viewMenu->addAction(materialIcon("memory"), tr("RamTable"));
+    connect(ramAct, SIGNAL(triggered()), this, SLOT(showRamTable()));
+    QAction *filesAct =
+        viewMenu->addAction(materialIcon("folder"), tr("File explorer"));
+    connect(filesAct, SIGNAL(triggered()), this, SLOT(showFileExplorer()));
+    viewMenu->addSeparator();
+    viewMenu->addAction(m_circuit->zoomInAct);
+    viewMenu->addAction(m_circuit->zoomOutAct);
+    viewMenu->addAction(m_circuit->zoomFitAct);
+    viewMenu->addAction(m_circuit->zoomResetAct);
+    viewMenu->addSeparator();
+    viewMenu->addAction(m_themeToggleAct);
+    QAction *realAct = m_realAct =
+        viewMenu->addAction(materialIcon("widgets"), tr("Realistic Parts"));
+    realAct->setObjectName("realisticPartsAction");
+    realAct->setToolTip(tr("Draw components as realistic parts instead of "
+                           "schematic symbols"));
+    realAct->setCheckable(true);
+    realAct->setChecked(PartArt::enabled());
+    connect(realAct, &QAction::toggled,
+            [](bool on) { PartArt::setEnabled(on); });
+
+    QMenu *simMenu = m_mainMenu->addMenu(tr("&Simulation"));
+    simMenu->addAction(m_circuit->powerCircAct);
+    simMenu->addAction(m_circuit->pauseSimAct);
+    simMenu->addSeparator();
+    QAction *spiceAct = m_spiceAct = simMenu->addAction(
+        materialIcon("tune"), tr("Accurate analog (ngspice)"));
+    spiceAct->setObjectName("spiceEngineAction");
+    spiceAct->setToolTip(tr("Solve the circuit with ngspice. "
+                            "Microcontrollers run in lockstep with it in "
+                            "simulated time: accurate, but it may run "
+                            "slower than real time (see the speed %). "
+                            "See docs/ANALOG_ENGINE.md"));
+    spiceAct->setCheckable(true);
+    spiceAct->setChecked(SpiceEngine::enabled());
+    connect(spiceAct, &QAction::toggled, [this](bool on) {
+        QString err;
+        if (on && !SpiceEngine::self()->available(&err)) {
+            QMessageBox::warning(this, tr("ngspice"), err);
+            on = false;
+            QSignalBlocker block(m_spiceAct);
+            m_spiceAct->setChecked(false);
+        }
+        bool running = Simulator::self()->isRunning();
+        if (running)
+            m_circuit->powerCircOff();
+        SpiceEngine::setEnabled(on);
+        if (running)
+            m_circuit->powerCircOn();
+    });
+
+    QMenu *toolsMenu = m_mainMenu->addMenu(tr("&Tools"));
+    QAction *uiAct   = toolsMenu->addAction(materialIcon("widgets"),
+                                            tr("Classic Widgets interface"));
+    uiAct->setObjectName("widgetsUiAction");
+    uiAct->setToolTip(tr("Use the classic Qt Widgets interface instead of the "
+                         "Qt Quick one (takes effect after restarting)"));
+    uiAct->setCheckable(true);
+    uiAct->setChecked(!m_settings.value("ui/qml", true).toBool());
+    connect(uiAct, &QAction::toggled, [this](bool widgets) {
+        m_settings.setValue("ui/qml", !widgets);
+        QMessageBox::information(this, tr("Interface"),
+                                 tr("The interface change takes effect the "
+                                    "next time SimulIDE starts."));
+    });
+
+    QAction *manageAct =
+        toolsMenu->addAction(materialIcon("tune"), tr("Manage Components"));
+    connect(manageAct, SIGNAL(triggered()), m_components,
+            SLOT(slotManageComponents()));
+    toolsMenu->addAction(m_circuit->createSubcircAct);
+    toolsMenu->addAction(m_circuit->bomAct);
+
+    QMenu *helpMenu = m_mainMenu->addMenu(tr("&Help"));
+    helpMenu->addAction(m_circuit->infoAct);
+    helpMenu->addAction(m_circuit->aboutAct);
+    helpMenu->addAction(m_circuit->aboutQtAct);
+}
+
+void MainWindow::updateSimButton()
+{
+    if (!m_simButton)
+        return;
+    QAction *power = m_circuit->powerCircAct;
+    QString state  = m_circuit->simState();
+
+    QString text = tr("Start Simulation");
+    QString icon = "play_arrow";
+    if (state == "On") {
+        text = tr("Stop Simulation");
+        icon = "stop";
+    } else if (state == "Paused") {
+        text = tr("Paused");
+        icon = "pause";
+    } else if (state == "Debug") {
+        text = tr("Debugging");
+        icon = "bug_report";
+    }
+    m_simButton->setText(text);
+    m_simButton->setIcon(ThemeManager::icon(icon, Qt::white));
+    m_simButton->setToolTip(power->statusTip());
+    m_simButton->setEnabled(power->isEnabled() && state != "Debug");
+
+    // Let the QSS target #simButton[simState="On"] etc.
+    if (m_simButton->property("simState").toString() != state) {
+        m_simButton->setProperty("simState", state);
+        m_simButton->style()->unpolish(m_simButton);
+        m_simButton->style()->polish(m_simButton);
+    }
+    QPalette pal = m_simButton->palette();
+    pal.setColor(QPalette::Button, (state == "Off") ? QColor(0x2E, 0x7D, 0x32)
+                                                    : QColor(0xC6, 0x28, 0x28));
+    m_simButton->setPalette(pal);
+}
+
+void MainWindow::setCodePanelVisible(bool visible)
+{
+    if (visible == !m_codePanel->isHidden() &&
+        (!m_codeButton || m_codeButton->isChecked() == visible))
+        return;
+
+    if (visible) {
+        // Tinkercad-like: the code panel takes the place of the components
+        m_sideWasVisible = !m_sideHost->isHidden();
+        m_codePanel->setVisible(true);
+        setComponentPanelVisible(false);
+
+        QList<int> sizes = m_Centralsplitter->sizes();
+        int total        = sizes[0] + sizes[1] + sizes[2];
+        int code         = qMax(sizes[1], qMax(380, total * 2 / 5));
+        if (code > total - 200)
+            code = total / 2;
+        sizes[1] = code;
+        sizes[0] = total - code - sizes[2];
+        m_Centralsplitter->setSizes(sizes);
+    } else {
+        m_codePanel->setVisible(false);
+        if (m_sideWasVisible)
+            setComponentPanelVisible(true);
+    }
+    if (m_codeButton) {
+        m_codeButton->blockSignals(true);
+        m_codeButton->setChecked(visible);
+        m_codeButton->blockSignals(false);
+    }
+    m_codePanelAct->blockSignals(true);
+    m_codePanelAct->setChecked(visible);
+    m_codePanelAct->blockSignals(false);
+    emit panelsChanged();
+}
+
+void MainWindow::setComponentPanelVisible(bool visible)
+{
+    m_sideHost->setVisible(visible);
+
+    if (m_componentsButton) {
+        m_componentsButton->blockSignals(true);
+        m_componentsButton->setChecked(visible);
+        m_componentsButton->blockSignals(false);
+    }
+    m_componentPanelAct->blockSignals(true);
+    m_componentPanelAct->setChecked(visible);
+    m_componentPanelAct->blockSignals(false);
+    emit panelsChanged();
+}
+
+bool MainWindow::isComponentPanelVisible() const
+{
+    return m_sideHost && !m_sideHost->isHidden();
+}
+
+bool MainWindow::isCodePanelVisible() const
+{
+    return m_codePanel && !m_codePanel->isHidden();
+}
+
+int MainWindow::sidePage() const
+{
+    return m_sidepanel->currentIndex();
+}
+
+void MainWindow::setSidePage(int page)
+{
+    if (page < 0 || page >= m_sidepanel->count())
+        return;
+    if (isCodePanelVisible())
+        setCodePanelVisible(false);
+    setComponentPanelVisible(true);
+    m_sidepanel->setCurrentIndex(page);
+}
+
+void MainWindow::setSerialMonitorExpanded(bool expanded)
+{
+    m_serialMonitor->setVisible(expanded);
+    m_serialToggle->blockSignals(true);
+    m_serialToggle->setChecked(expanded);
+    m_serialToggle->blockSignals(false);
+
+    if (expanded) {
+        m_serialPanel->setMaximumHeight(QWIDGETSIZE_MAX);
+        QList<int> sizes = m_codeSplitter->sizes();
+        int total        = sizes[0] + sizes[1];
+        if (sizes[1] < 150 && total > 300) {
+            sizes[1] = qMax(180, total / 3);
+            sizes[0] = total - sizes[1];
+            m_codeSplitter->setSizes(sizes);
+        }
+    } else {
+        m_serialPanel->setMaximumHeight(m_serialToggle->sizeHint().height());
+    }
+}
+
+void MainWindow::toggleTheme()
+{
+    ThemeManager::self()->toggle();
+    emit themeToggleRequested();
+}
+
+void MainWindow::createInspector()
+{
+    // Floating, Tinkercad-like property inspector over the circuit canvas
+    QWidget *view = m_circuit->view();
+    m_inspector   = new QFrame(view);
+    m_inspector->setObjectName("propertyInspector");
+    m_inspector->setFrameShape(QFrame::StyledPanel);
+    m_inspector->setAttribute(Qt::WA_StyledBackground, true);
+    m_inspector->setAutoFillBackground(false);
+    QGraphicsDropShadowEffect *shadow =
+        new QGraphicsDropShadowEffect(m_inspector);
+    shadow->setBlurRadius(16);
+    shadow->setOffset(0, 2);
+    shadow->setColor(QColor(0, 0, 0, 60));
+    m_inspector->setGraphicsEffect(shadow);
+
+    QVBoxLayout *layout = new QVBoxLayout(m_inspector);
+    layout->setContentsMargins(12, 8, 12, 12);
+    layout->setSpacing(6);
+
+    QHBoxLayout *header = new QHBoxLayout();
+    header->setSpacing(4);
+    m_inspectorTitle = new QLabel(m_inspector);
+    m_inspectorTitle->setObjectName("propertyInspectorTitle");
+    QFont tf = m_inspectorTitle->font();
+    tf.setBold(true);
+    m_inspectorTitle->setFont(tf);
+    m_inspectorTitle->setAttribute(Qt::WA_StyledBackground, true);
+    header->addWidget(m_inspectorTitle, 1);
+
+    m_inspectorCollapse = new QToolButton(m_inspector);
+    m_inspectorCollapse->setObjectName("propertyInspectorCollapse");
+    m_inspectorCollapse->setIcon(materialIcon("expand_less"));
+    m_inspectorCollapse->setAutoRaise(true);
+    m_inspectorCollapse->setCheckable(true);
+    m_inspectorCollapse->setToolTip(tr("Collapse"));
+    header->addWidget(m_inspectorCollapse);
+    layout->addLayout(header);
+
+    m_itemprop = new PropertiesWidget(m_inspector);
+    m_itemprop->setObjectName("propertiesPanel");
+    layout->addWidget(m_itemprop, 1);
+
+    connect(m_inspectorCollapse, &QToolButton::toggled, [this](bool c) {
+        m_itemprop->setVisible(!c);
+        m_inspectorCollapse->setIcon(
+            materialIcon(c ? "expand_more" : "expand_less"));
+        m_inspectorCollapse->setToolTip(c ? tr("Expand") : tr("Collapse"));
+        placeInspector();
+    });
+
+    view->installEventFilter(this);
+    m_inspector->hide();
+
+    m_inspectorTimer = new QTimer(this);
+    connect(m_inspectorTimer, &QTimer::timeout, this,
+            &MainWindow::updateInspector);
+    m_inspectorTimer->start(150);
+}
+
+void MainWindow::placeInspector()
+{
+    QWidget *view = m_circuit->view();
+    int margin    = 12;
+    int w         = qMin(300, view->width() - 2 * margin);
+    int h         = m_itemprop->isVisible()
+                        ? qMin(420, view->height() - 2 * margin)
+                        : m_inspector->layout()->sizeHint().height();
+    if (w < 50 || h < 20)
+        return;
+    m_inspector->setGeometry(view->width() - w - margin, margin, w, h);
+    m_inspector->raise();
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    if (m_circuit && obj == m_circuit->view() &&
+        event->type() == QEvent::Resize) {
+        if (m_qml)
+            placeOverlays();
+        else
+            placeInspector();
+    }
+    return QMainWindow::eventFilter(obj, event);
+}
+
+void MainWindow::updateInspector()
+{
+    Circuit *circ  = Circuit::self();
+    Component *sel = 0l;
+    if (circ) {
+        int count = 0;
+        for (QGraphicsItem *item : circ->selectedItems()) {
+            Component *comp = dynamic_cast<Component *>(item);
+            if (!comp)
+                continue;
+            sel = comp;
+            if (++count > 1)
+                break;
+        }
+        if (count != 1)
+            sel = 0l;
+    }
+    if (!sel) {
+        if (m_inspector->isVisible())
+            m_inspector->hide();
+        m_inspectedComp = 0l;
+        return;
+    }
+    // Circuit::mousePressEvent points the property editor at the circuit
+    // on every click; if the click then lands on a child item of the
+    // selected component (display, pin, label...) the component never
+    // re-claims the editor. Always re-sync with the selection.
+    QPropertyEditorWidget *editor = QPropertyEditorWidget::self();
+    if (m_inspectedComp.data() != sel || editor->object() != sel) {
+        m_inspectedComp = sel;
+        editor->setObject(sel);
+        PropertiesWidget::self()->setHelpText(sel->helpText());
+        m_inspectorTitle->setText(sel->itemType() + "  " + sel->itemID());
+    }
+    if (!m_inspector->isVisible()) {
+        placeInspector();
+        m_inspector->show();
+        m_inspector->raise();
+    }
+}
+
+void MainWindow::showProperties()
+{
+    if (m_qml) {
+        QmlUi::self()->inspector()->setCollapsed(false);
+        QmlUi::self()->inspector()->update();
+        return;
+    }
+    // Properties now live in the floating inspector over the canvas
+    m_inspectorCollapse->setChecked(false);
+    updateInspector();
+    placeInspector();
+}
+
+void MainWindow::openSerialMonitor(int uart)
+{
+    setCodePanelVisible(true);
+    if (uart > 0)
+        m_serialMonitor->setUart(uart);
+    setSerialMonitorExpanded(true);
+}
+
+void MainWindow::showRamTable()
+{
+    setSidePage(m_sidepanel->indexOf(m_ramTabWidget));
+}
+
+void MainWindow::showFileExplorer()
+{
+    setSidePage(m_sidepanel->indexOf(m_fileSystemTree));
+}
+
+void MainWindow::createQmlChrome(QVBoxLayout *baseLayout)
+{
+    QmlUi *ui = QmlUi::self();
+    ui->init(this, m_circuit, m_components);
+
+    // Top bar: menu, project name, theme, file actions, Components/Code
+    // button group, Start Simulation extended FAB
+    QQuickWidget *topBar = ui->createWidget("TopBar.qml", centralWidget());
+    topBar->setObjectName("topBar");
+    topBar->setFixedHeight(72);
+    baseLayout->addWidget(topBar);
+    m_topBar = topBar;
+
+    // Side panel: QML page switcher + QML component library page
+    QQuickWidget *sideHeader =
+        ui->createWidget("SidePanelHeader.qml", m_sideHost);
+    sideHeader->setObjectName("sidePanelHeader");
+    sideHeader->setFixedHeight(60);
+    static_cast<QVBoxLayout *>(m_sideHost->layout())
+        ->insertWidget(0, sideHeader);
+
+    QQuickWidget *library = ui->createWidget("ComponentPanel.qml", m_sidepanel);
+    library->setObjectName("componentLibrary");
+    m_sidepanel->insertTab(0, library, tr("Components"));
+    m_sidepanel->setCurrentIndex(0);
+
+    // Code panel header: title, target MCU selector, close
+    QQuickWidget *codeHeader =
+        ui->createWidget("CodePanelHeader.qml", m_codePanel);
+    codeHeader->setObjectName("codePanelHeader");
+    codeHeader->setFixedHeight(60);
+    static_cast<QVBoxLayout *>(m_codePanel->layout())
+        ->insertWidget(0, codeHeader);
+
+    // Friendly empty state of the editor (no file open)
+    QQuickWidget *empty = ui->createWidget("CodeEmptyState.qml", m_editor);
+    empty->setObjectName("codeEmptyState");
+    m_editor->setEmptyState(empty);
+
+    // Floating overlays over the canvas
+    QWidget *view  = m_circuit->view();
+    m_qmlToolbar   = ui->createWidget("EditToolbar.qml", view, true);
+    m_qmlInspector = ui->createWidget("PropertyInspector.qml", view, true);
+    m_qmlToolbar->setObjectName("editToolBar");
+    m_qmlInspector->setObjectName("propertyInspector");
+    for (QQuickWidget *w : { m_qmlToolbar, m_qmlInspector }) {
+        if (QQuickItem *root = w->rootObject()) {
+            connect(root, &QQuickItem::widthChanged, this,
+                    &MainWindow::placeOverlays, Qt::QueuedConnection);
+            connect(root, &QQuickItem::heightChanged, this,
+                    &MainWindow::placeOverlays, Qt::QueuedConnection);
+        }
+    }
+    m_circuit->rateLabel()->hide(); // Speed is shown by the QML toolbar
+
+    Inspector *insp = ui->inspector();
+    connect(insp, &Inspector::changed, this, [this, insp]() {
+        if (insp->active()) {
+            placeOverlays();
+            m_qmlInspector->show();
+            m_qmlInspector->raise();
+        } else // Let the exit animation play
+            QTimer::singleShot(220, this, [this, insp]() {
+                if (!insp->active())
+                    m_qmlInspector->hide();
+            });
+    });
+    m_qmlInspector->hide();
+    m_qmlToolbar->show();
+    view->installEventFilter(this);
+    placeOverlays();
+
+    m_editToolBar       = 0l;
+    m_inspectorTitle    = 0l;
+    m_inspectorCollapse = 0l;
+    m_inspectorTimer    = 0l;
+}
+
+void MainWindow::placeOverlays()
+{
+    if (!m_qmlInspector || !m_qmlToolbar)
+        return;
+    QWidget *view = m_circuit->view();
+    int margin    = 4; // QML items keep their own shadow margin
+    if (QQuickItem *root = m_qmlInspector->rootObject())
+        root->setProperty("maxHeight", qMax(120, view->height() - 2 * margin));
+    QSize is = m_qmlInspector->size();
+    m_qmlInspector->move(view->width() - is.width() - margin, margin);
+    // Floating toolbar: bottom centre of the canvas (M3 floating toolbar)
+    QSize ts = m_qmlToolbar->size();
+    m_qmlToolbar->move(qMax(0, (view->width() - ts.width()) / 2),
+                       view->height() - ts.height() - margin);
+    m_qmlToolbar->raise();
+    m_qmlInspector->raise();
 }
 
 void MainWindow::loadCircHelp()
@@ -226,7 +1168,7 @@ void MainWindow::loadCircHelp()
         if (file.open(QFile::ReadOnly | QFile::Text)) // Get Text from Help File
         {
             QTextStream s1(&file);
-            s1.setCodec("UTF-8");
+            s1.setEncoding(QStringConverter::Utf8);
 
             m_circHelp = "";
             m_circHelp.append(s1.readAll());

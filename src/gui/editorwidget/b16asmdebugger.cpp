@@ -109,7 +109,7 @@ int B16AsmDebugger::compile()
           tr("Cannot write file %1:\n%2.").arg(fileName).arg(outFile.errorString()));
     }
     QTextStream toFile( &outFile );
-    toFile.setCodec("UTF-8");
+    toFile.setEncoding(QStringConverter::Utf8);
     toFile << output;
     outFile.close();
 

@@ -26,9 +26,11 @@
 #include "mainwindow.h"
 #include "matrixsolver.h"
 #include "mcucomponent.h"
+#include "netlabel.h"
 #include "oscopewidget.h"
 #include "outpaneltext.h"
 #include "plotterwidget.h"
+#include "spiceengine.h"
 
 #include <iostream>
 
@@ -42,6 +44,9 @@ Simulator::Simulator(QObject *parent) : QObject(parent)
     m_debugging = false;
     m_paused    = false;
     m_runMcu    = false;
+    m_spiceMode = false;
+    m_error     = false;
+    m_nlIter    = 0;
 
     m_step        = 0;
     m_numEnodes   = 0;
@@ -89,6 +94,28 @@ void Simulator::timerEvent(
         CircuitWidget::self()->setRate(-1);
         return;
     }
+    if (m_spiceMode && SpiceEngine::self()->cosim()) // ngspice + MCUs
+    {
+        // A worker thread runs the MCUs and ngspice in lockstep in
+        // simulated time, paced to real time when it is fast enough
+        // (otherwise it simply runs slower); here only the GUI is updated.
+        m_refTime = m_RefTimer.nsecsElapsed();
+        m_tStep   = m_step;
+        runGraphicStep1();
+        if (m_CircuitFuture.isFinished())
+            m_CircuitFuture =
+                QtConcurrent::run(&SpiceEngine::cosimRun, SpiceEngine::self());
+        runGraphicStep2();
+        return;
+    }
+    if (m_spiceMode) // ngspice solves the circuit: apply its results
+    {
+        m_refTime = m_RefTimer.nsecsElapsed();
+        SpiceEngine::self()->step();
+        m_tStep = m_step;
+        runGraphicStep();
+        return;
+    }
     if (!m_CircuitFuture.isFinished()) // Stop remaining parallel thread
     {
         m_isrunning = false;
@@ -103,7 +130,7 @@ void Simulator::timerEvent(
     runGraphicStep1();
     // Run Circuit in parallel thread
     m_CircuitFuture = QtConcurrent::run(
-        this, &Simulator::runCircuit); // Run Circuit in a parallel thread
+        &Simulator::runCircuit, this); // Run Circuit in a parallel thread
 
     runGraphicStep2();
 }
@@ -138,6 +165,7 @@ void Simulator::runGraphicStep2()
     if (deltaRefTime >= 1e9) // We want steps per Sec = 1e9 ns
     {
         stepsPerSec = (m_tStep - m_lastStep) * 1e9 / deltaRefTime;
+        m_realSpeed = (stepsPerSec * 100.0) / (1e6 * m_stepsPerus);
         CircuitWidget::self()->setRate((stepsPerSec * 100) /
                                        (1e6 * m_stepsPerus) /*m_simuRate*/);
         m_lastStep    = m_tStep;
@@ -162,8 +190,10 @@ void Simulator::runCircuit()
     for (uint64_t i = 0; i < m_circuitRate; i++) {
         m_circTime = m_step * m_stepNS; // Circuit Time in nanoseconds
 
-        if (m_runMcu)
-            BaseProcessor::self()->step(); // Run MCU
+        if (m_runMcu) {
+            for (BaseProcessor *proc : m_mcuList)
+                proc->step(); // Run every MCU in the circuit
+        }
 
         if (!m_simuClock.isEmpty()) // Run elements at Simulation Clock
         {
@@ -187,6 +217,12 @@ void Simulator::runCircuit()
             }
         }
 
+        if (!m_nonLinearNext.isEmpty()) // Newton solves continued from
+        {                               // the previous step
+            for (eElement *el : m_nonLinearNext)
+                addToNoLinList(el);
+            m_nonLinearNext.clear();
+        }
         if (!m_nonLinear.isEmpty()) // Run Non-Linear elements
         {
             int counter = 0;
@@ -194,9 +230,14 @@ void Simulator::runCircuit()
 
             while (!m_nonLinear.isEmpty()) // Run untill all converged
             {
-                for (eElement *el : m_nonLinear)
-                    el->setVChanged();
+                // Elements may re-schedule themselves (addToNoLinList) when
+                // their Newton step was limited, so iterate over a copy.
+                m_nonLinearRun.swap(m_nonLinear);
                 m_nonLinear.clear();
+                m_nlIter = counter;
+                for (eElement *el : m_nonLinearRun)
+                    el->setVChanged();
+                m_nonLinearRun.clear();
 
                 if (!m_eChangedNodeList.isEmpty())
                     solveMatrix();
@@ -204,6 +245,8 @@ void Simulator::runCircuit()
                 if (++counter > limit)
                     break; // Limit the number of loops
             }
+            m_nlIter = 0;
+
             // if( counter > 0 ) qDebug() << "\nSimulator::runCircuit Non-Linear
             // Solved in steps:"<<counter;
         }
@@ -222,12 +265,12 @@ void Simulator::runCircuit()
     // circTime/count;
 }
 
-void Simulator::runExtraStep(uint64_t cycle)
+void Simulator::runExtraStep(uint64_t cycle, double mcuStepNS)
 {
     // if( !m_isrunning ) return;
 
     // qDebug() <<"\nSimulator::runExtraStep"<<m_circTime<<m_step<<m_stepNS;
-    m_circTime = cycle * m_mcuStepNS;
+    m_circTime = cycle * mcuStepNS;
     // qDebug() <<"Simulator::runExtraStep"<<m_circTime<<cycle<<m_mcuStepNS;
 
     if (!m_eChangedNodeList.isEmpty()) {
@@ -252,6 +295,18 @@ void Simulator::runContinuous()
     simuRateChanged(m_simuRate);
     startSim();
 
+    m_spiceMode = false;
+    if (SpiceEngine::enabled() && m_isrunning) // Accurate analog mode
+    {
+        QString err;
+        if (SpiceEngine::self()->start(&err))
+            m_spiceMode = true;
+        else
+            std::cout << "\n    ngspice engine not used: " << err.toStdString()
+                      << "\n    Using the native engine.\n"
+                      << std::endl;
+    }
+
     std::cout << "\n    Simulation Running... \n" << std::endl;
     m_timerId = this->startTimer(m_timerTick, Qt::PreciseTimer);
 }
@@ -274,6 +329,9 @@ void Simulator::startSim()
 {
     std::cout << "\nStarting Circuit Simulation...\n" << std::endl;
 
+    // Join same-name Net Labels into shared eNodes
+    NetLabel::updateNets(true);
+
     for (eNode *busNode : m_eNodeBusList)
         busNode->initialize(); // Clear Buses
 
@@ -293,6 +351,7 @@ void Simulator::startSim()
         busNode->createBus(); // Create Buses
 
     m_nonLinear.clear();
+    m_nonLinearNext.clear();
     m_changedFast.clear();
     m_reactive.clear();
     m_eChangedNodeList.clear();
@@ -301,8 +360,10 @@ void Simulator::startSim()
     for (eElement *el : m_elementList)
         el->attach();
 
-    if (McuComponent::self() && !m_paused)
-        McuComponent::self()->runAutoLoad();
+    if (!m_paused) {
+        for (McuComponent *mcu : McuComponent::mcuList())
+            mcu->runAutoLoad();
+    }
 
     m_numEnodes = m_eNodeList.size();
     std::cout << "  Initializing " << m_eNodeList.size() << "\teNodes"
@@ -351,10 +412,15 @@ void Simulator::stopSim()
     // if( !m_isrunning ) return;
 
     stopTimer();
+    if (m_spiceMode) {
+        SpiceEngine::self()->stop();
+        m_spiceMode = false;
+    }
     // emit pauseDebug();
-    m_paused   = false;
-    m_circTime = 0;
-    m_step     = 0;
+    m_paused    = false;
+    m_circTime  = 0;
+    m_step      = 0;
+    m_realSpeed = 0;
 
     for (eNode *node : m_eNodeList)
         node->setVolt(0);
@@ -363,8 +429,8 @@ void Simulator::stopSim()
     for (eElement *el : m_updateList)
         el->updateStep();
 
-    if (McuComponent::self())
-        McuComponent::self()->reset();
+    for (McuComponent *mcu : McuComponent::mcuList())
+        mcu->reset();
 
     CircuitWidget::self()->setRate(0);
     Circuit::self()->update();
@@ -377,6 +443,8 @@ void Simulator::pauseSim()
     emit pauseDebug();
     m_paused = true;
     stopTimer();
+    if (m_spiceMode)
+        SpiceEngine::self()->halt(); // Keeps the MCU co-simulation state
 
     std::cout << "\n    Simulation Paused \n" << std::endl;
 }
@@ -390,6 +458,9 @@ void Simulator::resumeSim()
 
     if (m_debugging)
         return;
+
+    if (m_spiceMode) // Properties may have changed: new netlist
+        SpiceEngine::self()->restart();
 
     std::cout << "\n    Resuming Simulation\n" << std::endl;
     m_timerId = this->startTimer(m_timerTick, Qt::PreciseTimer);
@@ -426,14 +497,13 @@ int Simulator::simuRateChanged(int rate)
 
     m_runMcu = false;
 
-    if (BaseProcessor::self()) {
-        // double mcuSteps = McuComponent::self()->freq()*1e6;
-        // if( mcuSteps > rate ) m_stepsPerus = (int)
-
-        double mcuSteps = McuComponent::self()->freq() / m_stepsPerus;
-        BaseProcessor::self()->setSteps(mcuSteps);
-        m_mcuStepNS = 1000 / McuComponent::self()->freq();
-        m_runMcu    = true;
+    for (BaseProcessor *proc : m_mcuList) {
+        McuComponent *mcu = proc->component();
+        if (!mcu || mcu->freq() <= 0)
+            continue;
+        proc->setSteps(mcu->freq() / m_stepsPerus);
+        proc->setStepNS(1000 / mcu->freq());
+        m_runMcu = true;
         // qDebug() <<"Simulator::simuRateChanged
         // mcuSteps"<<mcuSteps<<m_mcuStepNS;
     }
@@ -648,6 +718,13 @@ void Simulator::addToNoLinList(eElement *el)
 void Simulator::remFromNoLinList(eElement *el)
 {
     m_nonLinear.removeOne(el);
+    m_nonLinearNext.removeOne(el);
+}
+
+void Simulator::addToNoLinNextStep(eElement *el)
+{
+    if (!m_nonLinearNext.contains(el))
+        m_nonLinearNext.append(el);
 }
 
 void Simulator::addToMcuList(BaseProcessor *proc)

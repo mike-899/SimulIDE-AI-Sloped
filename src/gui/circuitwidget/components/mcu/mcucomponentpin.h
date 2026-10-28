@@ -51,6 +51,28 @@ class MAINMODULE_EXPORT McuComponentPin : public QObject, public eSource
         QString ptype() { return m_type; }
         QString id() { return m_id; }
 
+        McuComponent *mcu()
+        {
+            return m_mcuComponent;
+        }
+        bool isInput()
+        {
+            return m_isInput;
+        }
+        int pinType()
+        {
+            return m_pinType;
+        }
+        // ngspice co-simulation slot (SpiceCosim), -1 if not exported
+        int cosimSlot()
+        {
+            return m_cosimSlot;
+        }
+        void setCosimSlot(int slot)
+        {
+            m_cosimSlot = slot;
+        }
+
     protected:
         McuComponent* m_mcuComponent;
 
@@ -71,6 +93,9 @@ class MAINMODULE_EXPORT McuComponentPin : public QObject, public eSource
 
         int m_pinType;
         int m_angle;
+        int m_cosimSlot = -1;
+
+        void cosimChanged();
 
         QString m_type;
         QString m_id;

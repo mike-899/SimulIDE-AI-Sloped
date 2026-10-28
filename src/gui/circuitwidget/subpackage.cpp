@@ -18,10 +18,13 @@
  ***************************************************************************/
 
 #include "subpackage.h"
-#include "itemlibrary.h"
+
 #include "circuit.h"
+#include "itemlibrary.h"
 #include "simuapi_apppath.h"
 #include "utils.h"
+
+#include <algorithm>
 
 QString SubPackage::m_lastPkg = "";
 
@@ -145,23 +148,23 @@ void SubPackage::mousePressEvent( QGraphicsSceneMouseEvent* event )
         if( m_angle == 0 )
         {
             m_rigPin.append( pin );
-            qSort( m_rigPin.begin(), m_rigPin.end(), lessPinY );
+            std::sort(m_rigPin.begin(), m_rigPin.end(), lessPinY);
             //for( Pin* pin : m_rigPin ) qDebug() << pin->pinId();
         }
         else if( m_angle == 90 )
         {
             m_topPin.append( pin );
-            qSort( m_topPin.begin(), m_topPin.end(), lessPinX );
+            std::sort(m_topPin.begin(), m_topPin.end(), lessPinX);
         }
         else if( m_angle == 180 )
         {
             m_lefPin.append( pin );
-            qSort( m_lefPin.begin(), m_lefPin.end(), lessPinY );
+            std::sort(m_lefPin.begin(), m_lefPin.end(), lessPinY);
         }
         else if( m_angle == 270 )
         {
             m_botPin.append( pin );
-            qSort( m_botPin.begin(), m_botPin.end(), lessPinX );
+            std::sort(m_botPin.begin(), m_botPin.end(), lessPinX);
         }
         m_eventPin = pin;
         editPin();
@@ -172,12 +175,16 @@ void SubPackage::mousePressEvent( QGraphicsSceneMouseEvent* event )
         event->accept();
         ungrabMouse();
         setCursor( Qt::OpenHandCursor );
-        
-        if     ( m_angle == 0 )   qSort( m_rigPin.begin(), m_rigPin.end(), lessPinY );
-        else if( m_angle == 90 )  qSort( m_topPin.begin(), m_topPin.end(), lessPinX );
-        else if( m_angle == 180 ) qSort( m_lefPin.begin(), m_lefPin.end(), lessPinY );
-        else if( m_angle == 270 ) qSort( m_botPin.begin(), m_botPin.end(), lessPinX );
-        
+
+        if (m_angle == 0)
+            std::sort(m_rigPin.begin(), m_rigPin.end(), lessPinY);
+        else if (m_angle == 90)
+            std::sort(m_topPin.begin(), m_topPin.end(), lessPinX);
+        else if (m_angle == 180)
+            std::sort(m_lefPin.begin(), m_lefPin.end(), lessPinY);
+        else if (m_angle == 270)
+            std::sort(m_botPin.begin(), m_botPin.end(), lessPinX);
+
         m_changed = true;
         m_movePin = false;
         m_eventPin = 0l;
@@ -456,22 +463,22 @@ void SubPackage::deletePin()
     if( angle == 0 )   
     {
         m_rigPin.removeOne( m_eventPin );
-        qSort( m_rigPin.begin(), m_rigPin.end(), lessPinY );
+        std::sort(m_rigPin.begin(), m_rigPin.end(), lessPinY);
     }
     else if( angle == 90 )  
     {
         m_topPin.removeOne( m_eventPin );
-        qSort( m_topPin.begin(), m_topPin.end(), lessPinX );
+        std::sort(m_topPin.begin(), m_topPin.end(), lessPinX);
     }
     else if( angle == 180 ) 
     {
         m_lefPin.removeOne( m_eventPin );
-        qSort( m_lefPin.begin(), m_lefPin.end(), lessPinY );
+        std::sort(m_lefPin.begin(), m_lefPin.end(), lessPinY);
     }
     else if( angle == 270 ) 
     {
         m_botPin.removeOne( m_eventPin );
-        qSort( m_botPin.begin(), m_botPin.end(), lessPinX );
+        std::sort(m_botPin.begin(), m_botPin.end(), lessPinX);
     }
        
     if( m_eventPin->isConnected() ) m_eventPin->connector()->remove();
@@ -613,10 +620,10 @@ void SubPackage::loadPackage()
 
     setPackage( fileName );
 
-    qSort( m_rigPin.begin(), m_rigPin.end(), lessPinY );
-    qSort( m_topPin.begin(), m_topPin.end(), lessPinX );
-    qSort( m_lefPin.begin(), m_lefPin.end(), lessPinY );
-    qSort( m_botPin.begin(), m_botPin.end(), lessPinX );
+    std::sort(m_rigPin.begin(), m_rigPin.end(), lessPinY);
+    std::sort(m_topPin.begin(), m_topPin.end(), lessPinX);
+    std::sort(m_lefPin.begin(), m_lefPin.end(), lessPinY);
+    std::sort(m_botPin.begin(), m_botPin.end(), lessPinX);
 
     QDir pdir = QFileInfo( Circuit::self()->getFileName() ).absoluteDir();
     m_pkgeFile = pdir.relativeFilePath( fileName );
@@ -640,7 +647,7 @@ void SubPackage::savePackage( QString fileName )
           return;
     }
     QTextStream out(&file);
-    out.setCodec("UTF-8");
+    out.setEncoding(QStringConverter::Utf8);
 
     QApplication::setOverrideCursor(Qt::WaitCursor);
     
