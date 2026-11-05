@@ -110,14 +110,35 @@ void McpServer::onReadyRead()
     processBuffer(sock);
 }
 
-bool McpServer::originAllowed(const QByteArray &origin)
+static bool isLoopbackName(const QString &host)
 {
-    if (origin.isEmpty() || origin == "null")
-        return origin.isEmpty();
-    QUrl url(QString::fromUtf8(origin));
-    QString host = url.host().toLower();
     return host == "localhost" || host == "127.0.0.1" || host == "::1" ||
            host == "[::1]";
+}
+
+// Browsers always send Origin on POST: only accept pages served by this very
+// server (same host and port). Any other local web server (a dev server on
+// another port) must not be able to drive the simulator or its file tools.
+bool McpServer::originAllowed(const QByteArray &origin) const
+{
+    if (origin.isEmpty()) // Not a browser (MCP clients send no Origin)
+        return true;
+    QUrl url(QString::fromUtf8(origin));
+    if (!url.isValid() || url.scheme() != "http")
+        return false;
+    return isLoopbackName(url.host().toLower()) && url.port(80) == port();
+}
+
+// DNS rebinding: a page on evil.example resolving to 127.0.0.1 still sends
+// "Host: evil.example:<port>".
+bool McpServer::hostAllowed(const QByteArray &host) const
+{
+    if (host.isEmpty()) // HTTP/1.0 clients may omit it
+        return true;
+    QUrl url(QStringLiteral("http://") + QString::fromUtf8(host));
+    if (!url.isValid())
+        return false;
+    return isLoopbackName(url.host().toLower()) && url.port(80) == port();
 }
 
 void McpServer::processBuffer(QTcpSocket *sock)
@@ -171,7 +192,8 @@ void McpServer::processBuffer(QTcpSocket *sock)
         bool keepAlive  = (version == "HTTP/1.1") ? (conn != "close")
                                                   : (conn == "keep-alive");
 
-        if (!originAllowed(headers.value("origin"))) {
+        if (!originAllowed(headers.value("origin")) ||
+            !hostAllowed(headers.value("host"))) {
             sendResponse(sock, 403, "{\"error\":\"Origin not allowed\"}",
                          "application/json", keepAlive);
         } else if (path != "/mcp" && path != "/") {

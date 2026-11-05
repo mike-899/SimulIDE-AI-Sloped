@@ -47,7 +47,8 @@ class McpServer : public QObject
                       bool keepAlive                = true);
     QJsonValue handleMessage(const QJsonObject &msg); // Null if notification
     QJsonObject makeError(const QJsonValue &id, int code, const QString &msg);
-    static bool originAllowed(const QByteArray &origin);
+    bool originAllowed(const QByteArray &origin) const;
+    bool hostAllowed(const QByteArray &host) const;
 
     QTcpServer *m_server;
     McpTools *m_tools;

@@ -31,8 +31,15 @@ Ask Claude something like *"Build a 5V source, 220 ohm resistor and red LED circ
 
 ## Security
 
-The server listens on `127.0.0.1` only. Requests that carry an `Origin` header other than
-`localhost` / `127.0.0.1` / `[::1]` are rejected with 403 to block DNS-rebinding attacks from web pages.
+The server listens on `127.0.0.1` only. To keep web pages away from it, requests are rejected
+with 403 when:
+
+- they carry an `Origin` header that is not `http://localhost`, `http://127.0.0.1` or `http://[::1]`
+  **on the server's own port** (a page from another local web server, e.g. a dev server on
+  port 3000, is refused), or
+- their `Host` header is not a loopback name with the server's port (DNS rebinding).
+
+MCP clients such as Claude Code send no `Origin` header and are not affected.
 There is no authentication: any local process can drive the simulator (and the file tools can
 read/write files with your user rights). Use `--no-mcp` if that is a concern.
 
