@@ -171,8 +171,35 @@ Item {
                         readonly property bool numeric: kind === "int" || kind === "double" || kind === "quantity"
 
                         function commit(v) {
-                            if (String(v) !== row.display)
-                                Inspector.model.setValue(row.index, v)
+                            if (String(v) === row.display) {
+                                field.error = false
+                                return
+                            }
+                            var ok = Inspector.model.setValue(row.index, v)
+                            field.error = !ok
+                            if (ok) field.text = Qt.binding(function() { return row.display })
+                        }
+                        function revert() {
+                            field.error = false
+                            field.text = Qt.binding(function() { return row.display })
+                        }
+                        // Arrow keys: one step of the leading digit for
+                        // quantities (0.03 -> 0.04, 4700 -> 5700), 1 otherwise
+                        function step(dir) {
+                            var v = Number(row.value)
+                            if (isNaN(v)) return
+                            var d = 1
+                            if (row.kind === "quantity" && v !== 0) {
+                                d = Math.pow(10, Math.floor(Math.log10(Math.abs(v)) + 1e-9))
+                                if (dir < 0 && Math.abs(v) - d < d * 1e-9) d /= 10 // 1000 -> 900
+                            }
+                            if (Inspector.model.setValue(row.index, v + dir * d)) revert()
+                        }
+                        // "MaxCurrent" / "Show_res" -> "Max current" / "Show res"
+                        readonly property string pretty: {
+                            var t = row.label.replace(/_/g, " ").replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+                            t = t.toLowerCase()
+                            return t.length ? t.charAt(0).toUpperCase() + t.slice(1) : ""
                         }
 
                         Rectangle { // row hover layer
@@ -187,13 +214,20 @@ Item {
                         HoverHandler { id: rowHover }
 
                         Txt {
+                            id: labelTxt
                             anchors.left: parent.left
                             anchors.leftMargin: 20
                             anchors.verticalCenter: parent.verticalCenter
                             width: 112
-                            text: row.label.length ? row.label.charAt(0).toUpperCase() + row.label.slice(1) : ""
+                            text: row.pretty
                             style: "bodyM"
                             color: Theme.onSurfaceVariant
+                            HoverHandler { id: labelHover }
+                            Tip { // The full name when it doesn't fit
+                                anchor: labelTxt
+                                hovered: labelHover.hovered && labelTxt.truncated
+                                text: row.pretty
+                            }
                         }
                         Item {
                             id: editorBox
@@ -271,6 +305,7 @@ Item {
                             }
                             // text-like editors
                             M3TextField {
+                                id: field
                                 visible: row.kind === "int" || row.kind === "double" || row.kind === "quantity"
                                          || row.kind === "string" || row.kind === "color"
                                          || (row.kind === "other" && !row.readOnly)
@@ -282,9 +317,13 @@ Item {
                                 text: row.display
                                 inputMethodHints: row.kind === "int" || row.kind === "double"
                                                   ? Qt.ImhFormattedNumbersOnly : Qt.ImhNone
+                                errorText: row.kind === "quantity" ? qsTr("Enter a number, optionally with a prefix: 4.7k, 100n, 2 M")
+                                         : row.numeric ? qsTr("Enter a number")
+                                         : qsTr("Invalid value")
                                 onCommitted: (t) => row.commit(t)
-                                Keys.onUpPressed: if (row.numeric) Inspector.model.setValue(row.index, Number(row.value) + 1)
-                                Keys.onDownPressed: if (row.numeric) Inspector.model.setValue(row.index, Number(row.value) - 1)
+                                onReverted: row.revert()
+                                Keys.onUpPressed: if (row.numeric) row.step(1)
+                                Keys.onDownPressed: if (row.numeric) row.step(-1)
                             }
                             Txt {
                                 visible: row.kind === "other" && row.readOnly
