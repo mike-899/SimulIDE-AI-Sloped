@@ -29,7 +29,7 @@ LibraryItem* PICComponent::libraryItem()
     return new LibraryItem(
         "PIC",
         tr("Micro"),
-        "ic2.png",
+        "ic2.svg",
         "PIC",
     PICComponent::construct );
 }

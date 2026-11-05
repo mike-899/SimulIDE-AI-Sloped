@@ -31,7 +31,7 @@ LibraryItem* Clock::libraryItem()
     return new LibraryItem(
         tr( "Clock" ),
         tr( "Sources" ),
-        "clock.png",
+        "clock.svg",
         "Clock",
         Clock::construct );
 }

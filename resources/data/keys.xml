@@ -22,7 +22,7 @@
 <itemlib>
     
     <itemset category="Logic" type="">
-        <item name="Keys"  package=""  subcircuit=""  icon="ic2.png" ></item>
+        <item name="Keys"  package=""  subcircuit=""  icon="ic2.svg" ></item>
     </itemset>
     
     <itemset category="Logic/Keys" type="Subcircuit">

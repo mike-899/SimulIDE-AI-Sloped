@@ -20,6 +20,7 @@
 #include <sstream>
 
 #include "memory.h"
+#include "thememanager.h"
 #include "circuit.h"
 #include "pin.h"
 #include "utils.h"
@@ -39,7 +40,7 @@ LibraryItem* Memory::libraryItem()
     return new LibraryItem(
         tr( "Ram/Rom" ),
         tr( "Logic/Memory" ),
-        "2to3g.png",
+        "2to3g.svg",
         "Memory",
         Memory::construct );
 }
@@ -222,10 +223,10 @@ void Memory::contextMenuEvent( QGraphicsSceneContextMenuEvent* event )
 
 void Memory::contextMenu( QGraphicsSceneContextMenuEvent* event, QMenu* menu )
 {
-    QAction* loadAction = menu->addAction( QIcon(":/load.png"),tr("Load data") );
+    QAction* loadAction = menu->addAction( ThemeManager::icon("folder_open"),tr("Load data") );
     connect( loadAction, SIGNAL(triggered()), this, SLOT(loadData()) );
 
-    QAction* saveAction = menu->addAction(QIcon(":/save.png"), tr("Save data") );
+    QAction* saveAction = menu->addAction(ThemeManager::icon("save"), tr("Save data") );
     connect( saveAction, SIGNAL(triggered()), this, SLOT(saveData()) );
 
     menu->addSeparator();

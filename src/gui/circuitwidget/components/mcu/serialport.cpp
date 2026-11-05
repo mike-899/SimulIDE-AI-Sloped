@@ -61,7 +61,7 @@ LibraryItem* SerialPort::libraryItem()
     return new LibraryItem(
         "SerialPort",
         "",
-        "SerialPort.png",
+        "SerialPort.svg",
         "SerialPort",
         SerialPort::construct );
 }

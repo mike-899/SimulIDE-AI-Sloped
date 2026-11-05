@@ -40,7 +40,7 @@ LibraryItem* TextComponent::libraryItem()
     return new LibraryItem(
         tr( "Text" ),
         tr( "Graphical" ),
-        "text.png",
+        "text.svg",
         "TextComponent",
     TextComponent::construct );
 }

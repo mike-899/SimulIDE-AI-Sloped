@@ -28,7 +28,7 @@ LibraryItem* Led::libraryItem()
     return new LibraryItem(
             tr( "Led" ),
             tr( "Outputs" ),
-            "led.png",
+            "led.svg",
             "Led",
             Led::construct);
 }

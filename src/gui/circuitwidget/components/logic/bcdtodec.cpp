@@ -31,7 +31,7 @@ LibraryItem* BcdToDec::libraryItem()
     return new LibraryItem(
         tr( "Decoder(4 to 10/16)" ),
         tr( "Logic/Converters" ),
-        "2to3g.png",
+        "2to3g.svg",
         "BcdToDec",
         BcdToDec::construct );
 }

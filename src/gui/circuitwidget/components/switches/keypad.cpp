@@ -33,7 +33,7 @@ LibraryItem* KeyPad::libraryItem()
     return new LibraryItem(
             tr( "KeyPad" ),
             tr( "Switches" ),
-            "keypad.png",
+            "keypad.svg",
             "KeyPad",
             KeyPad::construct);
 }

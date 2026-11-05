@@ -30,7 +30,7 @@ LibraryItem* AndGate::libraryItem()
     return new LibraryItem(
         tr( "And Gate" ),
         tr( "Logic/Gates" ),
-        "andgate.png",
+        "andgate.svg",
         "And Gate",
         AndGate::construct );
 }

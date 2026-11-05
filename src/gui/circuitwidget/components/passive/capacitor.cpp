@@ -28,7 +28,7 @@ LibraryItem* Capacitor::libraryItem()
     return new LibraryItem(
             tr( "Capacitor" ),
             tr( "Passive" ),
-            "capacitor.png",
+            "capacitor.svg",
             "Capacitor",
             Capacitor::construct);
 }

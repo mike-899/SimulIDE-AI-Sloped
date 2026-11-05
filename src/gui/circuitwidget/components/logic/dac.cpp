@@ -29,7 +29,7 @@ LibraryItem* DAC::libraryItem()
     return new LibraryItem(
         tr( "DAC" ),
         tr( "Logic/Other Logic" ),
-        "3to1.png",
+        "3to1.svg",
         "DAC",
         DAC::construct );
 }

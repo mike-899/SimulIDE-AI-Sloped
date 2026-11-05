@@ -31,7 +31,7 @@ LibraryItem* LedMatrix::libraryItem()
     return new LibraryItem(
             tr( "LedMatrix" ),
             tr( "Outputs" ),
-            "ledmatrix.png",
+            "ledmatrix.svg",
             "LedMatrix",
             LedMatrix::construct);
 }

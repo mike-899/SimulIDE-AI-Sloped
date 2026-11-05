@@ -39,7 +39,7 @@ LibraryItem* SevenSegment::libraryItem()
     return new LibraryItem(
         tr( "7 Segment" ),
         tr( "Outputs" ),
-        "seven_segment.png",
+        "seven_segment.svg",
         "Seven Segment",
         SevenSegment::construct );
 }

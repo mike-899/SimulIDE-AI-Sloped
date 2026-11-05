@@ -36,7 +36,7 @@ LibraryItem* LogicInput::libraryItem()
     return new LibraryItem(
         tr( "Fixed Volt." ),
         tr( "Sources" ),
-        "voltage.png",
+        "voltage.svg",
         "Fixed Voltage",
         LogicInput::construct );
 }

@@ -18,6 +18,7 @@
  ***************************************************************************/
 
 #include "avrcompbase.h"
+#include "thememanager.h"
 
 #include "avr_twi.h"
 #include "ispuploader.h"
@@ -246,7 +247,7 @@ void AvrCompBase::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     event->accept();
     QMenu *menu        = new QMenu();
     QAction *ispAction = menu->addAction(
-        QIcon(":/load.png"), tr("Program target via ISP (STK500v1)..."));
+        ThemeManager::icon("folder_open"), tr("Program target via ISP (STK500v1)..."));
     connect(ispAction, SIGNAL(triggered()), this, SLOT(slotIspProgram()));
     menu->addSeparator();
     contextMenu(event, menu);

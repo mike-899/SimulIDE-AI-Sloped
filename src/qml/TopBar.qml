@@ -35,7 +35,7 @@ Rectangle {
             onClicked: Shell.popupMenu(menuButton)
         }
         Image {
-            source: "qrc:/simulide.png"
+            source: "qrc:/simulide.svg"
             sourceSize: Qt.size(56, 56)
             Layout.preferredWidth: 28
             Layout.preferredHeight: 28

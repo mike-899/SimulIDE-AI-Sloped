@@ -25,7 +25,7 @@
     <!-- Less used microcontrollers, grouped by family. The main "Micro" category
          only keeps the common parts (see avrs.xml, pics.xml, arduinos.xml). -->
     <itemset category="Microcontrollers (advanced)" type="">
-        <item name="By family"  package=""  subcircuit=""  icon="ic2.png" ></item>
+        <item name="By family"  package=""  subcircuit=""  icon="ic2.svg" ></item>
     </itemset>
 
     <itemset category="Microcontrollers (advanced)/By family/AVR AT90" type="AVR">
@@ -65,7 +65,7 @@
     </itemset>
 
     <itemset category="Microcontrollers (advanced)/By family/Arduino (other)" type="Arduino">
-    <item name="Duemilanove (m168)" package="arduino/arduino_uno"  data="avr/atmega328"  device="atmega168"  icon="duemilanove.png" ></item>
+    <item name="Duemilanove (m168)" package="arduino/arduino_uno"  data="avr/atmega328"  device="atmega168"  icon="duemilanove.svg" ></item>
     </itemset>
 
     <itemset category="Microcontrollers (advanced)/By family/PIC10F" type="PIC">

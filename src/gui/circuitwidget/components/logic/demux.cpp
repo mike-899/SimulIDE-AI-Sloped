@@ -30,7 +30,7 @@ LibraryItem* Demux::libraryItem()
     return new LibraryItem(
         tr( "Demux" ),
         tr( "Logic/Converters" ),
-        "demux.png",
+        "demux.svg",
         "Demux",
         Demux::construct );
 }

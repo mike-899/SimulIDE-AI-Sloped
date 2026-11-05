@@ -72,8 +72,8 @@ jobs:
           mkdir -p AppDir/usr
           cp -a "$OUT/bin" AppDir/usr/bin
           cp -a "$OUT/share" AppDir/usr/share
-          install -Dm644 resources/icons/hicolor/256x256/simulide.png \
-            AppDir/usr/share/icons/hicolor/256x256/apps/simulide.png
+          install -Dm644 resources/icons/hicolor/scalable/apps/simulide.svg \
+            AppDir/usr/share/icons/hicolor/scalable/apps/simulide.svg
           BASE=https://github.com/linuxdeploy
           curl -fsSL -o linuxdeploy "$BASE/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
           curl -fsSL -o linuxdeploy-plugin-qt "$BASE/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage"
@@ -81,7 +81,7 @@ jobs:
           ./linuxdeploy --appdir AppDir \
             --executable AppDir/usr/bin/simulide \
             --desktop-file packaging/linux/simulide.desktop \
-            --icon-file resources/icons/hicolor/256x256/simulide.png \
+            --icon-file resources/icons/hicolor/scalable/apps/simulide.svg \
             --plugin qt --output appimage
           mkdir -p dist
           mv SimulIDE*.AppImage "dist/SimulIDE-${{ steps.ver.outputs.version }}-x86_64.AppImage"

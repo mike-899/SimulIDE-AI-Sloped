@@ -36,7 +36,7 @@ LibraryItem* Function::libraryItem()
     return new LibraryItem(
         tr( "Function" ),
         tr( "Logic/Arithmetic" ),
-        "subc.png",
+        "subc.svg",
         "Function",
         Function::construct );
 }

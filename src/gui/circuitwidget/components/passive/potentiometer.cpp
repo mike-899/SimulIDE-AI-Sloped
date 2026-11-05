@@ -38,7 +38,7 @@ LibraryItem* Potentiometer::libraryItem()
     return new LibraryItem(
         tr( "Potentiometer" ),
         tr( "Passive" ),
-        "potentiometer.png",
+        "potentiometer.svg",
         "Potentiometer",
         Potentiometer::construct );
 }

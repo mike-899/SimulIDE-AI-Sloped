@@ -34,7 +34,7 @@ LibraryItem* LatchD::libraryItem()
     return new LibraryItem(
         tr( "Latch" ),
         tr( "Logic/Memory" ),
-        "subc.png",
+        "subc.svg",
         "LatchD",
         LatchD::construct );
 }

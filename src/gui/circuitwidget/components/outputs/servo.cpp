@@ -37,7 +37,7 @@ LibraryItem* Servo::libraryItem()
     return new LibraryItem(
         tr( "Servo" ),
         tr( "Outputs" ),
-        "servo.png",
+        "servo.svg",
         "Servo",
         Servo::construct );
 }

@@ -18,6 +18,7 @@
  ***************************************************************************/
 
 #include "mcucomponent.h"
+#include "thememanager.h"
 
 #include "baseprocessor.h"
 #include "circuit.h"
@@ -347,24 +348,24 @@ void McuComponent::contextMenu( QGraphicsSceneContextMenuEvent* event, QMenu* me
     setSelf(
         this); // Menu actions (Serial Monitor, Serial Port...) target this MCU
 
-    QAction* loadAction = menu->addAction( QIcon(":/load.png"),tr("Load firmware") );
+    QAction* loadAction = menu->addAction( ThemeManager::icon("folder_open"),tr("Load firmware") );
     connect( loadAction, SIGNAL(triggered()), this, SLOT(slotLoad()) );
 
-    QAction* reloadAction = menu->addAction( QIcon(":/reload.png"),tr("Reload firmware") );
+    QAction* reloadAction = menu->addAction( ThemeManager::icon("restart_alt"),tr("Reload firmware") );
     connect( reloadAction, SIGNAL(triggered()), this, SLOT(slotReload()) );
 
-    QAction* loadDaAction = menu->addAction( QIcon(":/load.png"),tr("Load EEPROM data") );
+    QAction* loadDaAction = menu->addAction( ThemeManager::icon("folder_open"),tr("Load EEPROM data") );
     connect( loadDaAction, SIGNAL(triggered()), this, SLOT(loadData()) );
 
-    QAction* saveDaAction = menu->addAction(QIcon(":/save.png"), tr("Save EEPROM data") );
+    QAction* saveDaAction = menu->addAction(ThemeManager::icon("save"), tr("Save EEPROM data") );
     connect( saveDaAction, SIGNAL(triggered()), this, SLOT(saveData()) );
 
     menu->addSeparator();
     
-    QAction* openTerminal = menu->addAction( QIcon(":/terminal.png"),tr("Open Serial Monitor.") );
+    QAction* openTerminal = menu->addAction( ThemeManager::icon("terminal"),tr("Open Serial Monitor.") );
     connect( openTerminal, SIGNAL(triggered()), this, SLOT(slotOpenTerm()) );
 
-    QAction* openSerial = menu->addAction( QIcon(":/terminal.png"),tr("Open Serial Port.") );
+    QAction* openSerial = menu->addAction( ThemeManager::icon("terminal"),tr("Open Serial Port.") );
     connect( openSerial, SIGNAL(triggered()), this, SLOT(slotOpenSerial()) );
 
     menu->addSeparator();
@@ -380,7 +381,7 @@ void McuComponent::slotOpenSerial()
     Circuit::self()->addItem( ser );
 
     /*m_shield = new Shield( this, "Shield1", "shield1");
-    m_shield->setBackground( ":/shield_uno.png");
+    m_shield->setBackground( ":/shield_uno.svg");
     m_shield->setPos( 0,0  );
     Circuit::self()->addItem( m_shield );
     Circuit::self()->compList()->removeOne( m_shield );

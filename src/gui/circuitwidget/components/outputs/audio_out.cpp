@@ -37,7 +37,7 @@ LibraryItem* AudioOut::libraryItem()
     return new LibraryItem(
             tr( "Audio Out" ),
             tr( "Outputs" ),
-            "audio_out.png",
+            "audio_out.svg",
             "AudioOut",
             AudioOut::construct);
 }

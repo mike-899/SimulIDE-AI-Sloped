@@ -63,7 +63,7 @@ package() {
     "$pkgdir/usr/share/applications/simulide-ai-sloped.desktop"
   sed -i 's|^Exec=.*|Exec=simulide-ai-sloped|; s|^Icon=.*|Icon=simulide-ai-sloped|' \
     "$pkgdir/usr/share/applications/simulide-ai-sloped.desktop"
-  install -Dm644 resources/icons/hicolor/256x256/simulide.png \
-    "$pkgdir/usr/share/icons/hicolor/256x256/apps/simulide-ai-sloped.png"
+  install -Dm644 resources/icons/hicolor/scalable/apps/simulide.svg \
+    "$pkgdir/usr/share/icons/hicolor/scalable/apps/simulide-ai-sloped.svg"
   install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }

@@ -29,7 +29,7 @@ LibraryItem* Frequencimeter::libraryItem()
     return new LibraryItem(
             tr( "Frequencimeter" ),
             tr( "Meters" ),
-            "frequencimeter.png",
+            "frequencimeter.svg",
             "Frequencimeter",
             Frequencimeter::construct);
 }

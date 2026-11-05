@@ -30,7 +30,7 @@ LibraryItem* OrGate::libraryItem()
     return new LibraryItem(
         tr( "Or Gate" ),
         tr( "Logic/Gates" ),
-        "orgate.png",
+        "orgate.svg",
         "Or Gate",
         OrGate::construct );
 }

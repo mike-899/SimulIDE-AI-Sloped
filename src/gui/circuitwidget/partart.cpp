@@ -550,6 +550,32 @@ QIcon PartArt::cardIcon(const QString &type, const QString &name,
             return icon(key);
     }
 
+    if (iconFile.endsWith(".svg") && QFile::exists(iconFile)) {
+        // Schematic card icon drawn with currentColor: tint with the theme
+        QFile f(iconFile);
+        if (f.open(QIODevice::ReadOnly)) {
+            QByteArray svg = f.readAll();
+            svg.replace("currentColor",
+                        ThemeManager::self()->textColor().name().toLatin1());
+            QSvgRenderer r(svg);
+            if (r.isValid()) {
+                QIcon ic;
+                for (int dpr = 1; dpr <= 2; dpr++) // Card icon size is 40x30
+                {
+                    QPixmap pm(40 * dpr, 30 * dpr);
+                    pm.fill(Qt::transparent);
+                    QPainter p(&pm);
+                    p.setRenderHint(QPainter::Antialiasing);
+                    r.render(&p, fitRect(&r, QRectF(0, 0, 40 * dpr, 30 * dpr),
+                                         0));
+                    p.end();
+                    pm.setDevicePixelRatio(dpr);
+                    ic.addPixmap(pm);
+                }
+                return ic;
+            }
+        }
+    }
     if (!iconFile.isEmpty() && QFile::exists(iconFile)) {
         QIcon ic(iconFile);
         if (!ic.availableSizes().isEmpty())

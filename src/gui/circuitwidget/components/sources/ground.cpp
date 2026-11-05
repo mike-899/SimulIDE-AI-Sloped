@@ -30,7 +30,7 @@ LibraryItem* Ground::libraryItem()
         return new LibraryItem(
         tr( "Ground (0 V)" ),
         tr( "Sources" ),
-        "ground.png",
+        "ground.svg",
         "Ground",
         Ground::construct );
 }

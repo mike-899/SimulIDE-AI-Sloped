@@ -18,6 +18,7 @@
  ***************************************************************************/
 
 #include "codeeditor.h"
+#include "thememanager.h"
 
 #include "avrasmdebugger.h"
 #include "b16asmdebugger.h"
@@ -719,7 +720,7 @@ void CodeEditor::lineNumberAreaPaintEvent( QPaintEvent *event )
             }
             // Draw debug line icon
             if( lineNumber == m_debugLine )
-                painter.drawImage( QRectF(0, top, fontSize, fontSize), QImage(":/finish.png") );
+                painter.drawImage( QRectF(0, top, fontSize, fontSize), QImage(":/debugline.svg") );
             // Draw line number
             QString number = QString::number( lineNumber );
             painter.setPen( Qt::black );
@@ -992,10 +993,10 @@ void LineNumberArea::contextMenuEvent( QContextMenuEvent *event)
     
     QMenu menu;
 
-    QAction *addm_brkAction = menu.addAction( QIcon(":/breakpoint.png"),tr( "Add BreakPoint" ) );
+    QAction *addm_brkAction = menu.addAction( ThemeManager::icon("radio_button_checked"),tr( "Add BreakPoint" ) );
     connect( addm_brkAction, SIGNAL( triggered()), m_codeEditor, SLOT(slotAddBreak()) );
 
-    QAction *remm_brkAction = menu.addAction( QIcon(":/nobreakpoint.png"),tr( "Remove BreakPoint" ) );
+    QAction *remm_brkAction = menu.addAction( ThemeManager::icon("radio_button_unchecked"),tr( "Remove BreakPoint" ) );
     connect( remm_brkAction, SIGNAL( triggered()), m_codeEditor, SLOT(slotRemBreak()) );
 
     if( menu.exec(event->globalPos()) != 0 ) lastPos = event->pos().y();
