@@ -17,8 +17,9 @@ ComponentModel::ComponentModel(ComponentSelector *selector, QObject *parent) :
     connect(m_selector, &ComponentSelector::contentChanged, this,
             &ComponentModel::rebuild);
     // Card icons are painted with theme colours (chips, category icons)
+    // Queued: the selector re-tints its card icons on the same signal first
     connect(ThemeManager::self(), &ThemeManager::themeChanged, this,
-            &ComponentModel::rebuild);
+            &ComponentModel::rebuild, Qt::QueuedConnection);
     rebuild();
 }
 

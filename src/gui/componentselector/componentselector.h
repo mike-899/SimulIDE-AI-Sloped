@@ -75,6 +75,8 @@ class MAINMODULE_EXPORT ComponentSelector : public QWidget
     static const int TypeRole = Qt::UserRole;     // component type
     static const int NameRole = Qt::UserRole + 1; // display name
     static const int InfoRole = Qt::UserRole + 2; // extra description
+    static const int IconRole = Qt::UserRole + 3; // icon file (re-tinting)
+    static const int CatRole  = Qt::UserRole + 4; // category (re-tinting)
 
     ComponentSelector(QWidget *parent);
     ~ComponentSelector();
@@ -133,6 +135,10 @@ class MAINMODULE_EXPORT ComponentSelector : public QWidget
     void slotManageComponents();
 
   private slots:
+    // Card icons are tinted with the theme text color when created: redo
+    // them on a theme switch (they stayed dark on the dark theme).
+    void retintIcons();
+
     void slotCategoryChanged(int index);
     void slotSearchChanged(const QString &text);
     void slotContextMenu(const QPoint &);

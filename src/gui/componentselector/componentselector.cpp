@@ -215,6 +215,8 @@ ComponentSelector::ComponentSelector(QWidget *parent) :
 
     createWidgets();
     LoadLibraryItems();
+    connect(ThemeManager::self(), &ThemeManager::themeChanged, this,
+            &ComponentSelector::retintIcons);
 
     setContextMenuPolicy(Qt::CustomContextMenu);
     connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), this,
@@ -222,6 +224,21 @@ ComponentSelector::ComponentSelector(QWidget *parent) :
 }
 ComponentSelector::~ComponentSelector()
 {
+}
+
+void ComponentSelector::retintIcons()
+{
+    for (QTreeWidgetItemIterator it(m_tree); *it; ++it) {
+        QTreeWidgetItem *item = *it;
+        QString type          = item->data(0, TypeRole).toString();
+        if (type.isEmpty())
+            continue; // A category
+        item->setIcon(0, PartArt::cardIcon(type,
+                                           item->data(0, NameRole).toString(),
+                                           item->data(0, CatRole).toString(),
+                                           item->data(0, IconRole).toString()));
+    }
+    emit contentChanged(); // The QML panel reloads the cards
 }
 
 void ComponentSelector::createWidgets()
@@ -496,6 +513,8 @@ void ComponentSelector::addItem( const QString &caption, const QString &_categor
     item->setData(0, TypeRole, type);
     item->setData(0, NameRole, name);
     item->setData(0, InfoRole, info);
+    item->setData(0, IconRole, icon);
+    item->setData(0, CatRole, _category);
 
     if( ( type == "Subcircuit" )
       ||( type == "PIC" )
