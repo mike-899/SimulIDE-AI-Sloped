@@ -431,7 +431,7 @@
     </message>
     <message>
         <source>BaudRate</source>
-        <translation type="unfinished"></translation>
+        <translation>Baudios</translation>
     </message>
     <message>
         <source>DataBits</source>
@@ -451,11 +451,11 @@
     </message>
     <message>
         <source>Mcu Uart</source>
-        <translation type="unfinished"></translation>
+        <translation>UART del MCU</translation>
     </message>
     <message>
         <source>Bipolar</source>
-        <translation type="unfinished"></translation>
+        <translation>Bipolar</translation>
     </message>
     <message>
         <source>Font</source>
@@ -479,23 +479,23 @@
     </message>
     <message>
         <source>Auto Backup Secs</source>
-        <translation type="unfinished"></translation>
+        <translation>Autoguardado (s)</translation>
     </message>
     <message>
         <source>Show volt</source>
-        <translation type="unfinished"></translation>
+        <translation>Mostrar voltaje</translation>
     </message>
     <message>
         <source>IOn</source>
-        <translation type="unfinished"></translation>
+        <translation>I encendido</translation>
     </message>
     <message>
         <source>IOff</source>
-        <translation type="unfinished"></translation>
+        <translation>I apagado</translation>
     </message>
     <message>
         <source>Key</source>
-        <translation type="unfinished"></translation>
+        <translation>Tecla</translation>
     </message>
     <message>
         <source>Size</source>
@@ -503,55 +503,55 @@
     </message>
     <message>
         <source>Data Bits</source>
-        <translation type="unfinished"></translation>
+        <translation>Bits de datos</translation>
     </message>
     <message>
         <source>Persistent</source>
-        <translation type="unfinished"></translation>
+        <translation>Persistente</translation>
     </message>
     <message>
         <source>Logic Symbol</source>
-        <translation type="unfinished"></translation>
+        <translation>Símbolo lógico</translation>
     </message>
     <message>
         <source>Font Scale</source>
-        <translation type="unfinished"></translation>
+        <translation>Escala de fuente</translation>
     </message>
     <message>
         <source>Open Collector</source>
-        <translation type="unfinished"></translation>
+        <translation>Colector abierto</translation>
     </message>
     <message>
         <source>Trigger</source>
-        <translation type="unfinished"></translation>
+        <translation>Disparo</translation>
     </message>
     <message>
         <source> 16 Bits</source>
-        <translation type="unfinished"></translation>
+        <translation> 16 bits</translation>
     </message>
     <message>
         <source>Mhz</source>
-        <translation type="unfinished"></translation>
+        <translation>MHz</translation>
     </message>
     <message>
         <source>Init gdb</source>
-        <translation type="unfinished"></translation>
+        <translation>Iniciar gdb</translation>
     </message>
     <message>
         <source>Buzzer</source>
-        <translation type="unfinished"></translation>
+        <translation>Zumbador</translation>
     </message>
     <message>
         <source>Vertical Pins</source>
-        <translation type="unfinished"></translation>
+        <translation>Pines verticales</translation>
     </message>
     <message>
         <source>Show Cap</source>
-        <translation type="unfinished"></translation>
+        <translation>Mostrar capacidad</translation>
     </message>
     <message>
         <source>Package File</source>
-        <translation type="unfinished"></translation>
+        <translation>Archivo de encapsulado</translation>
     </message>
 </context>
 <context>
@@ -855,6 +855,22 @@ a DomDocument</translation>
         <source>2 Package Pins connected together</source>
         <translation>2 Pines connectados juntos</translation>
     </message>
+    <message>
+        <source>Can&apos;t read &quot;%1&quot;: %2.</source>
+        <translation>No se puede leer &quot;%1&quot;: %2.</translation>
+    </message>
+    <message>
+        <source>&quot;%1&quot; isn&apos;t a valid SimulIDE circuit (line %2: %3).</source>
+        <translation>&quot;%1&quot; no es un circuito de SimulIDE válido (línea %2: %3).</translation>
+    </message>
+    <message>
+        <source>&quot;%1&quot; isn&apos;t a SimulIDE circuit.</source>
+        <translation>&quot;%1&quot; no es un circuito de SimulIDE.</translation>
+    </message>
+    <message>
+        <source>Can&apos;t open circuit</source>
+        <translation>No se puede abrir el circuito</translation>
+    </message>
 </context>
 <context>
     <name>CircuitView</name>
@@ -996,11 +1012,103 @@ Quiere guardar los cambios?</translation>
     </message>
     <message>
         <source>Info</source>
-        <translation type="unfinished"></translation>
+        <translation>Info</translation>
     </message>
     <message>
         <source>Pause Simulation</source>
         <translation>Pausar Simulacion</translation>
+    </message>
+    <message>
+        <source>Copy selected components</source>
+        <translation>Copiar los componentes seleccionados</translation>
+    </message>
+    <message>
+        <source>Paste components</source>
+        <translation>Pegar componentes</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation>Borrar</translation>
+    </message>
+    <message>
+        <source>Delete selected components</source>
+        <translation>Borrar los componentes seleccionados</translation>
+    </message>
+    <message>
+        <source>Rotate</source>
+        <translation>Rotar</translation>
+    </message>
+    <message>
+        <source>Rotate selected clockwise</source>
+        <translation>Rotar la selección en sentido horario</translation>
+    </message>
+    <message>
+        <source>Rotate selected counter-clockwise</source>
+        <translation>Rotar la selección en sentido antihorario</translation>
+    </message>
+    <message>
+        <source>Flip Horizontal</source>
+        <translation>Espejar horizontal</translation>
+    </message>
+    <message>
+        <source>Flip selected horizontally</source>
+        <translation>Espejar la selección horizontalmente</translation>
+    </message>
+    <message>
+        <source>Flip Vertical</source>
+        <translation>Espejar vertical</translation>
+    </message>
+    <message>
+        <source>Flip selected vertically</source>
+        <translation>Espejar la selección verticalmente</translation>
+    </message>
+    <message>
+        <source>Zoom In</source>
+        <translation>Acercar</translation>
+    </message>
+    <message>
+        <source>Zoom Out</source>
+        <translation>Alejar</translation>
+    </message>
+    <message>
+        <source>Zoom to Fit</source>
+        <translation>Ajustar a la vista</translation>
+    </message>
+    <message>
+        <source>Fit the whole circuit in view</source>
+        <translation>Mostrar todo el circuito</translation>
+    </message>
+    <message>
+        <source>Zoom 100%</source>
+        <translation>Zoom 100%</translation>
+    </message>
+    <message>
+        <source>Reset zoom to 100%</source>
+        <translation>Volver al zoom 100%</translation>
+    </message>
+    <message>
+        <source>Import a circuit into the current one</source>
+        <translation>Importar un circuito dentro del actual</translation>
+    </message>
+    <message>
+        <source>Cancelled: the current circuit has unsaved changes</source>
+        <translation>Cancelado: el circuito actual tiene cambios sin guardar</translation>
+    </message>
+    <message>
+        <source>Circuit files must have the .simu extension</source>
+        <translation>Los archivos de circuito deben tener la extensión .simu</translation>
+    </message>
+    <message>
+        <source>(recovered)</source>
+        <translation>(recuperado)</translation>
+    </message>
+    <message>
+        <source>Real Speed: Debugger</source>
+        <translation>Velocidad real: depurador</translation>
+    </message>
+    <message>
+        <source>Real Speed: </source>
+        <translation>Velocidad real: </translation>
     </message>
 </context>
 <context>
@@ -1082,11 +1190,11 @@ Error:  Mcu Borrado mientras se Depuraba!!
     </message>
     <message>
         <source>Please save the Document first</source>
-        <translation type="unfinished"></translation>
+        <translation>Primero guardá el documento</translation>
     </message>
     <message>
         <source>No Compiler available for: %1 files</source>
-        <translation type="unfinished"></translation>
+        <translation>No hay compilador para archivos %1</translation>
     </message>
 </context>
 <context>
@@ -1246,7 +1354,7 @@ a DomDocument</translation>
     </message>
     <message>
         <source>Pin Id:</source>
-        <translation type="unfinished"></translation>
+        <translation>Id del pin:</translation>
     </message>
     <message>
         <source>Invert Pin</source>
@@ -1467,7 +1575,7 @@ Quiere guardar los cambios?</translation>
     </message>
     <message>
         <source>Graphical</source>
-        <translation type="unfinished"></translation>
+        <translation>Gráficos</translation>
     </message>
 </context>
 <context>
@@ -1709,7 +1817,7 @@ Quiere guardar los cambios?</translation>
     </message>
     <message>
         <source>Graphical</source>
-        <translation type="unfinished"></translation>
+        <translation>Gráficos</translation>
     </message>
 </context>
 <context>
@@ -1845,7 +1953,7 @@ Quiere guardar los cambios?</translation>
     </message>
     <message>
         <source>Graphical</source>
-        <translation type="unfinished"></translation>
+        <translation>Gráficos</translation>
     </message>
 </context>
 <context>
@@ -2151,7 +2259,7 @@ a DomDocument</translation>
     <name>Potentiometer</name>
     <message>
         <source>Potentiometer</source>
-        <translation>Potenciometro</translation>
+        <translation>Potenciómetro</translation>
     </message>
     <message>
         <source>Passive</source>
@@ -2198,7 +2306,8 @@ a DomDocument</translation>
     <message>
         <source>Here will be some help ..............................................
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Acá aparece la ayuda del componente seleccionado.
+</translation>
     </message>
 </context>
 <context>
@@ -2295,7 +2404,7 @@ a DomDocument</translation>
     </message>
     <message>
         <source>Graphical</source>
-        <translation type="unfinished"></translation>
+        <translation>Gráficos</translation>
     </message>
 </context>
 <context>
@@ -2313,7 +2422,7 @@ a DomDocument</translation>
     <name>Resistor</name>
     <message>
         <source>Resistor</source>
-        <translation>Reistencia</translation>
+        <translation>Resistencia</translation>
     </message>
     <message>
         <source>Passive</source>
@@ -2399,7 +2508,7 @@ a DomDocument</translation>
     <name>Ssd1306</name>
     <message>
         <source>Ssd1306</source>
-        <translation type="unfinished"></translation>
+        <translation>Ssd1306</translation>
     </message>
     <message>
         <source>Outputs</source>
@@ -2450,7 +2559,7 @@ a DomDocument</translation>
     <name>SubPackage</name>
     <message>
         <source>Package</source>
-        <translation type="unfinished"></translation>
+        <translation>Encapsulado</translation>
     </message>
     <message>
         <source>
@@ -2472,15 +2581,15 @@ Quiere guardar los cambios?
     </message>
     <message>
         <source>Load Package</source>
-        <translation type="unfinished">Cargar Package</translation>
+        <translation>Cargar encapsulado</translation>
     </message>
     <message>
         <source>Save Package</source>
-        <translation type="unfinished">Guardar Package</translation>
+        <translation>Guardar encapsulado</translation>
     </message>
     <message>
         <source>Load Package File</source>
-        <translation type="unfinished">Cargar Archivo de Package</translation>
+        <translation>Cargar archivo de encapsulado</translation>
     </message>
     <message>
         <source>Packages (*.package);;All files (*.*)</source>
@@ -2551,11 +2660,11 @@ Quiere guardar los cambios?
     </message>
     <message>
         <source>CR</source>
-        <translation type="unfinished"></translation>
+        <translation>CR</translation>
     </message>
     <message>
         <source>Clear</source>
-        <translation type="unfinished">Borrar</translation>
+        <translation>Borrar</translation>
     </message>
 </context>
 <context>
@@ -2570,7 +2679,7 @@ Quiere guardar los cambios?
     </message>
     <message>
         <source>Graphical</source>
-        <translation type="unfinished"></translation>
+        <translation>Gráficos</translation>
     </message>
 </context>
 <context>
@@ -2610,7 +2719,7 @@ Quiere guardar los cambios?
     <name>WS2812</name>
     <message>
         <source>WS2812 Led</source>
-        <translation type="unfinished"></translation>
+        <translation>Led WS2812</translation>
     </message>
     <message>
         <source>Outputs</source>
@@ -2655,6 +2764,296 @@ Quiere guardar los cambios?
     <message>
         <source>Logic</source>
         <translation>Logica</translation>
+    </message>
+</context>
+<context>
+    <name>CodeEmptyState</name>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/CodeEmptyState.qml" line="29"/>
+        <source>No file open</source>
+        <translation>Ningún archivo abierto</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/CodeEmptyState.qml" line="38"/>
+        <source>Open a source file (.ino, .asm, .c, .gcb) to edit, compile and upload it to the target MCU, or start a new one.</source>
+        <translation>Abrí un archivo fuente (.ino, .asm, .c, .gcb) para editarlo, compilarlo y cargarlo en el MCU destino, o empezá uno nuevo.</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/CodeEmptyState.qml" line="49"/>
+        <source>Open file</source>
+        <translation>Abrir archivo</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/CodeEmptyState.qml" line="56"/>
+        <source>New file</source>
+        <translation>Archivo nuevo</translation>
+    </message>
+</context>
+<context>
+    <name>CodePanelHeader</name>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/CodePanelHeader.qml" line="20"/>
+        <source>Code</source>
+        <translation>Código</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/CodePanelHeader.qml" line="26"/>
+        <source>Target</source>
+        <translation>Destino</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/CodePanelHeader.qml" line="70"/>
+        <source>No MCU</source>
+        <translation>Sin MCU</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/CodePanelHeader.qml" line="71"/>
+        <source>Select MCU</source>
+        <translation>Elegir MCU</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/CodePanelHeader.qml" line="87"/>
+        <source>MCU targeted by upload, debugger, RAM table and Serial Monitor</source>
+        <translation>MCU destino de la carga, el depurador, la tabla RAM y el Monitor Serie</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/CodePanelHeader.qml" line="93"/>
+        <source>Close code panel</source>
+        <translation>Cerrar panel de código</translation>
+    </message>
+</context>
+<context>
+    <name>ComponentCard</name>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/controls/ComponentCard.qml" line="93"/>
+        <source>Drag into the circuit to add it</source>
+        <translation>Arrastralo al circuito para agregarlo</translation>
+    </message>
+</context>
+<context>
+    <name>ComponentPanel</name>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/ComponentPanel.qml" line="41"/>
+        <source>Manage Components (show/hide)</source>
+        <translation>Administrar componentes (mostrar/ocultar)</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/ComponentPanel.qml" line="51"/>
+        <source>Search components</source>
+        <translation>Buscar componentes</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/ComponentPanel.qml" line="119"/>
+        <source>No components found</source>
+        <translation>No se encontraron componentes</translation>
+    </message>
+</context>
+<context>
+    <name>EditToolbar</name>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/EditToolbar.qml" line="80"/>
+        <source>Pause / Resume Simulation</source>
+        <translation>Pausar / reanudar simulación</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/EditToolbar.qml" line="112"/>
+        <source>Circuit ERROR</source>
+        <translation>ERROR en el circuito</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/EditToolbar.qml" line="113"/>
+        <source>Stopped</source>
+        <translation>Detenida</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/EditToolbar.qml" line="114"/>
+        <source>Debugger</source>
+        <translation>Depurador</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/EditToolbar.qml" line="115"/>
+        <source>Speed %1 %</source>
+        <translation>Velocidad %1 %</translation>
+    </message>
+</context>
+<context>
+    <name>PropertyInspector</name>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/PropertyInspector.qml" line="94"/>
+        <source>Help</source>
+        <translation>Ayuda</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/PropertyInspector.qml" line="103"/>
+        <source>Expand</source>
+        <translation>Expandir</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/PropertyInspector.qml" line="103"/>
+        <source>Collapse</source>
+        <translation>Contraer</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/PropertyInspector.qml" line="320"/>
+        <source>Enter a number, optionally with a prefix: 4.7k, 100n, 2 M</source>
+        <translation>Ingresá un número, con prefijo opcional: 4.7k, 100n, 2 M</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/PropertyInspector.qml" line="321"/>
+        <source>Enter a number</source>
+        <translation>Ingresá un número</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/PropertyInspector.qml" line="322"/>
+        <source>Invalid value</source>
+        <translation>Valor inválido</translation>
+    </message>
+</context>
+<context>
+    <name>SearchBar</name>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/controls/SearchBar.qml" line="8"/>
+        <source>Search</source>
+        <translation>Buscar</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/controls/SearchBar.qml" line="59"/>
+        <source>Clear search</source>
+        <translation>Borrar búsqueda</translation>
+    </message>
+</context>
+<context>
+    <name>SidePanelHeader</name>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/SidePanelHeader.qml" line="20"/>
+        <source>Components</source>
+        <translation>Componentes</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/SidePanelHeader.qml" line="20"/>
+        <source>Component library</source>
+        <translation>Biblioteca de componentes</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/SidePanelHeader.qml" line="21"/>
+        <source>RAM</source>
+        <translation>RAM</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/SidePanelHeader.qml" line="21"/>
+        <source>RamTable</source>
+        <translation>Tabla RAM</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/SidePanelHeader.qml" line="22"/>
+        <source>Files</source>
+        <translation>Archivos</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/SidePanelHeader.qml" line="22"/>
+        <source>File explorer</source>
+        <translation>Explorador de archivos</translation>
+    </message>
+</context>
+<context>
+    <name>SimFab</name>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/controls/SimFab.qml" line="19"/>
+        <source>Stop</source>
+        <translation>Detener</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/controls/SimFab.qml" line="19"/>
+        <source>Stop Simulation</source>
+        <translation>Detener simulación</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/controls/SimFab.qml" line="20"/>
+        <source>Paused</source>
+        <translation>En pausa</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/controls/SimFab.qml" line="21"/>
+        <source>Debug</source>
+        <translation>Depurar</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/controls/SimFab.qml" line="21"/>
+        <source>Debugging</source>
+        <translation>Depurando</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/controls/SimFab.qml" line="22"/>
+        <source>Start</source>
+        <translation>Iniciar</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/controls/SimFab.qml" line="22"/>
+        <source>Start Simulation</source>
+        <translation>Iniciar simulación</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/controls/SimFab.qml" line="79"/>
+        <source>Power the circuit on / off</source>
+        <translation>Encender / apagar el circuito</translation>
+    </message>
+</context>
+<context>
+    <name>TopBar</name>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/TopBar.qml" line="34"/>
+        <source>Menu</source>
+        <translation>Menú</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/TopBar.qml" line="77"/>
+        <source>New Circuit</source>
+        <translation>Circuito nuevo</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/TopBar.qml" line="90"/>
+        <source>Unsaved changes</source>
+        <translation>Cambios sin guardar</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/TopBar.qml" line="99"/>
+        <source>Switch light / dark theme</source>
+        <translation>Cambiar tema claro / oscuro</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/TopBar.qml" line="107"/>
+        <source>New Circuit (Ctrl+N)</source>
+        <translation>Circuito nuevo (Ctrl+N)</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/TopBar.qml" line="114"/>
+        <source>Open Circuit (Ctrl+O)</source>
+        <translation>Abrir circuito (Ctrl+O)</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/TopBar.qml" line="121"/>
+        <source>Save Circuit (Ctrl+S)</source>
+        <translation>Guardar circuito (Ctrl+S)</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/TopBar.qml" line="133"/>
+        <source>Components</source>
+        <translation>Componentes</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/TopBar.qml" line="134"/>
+        <source>Show / hide the component panel</source>
+        <translation>Mostrar / ocultar el panel de componentes</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/TopBar.qml" line="142"/>
+        <source>Code</source>
+        <translation>Código</translation>
+    </message>
+    <message>
+        <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/TopBar.qml" line="143"/>
+        <source>Show / hide the code editor</source>
+        <translation>Mostrar / ocultar el editor de código</translation>
     </message>
 </context>
 </TS>

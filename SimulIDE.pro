@@ -125,6 +125,19 @@ runLrelease.commands = $$LRELEASE $$PWD/resources/translations/simulide.ts \
 QMAKE_EXTRA_TARGETS += runLrelease
 POST_TARGETDEPS     += runLrelease
 
+# `lupdate SimulIDE.pro` refreshes these .ts files from the C++ *and* the
+# QML shell (qsTr in src/qml); lupdate_only keeps qmake from compiling QML.
+TRANSLATIONS = $$PWD/resources/translations/simulide.ts \
+    $$PWD/resources/translations/simulide_en.ts \
+    $$PWD/resources/translations/simulide_es.ts \
+    $$PWD/resources/translations/simulide_fr.ts \
+    $$PWD/resources/translations/simulide_ru.ts \
+    $$PWD/resources/translations/simulide_de.ts \
+    $$PWD/resources/translations/simulide_pt_BR.ts
+lupdate_only {
+    SOURCES += $$PWD/src/qml/*.qml $$PWD/src/qml/controls/*.qml
+}
+
 RESOURCES = ./src/application.qrc
 RESOURCES += ./resources/themes/themes.qrc
 RESOURCES += ./resources/fonts/fonts.qrc
