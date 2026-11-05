@@ -23,8 +23,8 @@ InstallDirRegKey HKLM "Software\SimulIDE-AI-Sloped" "InstallDir"
 RequestExecutionLevel admin
 SetCompressor /SOLID lzma
 
-!define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\modern-install.ico"
-!define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall.ico"
+!define MUI_ICON "simulide.ico" ; makensis runs from this folder
+!define MUI_UNICON "simulide.ico" ; makensis runs from this folder
 !define MUI_FINISHPAGE_RUN "$INSTDIR\bin\simulide.exe"
 
 !insertmacro MUI_PAGE_WELCOME
@@ -39,6 +39,11 @@ SetCompressor /SOLID lzma
 
 Section "SimulIDE" SecMain
   SectionIn RO
+  ; Upgrades: drop the previous bin\ and share\ first, otherwise stale Qt
+  ; DLLs, plugins and QML modules from an older (Qt 5 / pre-M3E) install stay
+  ; next to the new ones and can be loaded instead of them.
+  RMDir /r "$INSTDIR\bin"
+  RMDir /r "$INSTDIR\share"
   SetOutPath "$INSTDIR"
   File "${SRCDIR}\LICENSE"
   SetOutPath "$INSTDIR\bin"
@@ -60,9 +65,9 @@ Section "SimulIDE" SecMain
   ; Shortcuts (working dir = bin so that ../share/simulide resolves)
   SetOutPath "$INSTDIR\bin"
   CreateDirectory "$SMPROGRAMS\${APPNAME}"
-  CreateShortcut "$SMPROGRAMS\${APPNAME}\SimulIDE.lnk" "$INSTDIR\bin\simulide.exe"
+  CreateShortcut "$SMPROGRAMS\${APPNAME}\SimulIDE.lnk" "$INSTDIR\bin\simulide.exe" "" "$INSTDIR\bin\simulide.exe" 0
   CreateShortcut "$SMPROGRAMS\${APPNAME}\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
-  CreateShortcut "$DESKTOP\SimulIDE.lnk" "$INSTDIR\bin\simulide.exe"
+  CreateShortcut "$DESKTOP\SimulIDE.lnk" "$INSTDIR\bin\simulide.exe" "" "$INSTDIR\bin\simulide.exe" 0
 SectionEnd
 
 Section "Uninstall"
