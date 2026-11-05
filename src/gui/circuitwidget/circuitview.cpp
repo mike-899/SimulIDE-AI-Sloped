@@ -146,8 +146,68 @@ void CircuitView::clear()
     
     m_circuit = new Circuit( -1600, -1200, 3200, 2400, this );
     setScene( m_circuit );
+
+    // Show / hide the empty state card: repaint the whole viewport when the
+    // circuit goes empty <-> not empty (a scene change only repaints the
+    // changed item's area, which would leave half a card behind).
+    m_wasEmpty = true;
+    connect(m_circuit, &QGraphicsScene::changed, this, [this]() {
+        bool empty = m_circuit->compList()->isEmpty();
+        if (empty != m_wasEmpty) {
+            m_wasEmpty = empty;
+            viewport()->update();
+        }
+    });
     centerOn( 900, 600 );
     //setCircTime( 0 );
+}
+
+void CircuitView::drawForeground(QPainter *p, const QRectF &rect)
+{
+    QGraphicsView::drawForeground(p, rect);
+    if (!m_circuit || !m_circuit->compList()->isEmpty())
+        return;
+
+    ThemeManager *tm = ThemeManager::self();
+    QString title    = tr("Start your circuit");
+    QString body     = tr("Drag a component from the panel into the circuit.\n"
+                              "Then drag from one pin to another to wire them:\n"
+                              "drop on a pin to connect, anywhere else to cancel.");
+    p->save();
+    p->resetTransform(); // Viewport pixels: same size at any zoom
+    p->setRenderHint(QPainter::Antialiasing);
+
+    QFont tf = font();
+    tf.setPixelSize(20);
+    tf.setWeight(QFont::DemiBold);
+    QFont bf = font();
+    bf.setPixelSize(14);
+    QFontMetrics tfm(tf), bfm(bf);
+    QRect bodyR = bfm.boundingRect(QRect(0, 0, 440, 400),
+                                   Qt::AlignHCenter | Qt::TextWordWrap, body);
+    int w       = qMax(bodyR.width(), tfm.horizontalAdvance(title)) + 64;
+    int h       = tfm.height() + 12 + bodyR.height() + 48;
+    QRect card(0, 0, w, h);
+    // The viewport is bigger than the widget: center on what is visible
+    card.moveCenter(viewport()->mapFrom(this, QWidget::rect().center()));
+
+    QColor bg = tm->token("surfaceContainerLow");
+    bg.setAlpha(235);
+    p->setPen(QPen(tm->token("outlineVariant"), 1));
+    p->setBrush(bg);
+    p->drawRoundedRect(card, 24, 24);
+
+    p->setPen(tm->textColor());
+    p->setFont(tf);
+    QRect tr_(card.left(), card.top() + 24, card.width(), tfm.height());
+    p->drawText(tr_, Qt::AlignHCenter | Qt::AlignVCenter, title);
+
+    p->setPen(tm->token("onSurfaceVariant"));
+    p->setFont(bf);
+    QRect br(card.left() + 32, tr_.bottom() + 12, card.width() - 64,
+             bodyR.height());
+    p->drawText(br, Qt::AlignHCenter | Qt::TextWordWrap, body);
+    p->restore();
 }
 
 void CircuitView::wheelEvent(QWheelEvent *event)

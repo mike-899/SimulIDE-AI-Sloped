@@ -63,19 +63,22 @@ class CircuitView : public QGraphicsView
 
       protected:
         void contextMenuEvent( QContextMenuEvent* event );
+        // Empty circuit: a centered card that says how to start
+        void drawForeground(QPainter *painter, const QRectF &rect) override;
 
-    private:
-      static CircuitView *m_pSelf;
+      private:
+        static CircuitView *m_pSelf;
 
-      void zoomBy(qreal factor);
-      void centerVisibleOn(QPointF scenePoint);
+        void zoomBy(qreal factor);
+        void centerVisibleOn(QPointF scenePoint);
 
-      QPlainTextEdit *m_info;
+        QPlainTextEdit *m_info;
 
-      Component *m_enterItem;
-      Circuit *m_circuit;
+        Component *m_enterItem;
+        Circuit *m_circuit;
 
-      QPointF m_eventpoint;
+        QPointF m_eventpoint;
+        bool m_wasEmpty = true;
 };
 
 #endif

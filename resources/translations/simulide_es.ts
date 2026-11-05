@@ -1030,6 +1030,18 @@ a DomDocument</translation>
         <source>Time: </source>
         <translation>Tiempo: </translation>
     </message>
+    <message>
+        <source>Start your circuit</source>
+        <translation>Empezá tu circuito</translation>
+    </message>
+    <message>
+        <source>Drag a component from the panel into the circuit.
+Then drag from one pin to another to wire them:
+drop on a pin to connect, anywhere else to cancel.</source>
+        <translation>Arrastrá un componente desde el panel al circuito.
+Después arrastrá de un pin a otro para cablearlos:
+soltá sobre un pin para conectar, en otro lado para cancelar.</translation>
+    </message>
 </context>
 <context>
     <name>CircuitWidget</name>

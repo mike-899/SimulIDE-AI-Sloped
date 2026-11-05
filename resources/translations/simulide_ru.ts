@@ -1030,6 +1030,16 @@ to DomDocument</source>
         <source>Time: </source>
         <translation>Bремя: </translation>
     </message>
+    <message>
+        <source>Start your circuit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Drag a component from the panel into the circuit.
+Then drag from one pin to another to wire them:
+drop on a pin to connect, anywhere else to cancel.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>CircuitWidget</name>
