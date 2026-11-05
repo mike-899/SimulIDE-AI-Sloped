@@ -33,7 +33,11 @@
 
 QString langFile( QString locale )
 {
-    QString langF = "../share/simulide/translations/simulide_"+locale+".qm";
+    // Relative to the executable, not the working directory: started from
+    // anywhere but bin/ the translations were silently never found.
+    QString langF = QCoreApplication::applicationDirPath() +
+                    "/../share/simulide/translations/simulide_" + locale +
+                    ".qm";
 
     QFile file( langF );
     if( !file.exists() ) langF = "";
@@ -114,8 +118,10 @@ int main(int argc, char *argv[])
         locale = QLocale::system().name().split("_").first();
         langF = langFile( locale );
     }
-    if( langF == "" ) langF = "../share/simulide/translations/simulide_en.qm";
-    
+    if (langF == "")
+        langF = QCoreApplication::applicationDirPath() +
+                "/../share/simulide/translations/simulide_en.qm";
+
     QTranslator translator;
     if (!translator.load(langF))
         qWarning() << "Cannot load translation" << langF;

@@ -13,13 +13,19 @@ Canvas {
     height: size
     renderStrategy: Canvas.Immediate
 
-    NumberAnimation on phase {
+    // Advance in coarse steps from a timer instead of two 60 fps
+    // NumberAnimations: every frame of this Canvas re-renders and
+    // re-composites the whole Qt Quick overlay over the circuit view, which
+    // cost more CPU than the simulation itself. ~12 fps is enough for a
+    // status indicator.
+    Timer {
+        interval: 80
+        repeat: true
         running: c.running && c.visible
-        from: 0; to: 2; duration: 1600; loops: Animation.Infinite
-    }
-    NumberAnimation on spin {
-        running: c.running && c.visible
-        from: 0; to: 360; duration: 2400; loops: Animation.Infinite
+        onTriggered: {
+            c.phase = (c.phase + 0.1) % 2
+            c.spin = (c.spin + 12) % 360
+        }
     }
     onPhaseChanged: requestPaint()
     onColorChanged: requestPaint()
