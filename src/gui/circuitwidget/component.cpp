@@ -25,6 +25,7 @@
 #include "itemlibrary.h"
 #include "mainwindow.h"
 #include "partart.h"
+#include "pin.h"
 #include "propertieswidget.h"
 #include "simuapi_apppath.h"
 #include "thememanager.h"
@@ -591,6 +592,8 @@ bool Component::paintArt(QPainter *p)
     else
         r = PartArt::paint(p, m_type, res);
 
+    paintPinPads(p, r);
+
     if (isSelected()) {
         p->setPen(QPen(QColor(60, 130, 230), 1, Qt::DashLine));
         p->setBrush(QColor(60, 130, 230, 50));
@@ -598,6 +601,26 @@ bool Component::paintArt(QPainter *p)
     }
     p->restore();
     return true;
+}
+
+void Component::paintPinPads(QPainter *p, const QRectF &art)
+{
+    if (art.isEmpty())
+        return;
+    const QRectF hit = art.adjusted(-1, -1, 1, 1);
+    p->save();
+    p->setRenderHint(QPainter::Antialiasing);
+    for (QGraphicsItem *ch : childItems()) {
+        Pin *pin = dynamic_cast<Pin *>(ch);
+        if (!pin || !pin->isVisible() || !hit.contains(pin->pos()))
+            continue;
+        // Gold pad with a dark rim: readable on light and dark art
+        p->setPen(QPen(QColor(30, 30, 30), 0.8));
+        p->setBrush(pin->unused() ? QColor(75, 120, 170)
+                                  : QColor(235, 190, 70));
+        p->drawEllipse(pin->pos(), 2.0, 2.0);
+    }
+    p->restore();
 }
 
 void Component::paint( QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget )

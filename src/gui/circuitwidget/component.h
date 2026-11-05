@@ -63,6 +63,9 @@ class MAINMODULE_EXPORT Component : public QObject, public QGraphicsItem
           return QString();
       } // Art override
       bool paintArt(QPainter *p); // Paint art + selection; false if not active
+      // Pins are stacked behind the component, so art covers every pin end
+      // that lies on it: mark those connection points on top of the art.
+      void paintPinPads(QPainter *p, const QRectF &art);
       void artGeometryAboutToChange()
       {
           prepareGeometryChange();

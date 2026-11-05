@@ -245,7 +245,7 @@ void Arduino::paint( QPainter* p, const QStyleOptionGraphicsItem* option, QWidge
         p->setRenderHint(QPainter::Antialiasing);
         p->setRenderHint(QPainter::TextAntialiasing);
         p->setRenderHint(QPainter::SmoothPixmapTransform);
-        PartArt::paint(p, board);
+        paintPinPads(p, PartArt::paint(p, board));
         p->restore();
         return;
     }
