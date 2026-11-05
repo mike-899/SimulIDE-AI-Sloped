@@ -56,8 +56,11 @@ void ThemeTokens::refresh()
     bool dark        = tm->isDark();
     for (const char *role : ColorRoles)
         insert(role, tm->token(role));
-    insert("error", tm->token("danger"));
-    insert("onError", QColor(Qt::white));
+    // M3 error pair. In dark mode the saturated red was 4.0:1 on the
+    // surface (3.0:1 on containers): use the M3 dark error tone instead,
+    // with its dark on-color, so it works as text, border and fill.
+    insert("error", dark ? QColor("#FFB4AB") : tm->token("danger"));
+    insert("onError", dark ? QColor("#690005") : QColor(Qt::white));
     insert("errorContainer", dark ? QColor("#93000A") : QColor("#FFDAD6"));
     insert("onErrorContainer", dark ? QColor("#FFDAD6") : QColor("#410002"));
     insert("canvas", tm->canvasBackground());

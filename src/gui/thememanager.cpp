@@ -46,7 +46,7 @@ static const QHash<QString, QString> &lightTokens()
         { "surfaceContainerHighest", "#E3E0F1" },
         { "onSurface", "#1A1B26" },
         { "onSurfaceVariant", "#454659" },
-        { "outline", "#75768B" },
+        { "outline", "#6A6B80" }, // 4.7:1 on surfaceContainerLow
         { "outlineVariant", "#C6C5DC" },
         { "inverseSurface", "#2F303C" },
         { "inverseOnSurface", "#F2EFFD" },

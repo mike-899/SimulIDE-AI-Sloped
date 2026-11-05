@@ -25,12 +25,15 @@ Referencia para la interfaz QML. Los valores de color son una paleta propia
 | surfaceContainerHighest | #E3E0F1 | #333547 |
 | onSurface | #1A1B26 | #E4E1F4 |
 | onSurfaceVariant | #454659 | #C6C5DC |
-| outline | #75768B | #9090A6 |
+| outline | #6A6B80 | #9090A6 |
 | outlineVariant | #C6C5DC | #454659 |
 | inverseSurface | #2F303C | #E4E1F4 |
 | inverseOnSurface | #F2EFFD | #2F303C |
 | success | #00855A | #1F9D6C |
-| error | #BA1A1A | #D93636 |
+| error (QSS `danger`) | #BA1A1A | #D93636 |
+| error (QML `Theme.error` / `onError`) | #BA1A1A / #FFFFFF | #FFB4AB / #690005 |
+
+En QML el modo oscuro usa el tono de error M3 (#FFB4AB, 11:1 sobre surface) con su color "on" oscuro: el rojo saturado quedaba en 4,0:1 sobre surface y 3,0:1 sobre los contenedores.
 
 Capas de estado: hover 8 %, focus/pressed 10-12 %, drag 16 %.
 Deshabilitado: contenido onSurface 38 %, contenedor 12 %.
