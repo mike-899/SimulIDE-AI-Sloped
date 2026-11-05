@@ -31,6 +31,8 @@ QT += core gui multimedia widgets serialport concurrent qml quick quickwidgets x
 win32-g++{
     OS = Windows
     LIBS += -lws2_32
+    # Explorer/taskbar icon (generated from resources/icons/hicolor/256x256)
+    RC_ICONS = packaging/windows/simulide.ico
 }
 linux {
     OS = Linux
