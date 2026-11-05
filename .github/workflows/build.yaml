@@ -156,6 +156,8 @@ jobs:
           # windeployqt may exit non-zero on optional pieces it cannot find
           # after deploying everything else; the ldd loop below copies any
           # DLL it still misses.
+          # --no-opengl-sw is fine: Qt Quick uses Direct3D 11 (with WARP as
+          # its software fallback) on Windows, see chooseRenderBackend().
           # --qmldir: the QML shell is embedded in the exe, so windeployqt
           # needs the sources to find the Qt Quick modules it imports.
           "$WDQ" --release --no-translations --no-opengl-sw \
@@ -170,6 +172,20 @@ jobs:
             done
           done
           ls bin
+          # windeployqt "continues" past missing pieces, which could ship
+          # a package that silently fell back to the classic Widgets UI or
+          # lost the SVG icons. Fail here if any M3E runtime piece is absent.
+          missing=0
+          for p in platforms/qwindows.dll \
+                   imageformats/qsvg.dll iconengines/qsvgicon.dll \
+                   qml/QtQuick/Controls/Basic qml/QtQuick/Layouts \
+                   qml/QtQuick/Shapes qml/QtQuick/Templates \
+                   qml/QtQuick/Window \
+                   Qt6Quick.dll Qt6QuickWidgets.dll \
+                   Qt6Svg.dll; do
+            [ -e "bin/$p" ] || { echo "::error::missing bin/$p"; missing=1; }
+          done
+          [ "$missing" = 0 ]
 
       - name: Portable zip
         run: |
