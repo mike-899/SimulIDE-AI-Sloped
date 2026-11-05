@@ -88,8 +88,10 @@ QT_QUICK_BACKEND=software xvfb-run -a -s "-screen 0 1600x900x24" \
 ```
 
 * `SIMULIDE_SOFTWARE_RENDER=1` fuerza el renderizador por software. Si no se
-  puede crear un contexto OpenGL, SimulIDE lo activa solo (`main.cpp`). Si
-  defines `QT_QUICK_BACKEND`/`QSG_RHI_BACKEND`, se respeta tu elección.
+  puede crear un contexto OpenGL, SimulIDE lo activa solo (`main.cpp`; solo
+  Linux/macOS: en Windows Qt Quick usa Direct3D 11, con WARP como respaldo por
+  software, y no se comprueba OpenGL). Si defines
+  `QT_QUICK_BACKEND`/`QSG_RHI_BACKEND`, se respeta tu elección.
 * `SIMULIDE_QML_DIR=<ruta a src/qml>` carga el QML desde disco (edición en
   caliente: reinicia el programa tras cada cambio).
 * Para pruebas automáticas usa el servidor MCP (`docs/MCP.md`) para crear el
@@ -116,7 +118,8 @@ bar, component library, side-panel header, code-panel header, floating edit
 toolbar and property inspector are `QQuickWidget`s sharing one `QQmlEngine`
 (`QmlUi`). C++ bridges are exposed as the context objects `Theme`, `Shell`,
 `Sim`, `Files`, `Inspector`, `Components` and `Mcus` (table above). Run
-headless with `QT_QUICK_BACKEND=software`; the software renderer is also chosen
-automatically when OpenGL is unavailable (`SIMULIDE_SOFTWARE_RENDER=1` forces
-it). `--widgets-ui` / setting `ui/qml=false` / a failed QML preflight select the
+headless with `QT_QUICK_BACKEND=software`; on Linux/macOS the software renderer
+is also chosen automatically when OpenGL is unavailable (on Windows Qt Quick
+uses Direct3D 11 with its own WARP fallback; `SIMULIDE_SOFTWARE_RENDER=1`
+forces software everywhere). `--widgets-ui` / setting `ui/qml=false` / a failed QML preflight select the
 classic Widgets UI.
