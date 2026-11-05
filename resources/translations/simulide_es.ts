@@ -553,6 +553,118 @@
         <source>Package File</source>
         <translation>Archivo de encapsulado</translation>
     </message>
+    <message>
+        <source>Model</source>
+        <translation>Modelo</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <translation>Modo</translation>
+    </message>
+    <message>
+        <source>Tcp Port</source>
+        <translation>Puerto TCP</translation>
+    </message>
+    <message>
+        <source>Mcu</source>
+        <translation>MCU</translation>
+    </message>
+    <message>
+        <source>CTR</source>
+        <translation>CTR</translation>
+    </message>
+    <message>
+        <source>Active Low</source>
+        <translation>Activo en bajo</translation>
+    </message>
+    <message>
+        <source>Internal Res</source>
+        <translation>Resistencia interna</translation>
+    </message>
+    <message>
+        <source>Rating</source>
+        <translation>Corriente nominal</translation>
+    </message>
+    <message>
+        <source>Blown</source>
+        <translation>Quemado</translation>
+    </message>
+    <message>
+        <source>Lux</source>
+        <translation>Lux</translation>
+    </message>
+    <message>
+        <source>R 10lux</source>
+        <translation>R a 10 lux</translation>
+    </message>
+    <message>
+        <source>Gamma</source>
+        <translation>Gamma</translation>
+    </message>
+    <message>
+        <source>Temperature</source>
+        <translation>Temperatura</translation>
+    </message>
+    <message>
+        <source>R25</source>
+        <translation>R25</translation>
+    </message>
+    <message>
+        <source>Beta</source>
+        <translation>Beta</translation>
+    </message>
+    <message>
+        <source>Position</source>
+        <translation>Posición</translation>
+    </message>
+    <message>
+        <source>Motion</source>
+        <translation>Movimiento</translation>
+    </message>
+    <message>
+        <source>Hold Time</source>
+        <translation>Tiempo de retención</translation>
+    </message>
+    <message>
+        <source>Out Volt</source>
+        <translation>Voltaje de salida</translation>
+    </message>
+    <message>
+        <source>Obstacle</source>
+        <translation>Obstáculo</translation>
+    </message>
+    <message>
+        <source>Level</source>
+        <translation>Nivel</translation>
+    </message>
+    <message>
+        <source>Pressed</source>
+        <translation>Presionado</translation>
+    </message>
+    <message>
+        <source>Magnet</source>
+        <translation>Imán</translation>
+    </message>
+    <message>
+        <source>Max Rpm</source>
+        <translation>RPM máx.</translation>
+    </message>
+    <message>
+        <source>Rated Volt</source>
+        <translation>Voltaje nominal</translation>
+    </message>
+    <message>
+        <source>Time Const</source>
+        <translation>Constante de tiempo</translation>
+    </message>
+    <message>
+        <source>Rpm</source>
+        <translation>RPM</translation>
+    </message>
+    <message>
+        <source>On Resistance</source>
+        <translation>Resistencia de conducción</translation>
+    </message>
 </context>
 <context>
     <name>Arduino</name>
@@ -1196,6 +1308,10 @@ Error:  Mcu Borrado mientras se Depuraba!!
         <source>No Compiler available for: %1 files</source>
         <translation>No hay compilador para archivos %1</translation>
     </message>
+    <message>
+        <source>Uploaded to </source>
+        <translation>Cargado en </translation>
+    </message>
 </context>
 <context>
     <name>CodeEditorWidget</name>
@@ -1282,6 +1398,18 @@ a DomDocument</translation>
     <message>
         <source>Manage Components</source>
         <translation>Configurar Componentes</translation>
+    </message>
+    <message>
+        <source>Component category</source>
+        <translation>Categoría de componentes</translation>
+    </message>
+    <message>
+        <source>Basic</source>
+        <translation>Básicos</translation>
+    </message>
+    <message>
+        <source>All Components</source>
+        <translation>Todos los componentes</translation>
     </message>
 </context>
 <context>
@@ -1874,6 +2002,22 @@ Quiere guardar los cambios?</translation>
         <source>Micro</source>
         <translation></translation>
     </message>
+    <message>
+        <source>Motors</source>
+        <translation>Motores</translation>
+    </message>
+    <message>
+        <source>Power</source>
+        <translation>Alimentación</translation>
+    </message>
+    <message>
+        <source>Semiconductors</source>
+        <translation>Semiconductores</translation>
+    </message>
+    <message>
+        <source>Modules</source>
+        <translation>Módulos</translation>
+    </message>
 </context>
 <context>
     <name>KeyPad</name>
@@ -2022,6 +2166,90 @@ Quiere guardar los cambios?</translation>
     <message>
         <source>RamTable</source>
         <translation></translation>
+    </message>
+    <message>
+        <source>Target:</source>
+        <translation>Destino:</translation>
+    </message>
+    <message>
+        <source>Serial Monitor</source>
+        <translation>Monitor Serie</translation>
+    </message>
+    <message>
+        <source>Toggle Theme</source>
+        <translation>Cambiar tema</translation>
+    </message>
+    <message>
+        <source>Components Panel</source>
+        <translation>Panel de componentes</translation>
+    </message>
+    <message>
+        <source>Code Panel</source>
+        <translation>Panel de código</translation>
+    </message>
+    <message>
+        <source>&amp;File</source>
+        <translation>&amp;Archivo</translation>
+    </message>
+    <message>
+        <source>&amp;Quit</source>
+        <translation>&amp;Salir</translation>
+    </message>
+    <message>
+        <source>&amp;Edit</source>
+        <translation>&amp;Editar</translation>
+    </message>
+    <message>
+        <source>&amp;View</source>
+        <translation>&amp;Ver</translation>
+    </message>
+    <message>
+        <source>Realistic Parts</source>
+        <translation>Piezas realistas</translation>
+    </message>
+    <message>
+        <source>Draw components as realistic parts instead of schematic symbols</source>
+        <translation>Dibujar los componentes como piezas reales en vez de símbolos esquemáticos</translation>
+    </message>
+    <message>
+        <source>&amp;Simulation</source>
+        <translation>&amp;Simulación</translation>
+    </message>
+    <message>
+        <source>Accurate analog (ngspice)</source>
+        <translation>Analógico preciso (ngspice)</translation>
+    </message>
+    <message>
+        <source>Solve the circuit with ngspice. Microcontrollers run in lockstep with it in simulated time: accurate, but it may run slower than real time (see the speed %). See docs/ANALOG_ENGINE.md</source>
+        <translation>Resuelve el circuito con ngspice. Los microcontroladores avanzan sincronizados con él en tiempo simulado: es preciso, pero puede ir más lento que el tiempo real (mirá el % de velocidad). Ver docs/ANALOG_ENGINE.md</translation>
+    </message>
+    <message>
+        <source>ngspice</source>
+        <translation>ngspice</translation>
+    </message>
+    <message>
+        <source>&amp;Tools</source>
+        <translation>&amp;Herramientas</translation>
+    </message>
+    <message>
+        <source>Classic Widgets interface</source>
+        <translation>Interfaz clásica (Widgets)</translation>
+    </message>
+    <message>
+        <source>Use the classic Qt Widgets interface instead of the Qt Quick one (takes effect after restarting)</source>
+        <translation>Usar la interfaz clásica de Qt Widgets en vez de la de Qt Quick (se aplica al reiniciar)</translation>
+    </message>
+    <message>
+        <source>Interface</source>
+        <translation>Interfaz</translation>
+    </message>
+    <message>
+        <source>The interface change takes effect the next time SimulIDE starts.</source>
+        <translation>El cambio de interfaz se aplica la próxima vez que inicies SimulIDE.</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>A&amp;yuda</translation>
     </message>
 </context>
 <context>
@@ -2200,6 +2428,12 @@ a DomDocument</translation>
     <message>
         <source>Error</source>
         <translation></translation>
+    </message>
+    <message>
+        <source>Only 1 PIC allowed
+ to be in the Circuit.</source>
+        <translation>Solo se permite 1 PIC
+ en el circuito.</translation>
     </message>
 </context>
 <context>
@@ -2459,6 +2693,16 @@ a DomDocument</translation>
         <translation>No se Pudo Abrir el Puerto %1:
 %2.</translation>
     </message>
+    <message>
+        <source>Cannot listen on TCP port %1:
+%2.</source>
+        <translation>No se puede escuchar en el puerto TCP %1:
+%2.</translation>
+    </message>
+    <message>
+        <source>Cannot create a pseudo terminal on this system.</source>
+        <translation>No se puede crear una pseudoterminal en este sistema.</translation>
+    </message>
 </context>
 <context>
     <name>Servo</name>
@@ -2702,6 +2946,10 @@ Quiere guardar los cambios?
     <message>
         <source>Sources</source>
         <translation>Fuentes</translation>
+    </message>
+    <message>
+        <source>Output ON/OFF</source>
+        <translation>Salida ON/OFF</translation>
     </message>
 </context>
 <context>
@@ -3054,6 +3302,217 @@ Quiere guardar los cambios?
         <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/TopBar.qml" line="143"/>
         <source>Show / hide the code editor</source>
         <translation>Mostrar / ocultar el editor de código</translation>
+    </message>
+</context>
+<context>
+    <name>AvrCompBase</name>
+    <message>
+        <source>Program target via ISP (STK500v1)...</source>
+        <translation>Programar destino por ISP (STK500v1)...</translation>
+    </message>
+</context>
+<context>
+    <name>DcMotor</name>
+    <message>
+        <source>DC Motor</source>
+        <translation>Motor DC</translation>
+    </message>
+    <message>
+        <source>Motors</source>
+        <translation>Motores</translation>
+    </message>
+</context>
+<context>
+    <name>IspUploader</name>
+    <message>
+        <source>No programmer MCU</source>
+        <translation>No hay MCU programador</translation>
+    </message>
+    <message>
+        <source>The programmer MCU has no firmware: load ArduinoISP first</source>
+        <translation>El MCU programador no tiene firmware: cargá ArduinoISP primero</translation>
+    </message>
+    <message>
+        <source>Unknown target device: %1</source>
+        <translation>Dispositivo destino desconocido: %1</translation>
+    </message>
+    <message>
+        <source>Cannot read %1</source>
+        <translation>No se puede leer %1</translation>
+    </message>
+    <message>
+        <source>Invalid HEX file %1: %2</source>
+        <translation>Archivo HEX inválido %1: %2</translation>
+    </message>
+    <message>
+        <source>Start the simulation first</source>
+        <translation>Primero iniciá la simulación</translation>
+    </message>
+    <message>
+        <source>Program target via ISP: firmware</source>
+        <translation>Programar destino por ISP: firmware</translation>
+    </message>
+    <message>
+        <source>Hex Files (*.hex);;All files (*.*)</source>
+        <translation>Archivos HEX (*.hex);;Todos los archivos (*.*)</translation>
+    </message>
+    <message>
+        <source>Program target via ISP</source>
+        <translation>Programar destino por ISP</translation>
+    </message>
+    <message>
+        <source>Target device (wired to the programmer&apos;s ISP pins):</source>
+        <translation>Dispositivo destino (conectado a los pines ISP del programador):</translation>
+    </message>
+    <message>
+        <source>ISP programming</source>
+        <translation>Programación ISP</translation>
+    </message>
+    <message>
+        <source>ISP programming failed</source>
+        <translation>Falló la programación ISP</translation>
+    </message>
+</context>
+<context>
+    <name>L293D</name>
+    <message>
+        <source>L293D</source>
+        <translation>L293D</translation>
+    </message>
+    <message>
+        <source>Motors</source>
+        <translation>Motores</translation>
+    </message>
+</context>
+<context>
+    <name>L298N</name>
+    <message>
+        <source>L298N Module</source>
+        <translation>Módulo L298N</translation>
+    </message>
+    <message>
+        <source>Motors</source>
+        <translation>Motores</translation>
+    </message>
+</context>
+<context>
+    <name>NetLabel</name>
+    <message>
+        <source>Net Label</source>
+        <translation>Etiqueta de red</translation>
+    </message>
+    <message>
+        <source>Connectors</source>
+        <translation>Conectores</translation>
+    </message>
+    <message>
+        <source>VCC Label</source>
+        <translation>Etiqueta VCC</translation>
+    </message>
+    <message>
+        <source>GND Label</source>
+        <translation>Etiqueta GND</translation>
+    </message>
+</context>
+<context>
+    <name>QObject</name>
+    <message>
+        <source>7805 Regulator</source>
+        <translation>Regulador 7805</translation>
+    </message>
+    <message>
+        <source>Power</source>
+        <translation>Alimentación</translation>
+    </message>
+    <message>
+        <source>LM317 Regulator</source>
+        <translation>Regulador LM317</translation>
+    </message>
+    <message>
+        <source>Stepper 28BYJ-48</source>
+        <translation>Paso a paso 28BYJ-48</translation>
+    </message>
+    <message>
+        <source>Motors</source>
+        <translation>Motores</translation>
+    </message>
+    <message>
+        <source>2N2222 NPN</source>
+        <translation>2N2222 NPN</translation>
+    </message>
+    <message>
+        <source>Semiconductors</source>
+        <translation>Semiconductores</translation>
+    </message>
+    <message>
+        <source>BC547 NPN</source>
+        <translation>BC547 NPN</translation>
+    </message>
+    <message>
+        <source>TIP120 Darlington</source>
+        <translation>TIP120 Darlington</translation>
+    </message>
+    <message>
+        <source>1N4007 Diode</source>
+        <translation>Diodo 1N4007</translation>
+    </message>
+    <message>
+        <source>1N4148 Diode</source>
+        <translation>Diodo 1N4148</translation>
+    </message>
+    <message>
+        <source>Zener 5.1V 1N4733A</source>
+        <translation>Zener 5,1 V 1N4733A</translation>
+    </message>
+    <message>
+        <source>Active Buzzer</source>
+        <translation>Zumbador activo</translation>
+    </message>
+    <message>
+        <source>Passive Buzzer</source>
+        <translation>Zumbador pasivo</translation>
+    </message>
+</context>
+<context>
+    <name>SerialMonitor</name>
+    <message>
+        <source>Send to MCU...</source>
+        <translation>Enviar al MCU...</translation>
+    </message>
+    <message>
+        <source>Send</source>
+        <translation>Enviar</translation>
+    </message>
+    <message>
+        <source>Add CR</source>
+        <translation>Agregar CR</translation>
+    </message>
+    <message>
+        <source>ASCII</source>
+        <translation>ASCII</translation>
+    </message>
+    <message>
+        <source>Print received bytes as ASCII (unchecked: numeric values)</source>
+        <translation>Mostrar los bytes recibidos como ASCII (sin marcar: valores numéricos)</translation>
+    </message>
+    <message>
+        <source>MCU</source>
+        <translation>MCU</translation>
+    </message>
+    <message>
+        <source>Connected: %1</source>
+        <translation>Conectado: %1</translation>
+    </message>
+</context>
+<context>
+    <name>TB6612</name>
+    <message>
+        <source>TB6612FNG Module</source>
+        <translation>Módulo TB6612FNG</translation>
+    </message>
+    <message>
+        <source>Motors</source>
+        <translation>Motores</translation>
     </message>
 </context>
 </TS>

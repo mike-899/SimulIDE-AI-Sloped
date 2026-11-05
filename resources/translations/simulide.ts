@@ -552,6 +552,118 @@
         <source>Package File</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Model</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tcp Port</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mcu</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CTR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Active Low</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Internal Res</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rating</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Blown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lux</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>R 10lux</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Gamma</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Temperature</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>R25</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Beta</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Motion</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hold Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Out Volt</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Obstacle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Level</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pressed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Magnet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Max Rpm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rated Volt</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time Const</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rpm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>On Resistance</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Arduino</name>
@@ -1173,6 +1285,10 @@ Error:  Mcu Deleted while Debugging!!
         <source>No Compiler available for: %1 files</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Uploaded to </source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>CodeEditorWidget</name>
@@ -1256,6 +1372,18 @@ to DomDocument</source>
     </message>
     <message>
         <source>Manage Components</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Component category</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Basic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>All Components</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1837,6 +1965,22 @@ Do you want to save your changes?
         <source>Micro</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Motors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Power</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Semiconductors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Modules</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>KeyPad</name>
@@ -1976,6 +2120,90 @@ Do you want to save your changes?
     </message>
     <message>
         <source>Plugin Error:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Target:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Serial Monitor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toggle Theme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Components Panel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Code Panel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Quit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Edit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Realistic Parts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Draw components as realistic parts instead of schematic symbols</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Simulation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Accurate analog (ngspice)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Solve the circuit with ngspice. Microcontrollers run in lockstep with it in simulated time: accurate, but it may run slower than real time (see the speed %). See docs/ANALOG_ENGINE.md</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ngspice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Classic Widgets interface</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use the classic Qt Widgets interface instead of the Qt Quick one (takes effect after restarting)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Interface</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The interface change takes effect the next time SimulIDE starts.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2149,6 +2377,11 @@ to DomDocument</source>
     </message>
     <message>
         <source>Only 1 Mcu allowed
+ to be in the Circuit.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Only 1 PIC allowed
  to be in the Circuit.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2403,6 +2636,15 @@ to DomDocument</source>
 %2.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Cannot listen on TCP port %1:
+%2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot create a pseudo terminal on this system.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Servo</name>
@@ -2634,6 +2876,10 @@ Do you want to save your changes?
     </message>
     <message>
         <source>Sources</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Output ON/OFF</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2986,6 +3232,217 @@ Do you want to save your changes?
     <message>
         <location filename="../../../../../../home/user/SimulIDE-AI-Sloped/src/qml/TopBar.qml" line="143"/>
         <source>Show / hide the code editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>AvrCompBase</name>
+    <message>
+        <source>Program target via ISP (STK500v1)...</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DcMotor</name>
+    <message>
+        <source>DC Motor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Motors</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>IspUploader</name>
+    <message>
+        <source>No programmer MCU</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The programmer MCU has no firmware: load ArduinoISP first</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unknown target device: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot read %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid HEX file %1: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start the simulation first</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Program target via ISP: firmware</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hex Files (*.hex);;All files (*.*)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Program target via ISP</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Target device (wired to the programmer&apos;s ISP pins):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ISP programming</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ISP programming failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>L293D</name>
+    <message>
+        <source>L293D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Motors</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>L298N</name>
+    <message>
+        <source>L298N Module</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Motors</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>NetLabel</name>
+    <message>
+        <source>Net Label</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connectors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VCC Label</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>GND Label</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QObject</name>
+    <message>
+        <source>7805 Regulator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Power</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LM317 Regulator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stepper 28BYJ-48</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Motors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>2N2222 NPN</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Semiconductors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>BC547 NPN</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>TIP120 Darlington</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1N4007 Diode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1N4148 Diode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zener 5.1V 1N4733A</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Active Buzzer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Passive Buzzer</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SerialMonitor</name>
+    <message>
+        <source>Send to MCU...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Send</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add CR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ASCII</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Print received bytes as ASCII (unchecked: numeric values)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MCU</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connected: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TB6612</name>
+    <message>
+        <source>TB6612FNG Module</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Motors</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
