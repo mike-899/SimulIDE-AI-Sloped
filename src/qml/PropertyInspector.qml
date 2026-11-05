@@ -96,12 +96,20 @@ Item {
             IconButton {
                 id: collapse
                 objectName: "propertyInspectorCollapse"
-                anchors.right: parent.right
-                anchors.rightMargin: 12
+                anchors.right: closeButton.left
                 anchors.verticalCenter: parent.verticalCenter
                 iconName: Inspector.collapsed ? "expand_more" : "expand_less"
                 tip: Inspector.collapsed ? qsTr("Expand") : qsTr("Collapse")
                 onClicked: Inspector.collapsed = !Inspector.collapsed
+            }
+            IconButton {
+                id: closeButton
+                anchors.right: parent.right
+                anchors.rightMargin: 12
+                anchors.verticalCenter: parent.verticalCenter
+                iconName: "close"
+                tip: qsTr("Close (deselect)")
+                onClicked: Inspector.close()
             }
         }
 
@@ -148,7 +156,7 @@ Item {
                         lineHeightMode: Text.ProportionalHeight
                         lineHeight: 1.1
                         color: Theme.onSurfaceVariant
-                        maximumLineCount: 14
+                        // No line limit: the panel scrolls (14 lines cut long help)
                     }
                 }
 

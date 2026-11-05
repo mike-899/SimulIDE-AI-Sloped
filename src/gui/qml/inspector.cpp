@@ -312,6 +312,13 @@ void Inspector::setCollapsed(bool c)
     emit collapsedChanged();
 }
 
+void Inspector::close()
+{
+    if (Circuit *circ = Circuit::self())
+        circ->clearSelection();
+    update(); // Hide now, not on the next poll
+}
+
 void Inspector::update()
 {
     if (m_active && m_comp.isNull()) { // selected component was deleted

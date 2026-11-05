@@ -106,6 +106,8 @@ class Inspector : public QObject
         return m_collapsed;
     }
     void setCollapsed(bool c);
+    // Close the inspector: deselect the part it shows
+    Q_INVOKABLE void close();
     QObject *model() const
     {
         return m_model;

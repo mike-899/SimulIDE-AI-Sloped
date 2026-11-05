@@ -3167,6 +3167,10 @@ Voulez-vous sauvegarder les changements ?
         <source>Invalid value</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Close (deselect)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SearchBar</name>
