@@ -329,6 +329,10 @@ QRectF ModuleBase::boundingRect() const
 
 void ModuleBase::mousePressEvent(QGraphicsSceneMouseEvent *e)
 {
+    if (e->button() == Qt::LeftButton && freePinAt(e->scenePos())) {
+        e->ignore(); // A wire starts on the pin, not a zone press
+        return;
+    }
     if (e->button() == Qt::LeftButton) {
         for (int i = 0; i < m_zones.size(); i++) {
             Zone &z = m_zones[i];

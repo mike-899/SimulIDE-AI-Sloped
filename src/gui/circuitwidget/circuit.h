@@ -27,6 +27,7 @@
 #include "connector.h"
 #include "pin.h"
 
+class ConnectorLine;
 
 class MAINMODULE_EXPORT Circuit : public QGraphicsScene
 {
@@ -113,6 +114,17 @@ class MAINMODULE_EXPORT Circuit : public QGraphicsScene
         void newconnector( Pin*  startpin );
         void closeconnector( Pin* endpin );
         void deleteNewConnector();
+
+        // Drag & drop wiring: press on a pin (or Shift+press on a wire),
+        // drag, release on a pin or a wire to connect; anywhere else cancels.
+        // firstLeg: 0 = follow the drag, 1 = horizontal, 2 = vertical
+        // (a branch leaves its wire at a right angle).
+        void beginWireDrag(int firstLeg = 0);
+        bool wireDragging()
+        {
+            return m_wireDrag;
+        }
+        void cancelWireDrag();
         void updateConnectors();
         Connector* getNewConnector() { return new_connector; }
 
@@ -180,6 +192,19 @@ class MAINMODULE_EXPORT Circuit : public QGraphicsScene
         QRect          m_scenerect;
         QGraphicsView* m_graphicView;
         Connector*     new_connector;
+
+        void routeWireDrag(QPointF scenePos);
+        void finishWireDrag(QPointF scenePos);
+        Pin *wirePinAt(QPointF scenePos);
+        ConnectorLine *wireLineAt(QPointF scenePos);
+        void showWireTarget(Pin *pin, ConnectorLine *line, QPointF at);
+
+        bool m_wireDrag                        = false;
+        bool m_wireDirLocked                   = false;
+        bool m_wireHFirst                      = true;
+        int m_wireFirstLeg                     = 0;
+        int m_undoSizeAtCon                    = -1;
+        QGraphicsEllipseItem *m_wireTargetMark = nullptr;
 
         int m_seqNumber;
         int m_error;

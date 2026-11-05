@@ -168,6 +168,10 @@ class MAINMODULE_EXPORT Component : public QObject, public QGraphicsItem
 
     protected:
         void mousePressEvent( QGraphicsSceneMouseEvent* event );
+
+        // A free pin (no wire yet) at scenePos: presses there start a wire
+        // instead of moving the part (pins stack behind their part's art).
+        Pin *freePinAt(QPointF scenePos);
         void mouseDoubleClickEvent( QGraphicsSceneMouseEvent* event );
         void mouseMoveEvent( QGraphicsSceneMouseEvent* event );
         void mouseReleaseEvent( QGraphicsSceneMouseEvent* event );

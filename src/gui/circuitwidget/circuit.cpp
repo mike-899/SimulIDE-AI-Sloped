@@ -980,6 +980,7 @@ QPointF Circuit::deltaMove(){ return m_deltaMove; }
 
 void Circuit::newconnector( Pin*  startpin )
 {
+    m_undoSizeAtCon = m_undoStack.size();
     saveState();
 
     //if ( m_subcirmode ) return;
@@ -1012,7 +1013,177 @@ void Circuit::deleteNewConnector()
     {
         new_connector->remove();
         m_con_started = false;
+
+        // Nothing changed: drop the undo step newconnector() pushed
+        if (m_undoSizeAtCon >= 0 && m_undoStack.size() == m_undoSizeAtCon + 1)
+            delete m_undoStack.takeLast();
     }
+    m_undoSizeAtCon = -1;
+    m_wireDrag      = false;
+    showWireTarget(nullptr, nullptr, QPointF());
+}
+
+//---------------------------------------------------- drag & drop wiring --
+
+void Circuit::beginWireDrag(int firstLeg)
+{
+    if (!m_con_started)
+        return;
+    m_wireDrag      = true;
+    m_wireDirLocked = false;
+    m_wireHFirst    = firstLeg != 2;
+    m_wireFirstLeg  = firstLeg;
+}
+
+void Circuit::cancelWireDrag()
+{
+    deleteNewConnector();
+}
+
+// A free pin of another item close to the cursor that this wire may end on.
+Pin *Circuit::wirePinAt(QPointF scenePos)
+{
+    const double tol = 6;
+    Pin *best        = nullptr;
+    double bestD     = tol * tol + 1;
+    QRectF area(scenePos - QPointF(tol, tol), QSizeF(2 * tol, 2 * tol));
+    for (QGraphicsItem *it : items(area)) {
+        if (it->type() != Pin::Type || !it->isVisible())
+            continue;
+        Pin *pin = static_cast<Pin *>(it);
+        if (pin == new_connector->startPin())
+            continue;
+        if (pin->connector() || pin->unused())
+            continue;
+        if (pin->isBus() != new_connector->isBus())
+            continue;
+        QPointF d = pin->scenePos() - scenePos;
+        double d2 = d.x() * d.x() + d.y() * d.y();
+        if (d2 < bestD) {
+            bestD = d2;
+            best  = pin;
+        }
+    }
+    return best;
+}
+
+// A wire (not the one being drawn, not on the same net) under the cursor.
+ConnectorLine *Circuit::wireLineAt(QPointF scenePos)
+{
+    QRectF area(scenePos - QPointF(3, 3), QSizeF(6, 6));
+    for (QGraphicsItem *it : items(area)) {
+        ConnectorLine *line = dynamic_cast<ConnectorLine *>(it);
+        if (!line)
+            continue;
+        Connector *con = line->connector();
+        if (con == new_connector || !con->endPin())
+            continue;
+        if (con->isBus() != new_connector->isBus())
+            continue;
+        if (con->enode() && con->enode() == new_connector->enode())
+            continue;
+        if (line->isDiagonal())
+            continue; // No junctions on slanted segments
+        return line;
+    }
+    return nullptr;
+}
+
+void Circuit::showWireTarget(Pin *pin, ConnectorLine *line, QPointF at)
+{
+    if (!pin && !line) {
+        if (m_wireTargetMark)
+            m_wireTargetMark->hide();
+        return;
+    }
+    if (!m_wireTargetMark) {
+        m_wireTargetMark = new QGraphicsEllipseItem(-5, -5, 10, 10);
+        m_wireTargetMark->setZValue(1000);
+        m_wireTargetMark->setAcceptedMouseButtons(Qt::NoButton);
+        addItem(m_wireTargetMark);
+    }
+    QColor c = ThemeManager::self()->wireSelected();
+    m_wireTargetMark->setPen(QPen(c, 1.5));
+    c.setAlpha(70);
+    m_wireTargetMark->setBrush(c);
+    m_wireTargetMark->setPos(pin ? pin->scenePos() : at);
+    m_wireTargetMark->show();
+}
+
+// The wire follows the cursor as an L: the first leg goes in the direction
+// the drag started in (decided once the cursor is 8 px away from the pin).
+void Circuit::routeWireDrag(QPointF scenePos)
+{
+    QList<ConnectorLine *> *lines = new_connector->lineList();
+    if (lines->isEmpty())
+        return;
+
+    QPoint s = new_connector->startPin()->scenePos().toPoint();
+    QPoint e = togrid(scenePos).toPoint();
+
+    Pin *pin            = wirePinAt(scenePos);
+    ConnectorLine *line = pin ? nullptr : wireLineAt(scenePos);
+    if (pin)
+        e = pin->scenePos().toPoint();
+    else if (line) // Snap onto the wire
+    {
+        if (line->dy() == 0)
+            e.setY(line->p1().y());
+        else
+            e.setX(line->p1().x());
+    }
+    showWireTarget(pin, line, e);
+
+    QPoint d = e - s;
+    if (abs(d.x()) + abs(d.y()) < 8)
+        m_wireDirLocked = false;
+    else if (!m_wireDirLocked) {
+        m_wireHFirst    = abs(d.x()) >= abs(d.y());
+        m_wireDirLocked = true;
+    }
+    bool hFirst = m_wireHFirst;
+    if (m_wireFirstLeg)
+        hFirst = m_wireFirstLeg == 1; // Leave a wire square
+    else if (line)
+        hFirst = line->dy() == 0; // Enter a wire square
+
+    QPoint corner = hFirst ? QPoint(e.x(), s.y()) : QPoint(s.x(), e.y());
+
+    while (lines->size() > 2)
+        new_connector->remConLine(lines->last());
+    if (lines->size() < 2)
+        new_connector->addConLine(corner.x(), corner.y(), e.x(), e.y(), 1);
+
+    ConnectorLine *l0 = lines->at(0);
+    ConnectorLine *l1 = lines->at(1);
+    l0->sSetP1(s);
+    l0->sSetP2(corner);
+    l1->sSetP1(corner);
+    l1->sSetP2(e);
+}
+
+void Circuit::finishWireDrag(QPointF scenePos)
+{
+    m_wireDrag = false;
+    showWireTarget(nullptr, nullptr, QPointF());
+
+    routeWireDrag(scenePos); // Make sure the route ends on the target
+    showWireTarget(nullptr, nullptr, QPointF());
+
+    if (Pin *pin = wirePinAt(scenePos)) {
+        closeconnector(pin);
+        m_undoSizeAtCon = -1;
+        return;
+    }
+    if (ConnectorLine *line = wireLineAt(scenePos)) {
+        QPoint e = new_connector->lineList()->last()->p2();
+        if (line->connectAt(e)) // Splits the wire, adds a Node, closes us
+        {
+            m_undoSizeAtCon = -1;
+            return;
+        }
+    }
+    deleteNewConnector(); // Dropped on nothing: cancel
 }
 
 void Circuit::updateConnectors()
@@ -1411,7 +1582,11 @@ void Circuit::mouseReleaseEvent( QGraphicsSceneMouseEvent* event )
 {
     if( event->button() == Qt::LeftButton )
     {
-        if( m_con_started )  new_connector->incActLine() ;
+        if (m_con_started && m_wireDrag) {
+            event->accept();
+            finishWireDrag(event->scenePos());
+        } else if (m_con_started)
+            new_connector->incActLine();
         QGraphicsScene::mouseReleaseEvent( event );
     }
     else if( event->button() == Qt::RightButton )
@@ -1422,8 +1597,10 @@ void Circuit::mouseReleaseEvent( QGraphicsSceneMouseEvent* event )
 
 void Circuit::mouseMoveEvent( QGraphicsSceneMouseEvent* event )
 {
-    if( m_con_started )
-    {
+    if (m_con_started && m_wireDrag) {
+        event->accept();
+        routeWireDrag(event->scenePos());
+    } else if (m_con_started) {
         event->accept();
         
         if(event->modifiers() & Qt::ShiftModifier)
@@ -1437,7 +1614,11 @@ void Circuit::mouseMoveEvent( QGraphicsSceneMouseEvent* event )
 
 void Circuit::keyPressEvent( QKeyEvent* event )
 {
-    if( m_con_started ) return;
+    if (m_con_started) {
+        if (event->key() == Qt::Key_Escape)
+            deleteNewConnector();
+        return;
+    }
 
     int key = event->key();
 

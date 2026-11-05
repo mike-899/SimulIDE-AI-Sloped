@@ -62,13 +62,20 @@ class MAINMODULE_EXPORT ConnectorLine : public QGraphicsObject
         
         void setIsBus( bool bus );
 
+        // Junction: split this wire at `point` with a Node and connect the
+        // wire being drawn there (or start a new wire from it).
+        bool connectAt(QPoint point);
+        bool conSelected() const; // Any segment of this wire selected
+
         void mousePressEvent( QGraphicsSceneMouseEvent* event );
         void mouseMoveEvent( QGraphicsSceneMouseEvent* event );
         void mouseReleaseEvent( QGraphicsSceneMouseEvent* event );
 
         void contextMenuEvent( QGraphicsSceneContextMenuEvent* event );
-        
+        void hoverMoveEvent(QGraphicsSceneHoverEvent *event);
+
         virtual QPainterPath shape() const;
+        QVariant itemChange(GraphicsItemChange change, const QVariant &value);
         virtual void paint( QPainter* p, const QStyleOptionGraphicsItem* option, QWidget* widget );
 
     signals:
@@ -82,20 +89,26 @@ class MAINMODULE_EXPORT ConnectorLine : public QGraphicsObject
         void remove();
 
     private:
-        int myIndex();
-        int m_p1X;
-        int m_p1Y;
-        int m_p2X;
-        int m_p2Y;
-        
-        bool m_isBus;
-        bool m_moveP1;
-        bool m_moveP2;
-        bool m_moving;
+      enum DragMode { NoDrag, DragSegment, DragP1, DragP2 };
+      DragMode hitTest(QPointF scenePos) const;
+      void selectWire();
 
-        Connector* m_pConnector;
-        ConnectorLine* m_prevLine;
-        ConnectorLine* m_nextLine;
+      int myIndex();
+      DragMode m_drag = NoDrag;
+      bool m_dragged  = false;
+      int m_p1X;
+      int m_p1Y;
+      int m_p2X;
+      int m_p2Y;
+
+      bool m_isBus;
+      bool m_moveP1;
+      bool m_moveP2;
+      bool m_moving;
+
+      Connector *m_pConnector;
+      ConnectorLine *m_prevLine;
+      ConnectorLine *m_nextLine;
 };
 
 #endif

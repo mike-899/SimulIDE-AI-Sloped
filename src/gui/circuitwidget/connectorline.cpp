@@ -46,6 +46,7 @@ ConnectorLine::ConnectorLine( int x1, int y1, int x2, int y2, Connector* connect
     m_moving = false;
 
     this->setFlag( QGraphicsItem::ItemIsSelectable, true );
+    setAcceptHoverEvents(true);
 
     setCursor( Qt::CrossCursor );
 
@@ -56,20 +57,15 @@ ConnectorLine::ConnectorLine( int x1, int y1, int x2, int y2, Connector* connect
 }
 ConnectorLine::~ConnectorLine(){}
 
+// Handle sizes, in scene units
+static const double kVertex = 3.0; // Half side of a corner handle
+static const double kCenter = 3.2; // Radius of the segment center handle
+static const double kGrab   = 4.0; // Half width of the clickable band
+
 QRectF ConnectorLine::boundingRect() const
 {
-    int dy = m_p2Y-m_p1Y;
-    int dx = m_p2X-m_p1X;
-    int p =-1;
-    int d = 2;
-
-    if( dx != 0
-     && dy != 0 )     return QRect( 0   , 0   , dx  , dy );
-    else if( dx > 0 ) return QRect(-1   ,-2   , dx+d, 4 );
-    else if( dx < 0 ) return QRect( dx+p,-2   ,-dx+d, 4 );
-    else if( dy > 0 ) return QRect(-2   ,-1   , 4   , dy+d );
-    else if( dy < 0 ) return QRect(-2   , dy+p, 4   ,-dy+d );
-    else              return QRect( 0   , 0   , 0   , 0 );
+    QRectF r(QPointF(0, 0), QPointF(m_p2X - m_p1X, m_p2Y - m_p1Y));
+    return r.normalized().adjusted(-7, -7, 7, 7);
 }
 
 void ConnectorLine::sSetP1( QPoint point )
@@ -230,140 +226,167 @@ void ConnectorLine::remove()
     //m_pConnector->remove(); 
 }
 
+bool ConnectorLine::conSelected() const
+{
+    for (ConnectorLine *line : *m_pConnector->lineList())
+        if (line->isSelected())
+            return true;
+    return false;
+}
+
+void ConnectorLine::selectWire()
+{
+    Circuit::self()->clearSelection();
+    for (ConnectorLine *line : *m_pConnector->lineList())
+        line->setSelected(true);
+}
+
+// What a press at scenePos grabs: an inner corner (moves freely, the
+// neighbour segments stop being parallel) or the segment (moves parallel).
+// The ends on pins are not movable.
+ConnectorLine::DragMode ConnectorLine::hitTest(QPointF scenePos) const
+{
+    QList<ConnectorLine *> *lines = m_pConnector->lineList();
+    int index = lines->indexOf(const_cast<ConnectorLine *>(this));
+    double r  = kVertex + 2;
+
+    QPointF d1 = scenePos - QPointF(m_p1X, m_p1Y);
+    QPointF d2 = scenePos - QPointF(m_p2X, m_p2Y);
+    if (index > 0 && fabs(d1.x()) <= r && fabs(d1.y()) <= r)
+        return DragP1;
+    if (index < lines->size() - 1 && fabs(d2.x()) <= r && fabs(d2.y()) <= r)
+        return DragP2;
+    return DragSegment;
+}
+
+bool ConnectorLine::connectAt(QPoint point1)
+{
+    Circuit *circ = Circuit::self();
+    if (circ->is_constarted()) {
+        Connector *con = circ->getNewConnector();
+        if (con->isBus() != m_isBus)
+            return false; // Bus with no-Bus
+        if (con->enode() == m_pConnector->enode())
+            return false; // Same net
+    }
+    int index;
+    int myindex = m_pConnector->lineList()->indexOf(this);
+    int last    = m_pConnector->lineList()->size() - 1;
+
+    if (((dy() == 0 && abs(point1.x() - m_p2X) < 8) // Near the p2 corner
+         || (dx() == 0 && abs(point1.y() - m_p2Y) < 8)) &&
+        myindex != last) {
+        point1 = p2();
+        index  = myindex + 1;
+    } else if (((dy() == 0 && abs(point1.x() - m_p1X) < 8) // Near the p1 corner
+                || (dx() == 0 && abs(point1.y() - m_p1Y) < 8)) &&
+               myindex != 0) {
+        point1 = p1();
+        index  = myindex;
+    } else // Split this line in two
+    {
+        if (dy() == 0)
+            point1.setY(m_p1Y);
+        else
+            point1.setX(m_p1X);
+
+        index               = myindex + 1;
+        ConnectorLine *line = new ConnectorLine(point1.x(), point1.y(), m_p2X,
+                                                m_p2Y, m_pConnector);
+        m_pConnector->addConLine(line, index);
+    }
+    QString type = QString("Node");
+    QString id   = type + "-" + circ->newSceneId();
+
+    Node *node = new Node(0, type, id); // Add the Node
+    node->setPos(point1.x(), point1.y());
+    circ->addItem(node);
+
+    bool pauseSim = Simulator::self()->isRunning();
+    if (pauseSim)
+        Simulator::self()->pauseSim();
+
+    m_pConnector->splitCon(index, node->getPin(0), node->getPin(2));
+    node->getPin(1)->setEnode(m_pConnector->enode());
+
+    if (circ->is_constarted())
+        circ->closeconnector(node->getPin(1)); // Ends here
+    else
+        circ->newconnector(node->getPin(1)); // Starts here
+
+    if (pauseSim)
+        Simulator::self()->runContinuous();
+    return true;
+}
+
 void ConnectorLine::mousePressEvent( QGraphicsSceneMouseEvent* event )
 {
-    if (event->button() == Qt::MiddleButton) // Move Line
+    Circuit *circ = Circuit::self();
+    QPoint point  = togrid(event->scenePos()).toPoint();
+
+    if (event->button() == Qt::MiddleButton) // Move the segment
     {
         event->accept();
-
-        if     ( dy() == 0 ) CircuitView::self()->viewport()->setCursor( Qt::SplitVCursor );
-        else if( dx() == 0 ) CircuitView::self()->viewport()->setCursor( Qt::SplitHCursor );
-        else                 CircuitView::self()->viewport()->setCursor( Qt::SizeAllCursor );
-        m_moving = true;
-    } else if (event->button() == Qt::LeftButton) {
-        if( event->modifiers() == Qt::ControlModifier ) setSelected( !isSelected() ); // Select - Deselect
-        
-        else if( event->modifiers() & Qt::ShiftModifier ) // Move Corner
-        {
-            QPoint evPoint = togrid( event->scenePos() ).toPoint();
-            
-            if     ( evPoint==p1() ) m_moveP1 = true;
-            else if( evPoint==p2() ) m_moveP2 = true;
-            m_moving = true;
-        }
-        else                                   // Connecting a wire here
-        {   
-           if( Circuit::self()->is_constarted() )       
-           {
-               Connector* con = Circuit::self()->getNewConnector();
-               
-               if( con->isBus() != m_isBus ) // Avoid connect Bus with no-Bus
-               {
-                   event->ignore();
-                   return;
-               }
-               eNode* eNode1 = con->enode();
-               eNode* eNode2 = m_pConnector->enode();
-               
-               if( eNode1 == eNode2 )     // Avoid connect to same eNode
-               {
-                   event->ignore();
-                   return;
-               }
-           }
-           int index;
-           int myindex = m_pConnector->lineList()->indexOf( this );
-           QPoint point1 = togrid(event->scenePos()).toPoint();
-
-           ConnectorLine* line;
-
-           if(( ( (dy() == 0) && ( abs( point1.x()-m_p2X ) < 8 ) ) // point near the p2 corner
-             || ( (dx() == 0) && ( abs( point1.y()-m_p2Y ) < 8 ) ) )
-             && ( myindex != m_pConnector->lineList()->size()-1 ) )
-           {
-               if( myindex == m_pConnector->lineList()->size()-1 )
-               {
-                   event->ignore();
-                   return;
-               }
-               event->accept();
-               point1 = p2();
-               index = myindex+1;
-               line = m_pConnector->lineList()->at( index );
-           }
-           else if(( ( (dy() == 0) && ( abs( point1.x()-m_p1X ) < 8 ) ) // point near the p1 corner
-                  || ( (dx() == 0) && ( abs( point1.y()-m_p1Y ) < 8 ) ) )
-                  && ( myindex != 0 ) )
-           {
-               if( myindex == 0 )
-               {
-                   event->ignore();
-                   return;
-               }
-               event->accept();
-               point1 = p1();
-               line = this;
-               index = myindex;
-           }
-           else                                // split this line in two
-           {
-               event->accept();
-
-               if( dy() == 0 ) point1.setY( m_p1Y );
-               else            point1.setX( m_p1X );
-
-               index = myindex+1;
-
-               line = new ConnectorLine( point1.x(), point1.y(), m_p2X, p2().y(), m_pConnector );
-               m_pConnector->addConLine( line, index );
-           }
-
-           QString type = QString("Node");
-           QString id = type;
-           id.append( "-" );
-           id.append( Circuit::self()->newSceneId() );
-
-           Node* node = new Node( 0, type, id );     // Now add the Node
-           node->setPos( point1.x(), point1.y());
-           Circuit::self()->addItem( node );
-
-           bool pauseSim = Simulator::self()->isRunning();
-           if( pauseSim )  Simulator::self()->pauseSim();
-
-           //qDebug() << "line constarted" << Circuit::self()->is_constarted() << Circuit::self();
-
-           m_pConnector->splitCon( index, node->getPin(0), node->getPin(2) );
-           eNode* enode = m_pConnector->enode();    // get the eNode from my connector
-           node->getPin(1)->setEnode( enode );
-
-           if( Circuit::self()->is_constarted() )   // A Connector wants to connect here (ends in a node)
-               Circuit::self()->closeconnector( node->getPin(1) );
-           else                                     // A new Connector created here (starts in a node)
-               Circuit::self()->newconnector( node->getPin(1) );      // start a new connector
-
-           if( pauseSim ) Simulator::self()->runContinuous();
-        }
+        m_drag    = DragSegment;
+        m_dragged = false;
+        return;
     }
-    //else setSelected( true );
+    if (event->button() != Qt::LeftButton)
+        return;
+    event->accept();
+
+    if (circ->is_constarted()) // Legacy click wiring: end here
+    {
+        if (!connectAt(point))
+            event->ignore();
+        return;
+    }
+    if (event->modifiers() & Qt::ControlModifier) // Toggle selection
+    {
+        bool sel = !conSelected();
+        for (ConnectorLine *line : *m_pConnector->lineList())
+            line->setSelected(sel);
+        return;
+    }
+    if (event->modifiers() & Qt::ShiftModifier) // Branch: drag a new wire
+    {
+        bool horiz = dy() == 0; // Leave this wire at a right angle
+        if (connectAt(point))
+            circ->beginWireDrag(horiz ? 2 : 1);
+        return;
+    }
+    if (!conSelected())
+        selectWire();
+
+    m_drag    = hitTest(event->scenePos());
+    m_dragged = false;
 }
 
 void ConnectorLine::mouseMoveEvent( QGraphicsSceneMouseEvent* event )
 {
     event->accept();
+    if (m_drag == NoDrag || Circuit::self()->wireDragging())
+        return;
 
-    QPoint delta = togrid( event->scenePos() ).toPoint() - togrid(event->lastScenePos()).toPoint();
+    QPoint delta = togrid(event->scenePos()).toPoint() -
+                   togrid(event->lastScenePos()).toPoint();
+    if (delta.isNull())
+        return;
 
-    if( event->modifiers() & Qt::ShiftModifier )          // Move Corner
+    if (!m_dragged) // First real move: undo point
     {
-        //qDebug() << "ConnectorLine::mousePressEvent"<<event->scenePos()<<evPoint<<p1()<<p2();
-        //qDebug() << "ConnectorLine::mousePressEvent corner"<<delta;
-        if     ( m_moveP1 ) setP1( p1()+delta );
-        else if( m_moveP2 ) setP2( p2()+delta );
+        Circuit::self()->saveState();
+        m_dragged = true;
     }
+    if (m_drag == DragP1)
+        setP1(p1() + delta);
+    else if (m_drag == DragP2)
+        setP2(p2() + delta);
     else
     {
         int myindex = m_pConnector->lineList()->indexOf( this );
-
+        // An end segment drags a new stub out of its pin, so the pin end
+        // stays put and the segment moves parallel.
         if( myindex == 0 )
             m_pConnector->addConLine( p1().x(), p1().y(), p1().x(), p1().y(), myindex );
 
@@ -374,21 +397,55 @@ void ConnectorLine::mouseMoveEvent( QGraphicsSceneMouseEvent* event )
     }
     updatePos();
     updateLines();
-    //Circuit::self()->update();
+    for (ConnectorLine *line : *m_pConnector->lineList())
+        line->update();
 }
 
 void ConnectorLine::mouseReleaseEvent( QGraphicsSceneMouseEvent* event )
 {
     event->accept();
-    m_moveP1 = false;
-    m_moveP2 = false;
-    m_pConnector->remNullLines();
+    bool dragged = m_dragged;
+    m_drag       = NoDrag;
+    m_dragged    = false;
+    m_moveP1     = false;
+    m_moveP2     = false;
+    m_moving     = false;
 
-    if( m_moving )
-    {
-        m_moving = false;
+    if (dragged) {
+        Connector *con = m_pConnector;
+        con->remNullLines(); // May remove this line: touch nothing after
         Circuit::self()->setChanged();
     }
+}
+
+void ConnectorLine::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
+{
+    if (Circuit::self()->is_constarted())
+        return;
+    if (!conSelected()) {
+        setCursor(Qt::PointingHandCursor);
+        return;
+    }
+
+    DragMode mode = hitTest(event->scenePos());
+    if (mode != DragSegment)
+        setCursor(Qt::SizeAllCursor);
+    else if (isDiagonal())
+        setCursor(Qt::SizeAllCursor);
+    else if (dy() == 0)
+        setCursor(Qt::SizeVerCursor);
+    else
+        setCursor(Qt::SizeHorCursor);
+}
+
+QVariant ConnectorLine::itemChange(GraphicsItemChange change,
+                                   const QVariant &value)
+{
+    if (change == ItemSelectedHasChanged && m_pConnector) // Handles on/off
+        for (ConnectorLine *line : *m_pConnector->lineList())
+            if (line != this)
+                line->update();
+    return QGraphicsObject::itemChange(change, value);
 }
 
 void ConnectorLine::contextMenuEvent( QGraphicsSceneContextMenuEvent* event )
@@ -431,39 +488,22 @@ Connector* ConnectorLine::connector(){ return m_pConnector; }
 
 QPainterPath ConnectorLine::shape() const
 {
-    int dy = m_p2Y-m_p1Y;
-    int dx = m_p2X-m_p1X;
-    int q = 0;
-    int i = 0;
+    QPainterPath line;
+    line.moveTo(0, 0);
+    line.lineTo(m_p2X - m_p1X, m_p2Y - m_p1Y);
 
-    if( this->cursor().shape() == Qt::ArrowCursor ) // New Connector
-    {
-        if     ( dx > 0 ) q = -3;
-        else if( dx < 0 ) q =  3;
-        if     ( dy > 0 ) i = -3;
-        else if( dy < 0 ) i =  3;
-    }
+    QPainterPathStroker stroker; // A comfortable band to click on
+    stroker.setWidth(2 * kGrab);
+    stroker.setCapStyle(Qt::RoundCap);
+    QPainterPath path = stroker.createStroke(line);
 
-    QPainterPath path;
-    
-    QVector<QPointF> points;
-    
-    if( abs(m_p2X - m_p1X) > abs(m_p2Y - m_p1Y) )
+    if (conSelected()) // Handles stick out of the band
     {
-        points << mapFromScene( QPointF( m_p1X  , m_p1Y-2 ) )
-               << mapFromScene( QPointF( m_p1X  , m_p1Y+2 ) )
-               << mapFromScene( QPointF( m_p2X+q, m_p2Y+2 ) )
-               << mapFromScene( QPointF( m_p2X+q, m_p2Y-2 ) );
+        double r = kVertex + 2;
+        path.addRect(QRectF(-r, -r, 2 * r, 2 * r));
+        path.addRect(
+            QRectF(m_p2X - m_p1X - r, m_p2Y - m_p1Y - r, 2 * r, 2 * r));
     }
-    else
-    {
-        points << mapFromScene( QPointF( m_p1X-2, m_p1Y   ) )
-               << mapFromScene( QPointF( m_p1X+2, m_p1Y   ) )
-               << mapFromScene( QPointF( m_p2X+2, m_p2Y+i ) )
-               << mapFromScene( QPointF( m_p2X-2, m_p2Y+i ) );
-    }
-    path.addPolygon( QPolygonF(points) );
-    path.closeSubpath();
     return path;
 }
 
@@ -472,42 +512,58 @@ void ConnectorLine::paint( QPainter* p, const QStyleOptionGraphicsItem* option, 
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
-    //pen.setColor( Qt::darkGray);
-    //p->setPen( pen );
-
+    bool wireSel = conSelected();
+    QColor sel   = ThemeManager::self()->wireSelected();
     QColor color;
-    if (isSelected())
-        color = ThemeManager::self()->wireSelected();
-    else if( !m_isBus  && Circuit::self()->animate() )               //color = QColor( 40, 40, 60 /*Qt::black*/ );
-    {
+    if (wireSel)
+        color = sel;
+    else if (!m_isBus && Circuit::self()->animate()) {
         if( m_pConnector->getVolt() > 2.5 ) color = QColor( 200, 50, 50 );
-        else                                color = QColor( 50, 50, 200 );
-        //int volt = 50*int( m_pConnector->getVolt() );
-        //if( volt > 250 )volt = 250;
-        //if( volt < 0 ) volt = 0;
-
-        /*if( m_pConnector->endPin()
-        && (m_pConnector->startPin()->changed()
-        ||  m_pConnector->endPin()->changed()) )
-        { pen.setWidth(3); }*/
-
-        //color = QColor( volt, 50, 250-volt);
-    }
-    else if( m_isBus ) color =  Qt::darkGreen;
+        else
+            color = QColor(50, 50, 200);
+    } else if (m_isBus)
+        color = Qt::darkGreen;
     else
         color = ThemeManager::self()->wireColor();
 
-    QPen pen( color, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin );
-    //p->setBrush( Qt::green );
-    //p->drawRect( boundingRect() );
-    //p->setBrush( Qt::blue );
-    //p->drawPath( shape() );
-    
-    if( m_isBus ) 
+    if (wireSel) // Halo: tells a selected wire apart in every color mode
     {
-        pen.setWidth( 3 );
+        QColor halo = sel;
+        halo.setAlpha(60);
+        p->setPen(QPen(halo, 7, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        p->drawLine(0, 0, dx(), dy());
     }
+    QPen pen(color, m_isBus ? 3 : 2, Qt::SolidLine, Qt::RoundCap,
+             Qt::RoundJoin);
     p->setPen( pen );
-    p->drawLine( 0, 0, dx(), dy());
-}
+    p->drawLine(0, 0, dx(), dy());
 
+    if (!wireSel || Circuit::self()->is_constarted())
+        return;
+
+    // Handles: every corner (square) and the center of the segment (dot).
+    // Ends on pins are drawn as small rings: they don't move.
+    p->setRenderHint(QPainter::Antialiasing);
+    QList<ConnectorLine *> *lines = m_pConnector->lineList();
+    int index                     = lines->indexOf(this);
+    QColor fill =
+        ThemeManager::self()->isDark() ? QColor(30, 30, 36) : Qt::white;
+
+    auto vertex = [&](QPointF at, bool fixed) {
+        p->setPen(QPen(sel, 1.2));
+        p->setBrush(fill);
+        if (fixed)
+            p->drawEllipse(at, kVertex - 0.8, kVertex - 0.8);
+        else
+            p->drawRect(QRectF(at.x() - kVertex, at.y() - kVertex, 2 * kVertex,
+                               2 * kVertex));
+    };
+    vertex(QPointF(0, 0), index == 0);
+    vertex(QPointF(dx(), dy()), index == lines->size() - 1);
+
+    if (abs(dx()) + abs(dy()) >= 4 * kVertex + 2 * kCenter) {
+        p->setPen(QPen(fill, 1.2));
+        p->setBrush(sel);
+        p->drawEllipse(QPointF(dx() / 2.0, dy() / 2.0), kCenter, kCenter);
+    }
+}

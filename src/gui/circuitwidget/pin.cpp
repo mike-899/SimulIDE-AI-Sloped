@@ -197,7 +197,11 @@ void Pin::mousePressEvent( QGraphicsSceneMouseEvent* event )
             }
             event->accept();
             if( Circuit::self()->is_constarted() ) Circuit::self()->closeconnector( this );
-            else                                   Circuit::self()->newconnector( this );
+            else // Drag & drop: the wire follows the mouse until release
+            {
+                Circuit::self()->newconnector(this);
+                Circuit::self()->beginWireDrag();
+            }
         }
         else event->ignore();
     }

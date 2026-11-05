@@ -119,8 +119,30 @@ Component::Component( QObject* parent, QString type, QString id )
 }
 Component::~Component(){}
 
+Pin *Component::freePinAt(QPointF scenePos)
+{
+    const double tol = 4.5;
+    for (QGraphicsItem *ch : childItems()) {
+        if (ch->type() != Pin::Type || !ch->isVisible())
+            continue;
+        Pin *pin = static_cast<Pin *>(ch);
+        if (pin->connector() || pin->unused())
+            continue;
+        QPointF d = pin->scenePos() - scenePos;
+        if (fabs(d.x()) <= tol && fabs(d.y()) <= tol)
+            return pin;
+    }
+    return nullptr;
+}
+
 void Component::mousePressEvent( QGraphicsSceneMouseEvent* event )
 {
+    if (event->button() == Qt::LeftButton &&
+        !(event->modifiers() & Qt::ControlModifier) &&
+        freePinAt(event->scenePos())) {
+        event->ignore(); // Let the pin below get it: drag a wire from it
+        return;
+    }
     if( event->button() == Qt::LeftButton )
     {
         event->accept();
