@@ -22,6 +22,7 @@
 #include "circuit.h"
 #include "filebrowser.h"
 #include "mainwindow.h"
+#include "serialmonitor.h"
 #include "simuapi_apppath.h"
 #include "thememanager.h"
 
@@ -67,6 +68,9 @@ void CircuitWidget::clear()
 {
     m_circView.clear();
     m_circView.setCircTime( 0 );
+    // The previous circuit's serial output doesn't belong to the next one
+    if (SerialMonitor *mon = MainWindow::self()->serialMonitor())
+        mon->clear();
 }
 
 static QAction *makeAction(QObject *parent, const QString &icon,

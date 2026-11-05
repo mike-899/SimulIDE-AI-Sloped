@@ -75,6 +75,10 @@ class MAINMODULE_EXPORT MainWindow : public QMainWindow
 
     // Open the code panel with the integrated serial monitor expanded
     void openSerialMonitor(int uart = 0);
+    SerialMonitor *serialMonitor()
+    {
+        return m_serialMonitor;
+    }
 
     // Top bar theme toggle (placeholder, see toggleTheme())
     QAction *themeToggleAction()
@@ -194,7 +198,7 @@ class MAINMODULE_EXPORT MainWindow : public QMainWindow
     QSplitter *m_codeSplitter;
     QWidget *m_serialPanel;
     QToolButton *m_serialToggle;
-    SerialMonitor *m_serialMonitor;
+    SerialMonitor *m_serialMonitor = nullptr;
     QComboBox *m_mcuSelector;
 
     QFrame *m_inspector;
