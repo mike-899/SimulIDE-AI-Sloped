@@ -60,6 +60,9 @@ class CircuitView : public QGraphicsView
         void zoomOut();
         void zoomToFit();
         void zoomReset();
+        // Click (or Enter) on a library card: add the part at the center of
+        // the visible area, selected, the same way a drop does.
+        void placeComponent(const QString &type, const QString &dragId);
 
       protected:
         void contextMenuEvent( QContextMenuEvent* event );

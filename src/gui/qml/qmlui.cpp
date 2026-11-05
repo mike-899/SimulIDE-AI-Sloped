@@ -15,6 +15,7 @@
 #include <QCoreApplication>
 #include <QCursor>
 #include <QDebug>
+#include <QKeyEvent>
 #include <QQmlComponent>
 #include <QQmlContext>
 #include <QQmlEngine>
@@ -96,6 +97,74 @@ void QmlUi::init(MainWindow *window, CircuitWidget *circuit,
                             new ShellController(window, circuit, this));
 }
 
+// QQuickWidget (Qt < 6.7) keeps Tab inside its scene: after the last
+// control it wraps to the first, so the keyboard could never leave the top
+// bar. This filter hands the focus to the next / previous widget at the
+// ends of the scene's tab chain, and lands on the first (last) control when
+// the widget is entered with Tab (Shift+Tab).
+namespace
+{
+class TabChainFilter : public QObject
+{
+  public:
+    using QObject::QObject;
+
+  protected:
+    bool eventFilter(QObject *obj, QEvent *ev) override
+    {
+        QQuickWidget *w = qobject_cast<QQuickWidget *>(obj);
+        if (!w || !w->quickWindow())
+            return false;
+        QQuickItem *root  = w->quickWindow()->contentItem();
+        QQuickItem *first = root->nextItemInFocusChain(true);
+        QQuickItem *last  = root->nextItemInFocusChain(false);
+        if (!first || first == root) // Nothing focusable in this scene
+            return false;
+
+        if (ev->type() == QEvent::FocusIn) {
+            auto reason = static_cast<QFocusEvent *>(ev)->reason();
+            if (reason == Qt::TabFocusReason)
+                QMetaObject::invokeMethod(
+                    first,
+                    [first] { first->forceActiveFocus(Qt::TabFocusReason); },
+                    Qt::QueuedConnection);
+            else if (reason == Qt::BacktabFocusReason)
+                QMetaObject::invokeMethod(
+                    last,
+                    [last] { last->forceActiveFocus(Qt::BacktabFocusReason); },
+                    Qt::QueuedConnection);
+            return false;
+        }
+        if (ev->type() != QEvent::KeyPress)
+            return false;
+        QKeyEvent *k = static_cast<QKeyEvent *>(ev);
+        bool fwd =
+            k->key() == Qt::Key_Tab && !(k->modifiers() & Qt::ShiftModifier);
+        bool bwd =
+            k->key() == Qt::Key_Backtab ||
+            (k->key() == Qt::Key_Tab && (k->modifiers() & Qt::ShiftModifier));
+        if (!fwd && !bwd)
+            return false;
+        QQuickItem *cur = w->quickWindow()->activeFocusItem();
+        if ((fwd && cur == last) || (bwd && cur == first)) {
+            QWidget *next = w;
+            do { // Next widget in the chain that takes Tab focus
+                next = fwd ? next->nextInFocusChain()
+                           : next->previousInFocusChain();
+            } while (next != w && !(next->isVisible() && next->isEnabled() &&
+                                    (next->focusPolicy() & Qt::TabFocus) &&
+                                    next->window() == w->window()));
+            if (next != w) {
+                next->setFocus(fwd ? Qt::TabFocusReason
+                                   : Qt::BacktabFocusReason);
+                return true;
+            }
+        }
+        return false;
+    }
+};
+} // namespace
+
 QQuickWidget *QmlUi::createWidget(const QString &file, QWidget *parent,
                                   bool overlay)
 {
@@ -103,6 +172,8 @@ QQuickWidget *QmlUi::createWidget(const QString &file, QWidget *parent,
     w->setObjectName("qml_" + QString(file).remove(".qml"));
     // Tab must reach the QML controls (keyboard navigation), not only clicks
     w->setFocusPolicy(Qt::StrongFocus);
+    static TabChainFilter *tabFilter = new TabChainFilter(qApp);
+    w->installEventFilter(tabFilter);
     if (overlay) {
         w->setAttribute(Qt::WA_AlwaysStackOnTop);
         w->setAttribute(Qt::WA_TranslucentBackground);

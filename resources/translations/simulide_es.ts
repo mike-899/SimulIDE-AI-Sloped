@@ -3089,6 +3089,10 @@ Quiere guardar los cambios?
         <source>Drag into the circuit to add it</source>
         <translation>Arrastralo al circuito para agregarlo</translation>
     </message>
+    <message>
+        <source>Click or drag into the circuit to add it</source>
+        <translation>Hacé clic o arrastralo al circuito para agregarlo</translation>
+    </message>
 </context>
 <context>
     <name>ComponentPanel</name>

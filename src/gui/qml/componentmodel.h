@@ -60,6 +60,7 @@ class ComponentModel : public QAbstractListModel
     // Starts a real drag (same mime data as the Widgets cards, so
     // CircuitView::dropEvent creates the component). Blocks until drop.
     Q_INVOKABLE void startDrag(const QString &name);
+    Q_INVOKABLE void place(const QString &name); // Click to add
     Q_INVOKABLE void manage();
 
   signals:

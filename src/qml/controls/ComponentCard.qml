@@ -6,6 +6,15 @@ import QtQuick
 Item {
     id: card
     property var data_: ({})
+    // Keyboard: Tab to a card, Enter / Space adds it
+    activeFocusOnTab: true
+    Keys.onReturnPressed: Components.place(card.data_.name)
+    Keys.onEnterPressed: Components.place(card.data_.name)
+    Keys.onSpacePressed: Components.place(card.data_.name)
+    Accessible.role: Accessible.Button
+    Accessible.name: card.data_.name || ""
+    property bool visualFocus: activeFocus // For FocusRing
+    FocusRing { targetRadius: 16 }
     implicitWidth: 96
     implicitHeight: 100
 
@@ -74,6 +83,7 @@ Item {
         property point origin
         property bool dragging: false
         onPressed: (ev) => { origin = Qt.point(ev.x, ev.y); dragging = false }
+        onClicked: if (!dragging) Components.place(card.data_.name) // Click: add it
         onPositionChanged: (ev) => {
             if (!pressed || dragging) return
             if (Math.abs(ev.x - origin.x) + Math.abs(ev.y - origin.y) < 8) return
@@ -90,6 +100,6 @@ Item {
         anchor: card
         hovered: card.hovered && !mouse.pressed
         text: (card.data_.name || "") + (card.data_.info ? "\n" + card.data_.info : "")
-              + "\n" + qsTr("Drag into the circuit to add it")
+              + "\n" + qsTr("Click or drag into the circuit to add it")
     }
 }

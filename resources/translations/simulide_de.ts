@@ -3089,6 +3089,10 @@ Sollen die Änderungen gespeichert werden?
         <source>Drag into the circuit to add it</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Click or drag into the circuit to add it</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ComponentPanel</name>

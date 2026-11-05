@@ -4,6 +4,7 @@
  ***************************************************************************/
 #include "componentmodel.h"
 
+#include "circuitview.h"
 #include "componentselector.h"
 #include "thememanager.h"
 
@@ -134,6 +135,17 @@ void ComponentModel::startDrag(const QString &name)
     QString dragId = item->data(0, Qt::WhatsThisRole).toString();
     QPixmap icon   = item->icon(0).pixmap(QSize(48, 36));
     ComponentSelector::execDrag(this, dragId, type, icon);
+}
+
+void ComponentModel::place(const QString &name)
+{
+    QTreeWidgetItem *item = m_selector->itemByName(name);
+    if (!item)
+        return;
+    QString type   = item->data(0, ComponentSelector::TypeRole).toString();
+    QString dragId = item->data(0, Qt::WhatsThisRole).toString();
+    if (CircuitView *view = CircuitView::self())
+        view->placeComponent(type, dragId);
 }
 
 void ComponentModel::manage()

@@ -296,6 +296,41 @@ void CircuitView::dragEnterEvent(QDragEnterEvent *event)
     }
 }
 
+void CircuitView::placeComponent(const QString &type, const QString &dragId)
+{
+    if (type.isEmpty() || dragId.isEmpty() || m_circuit->is_constarted())
+        return;
+
+    Component *comp =
+        m_circuit->createItem(type, dragId + "-" + m_circuit->newSceneId());
+    if (!comp)
+        return;
+
+    m_circuit->saveState();
+    if (type == "Subcircuit")
+        static_cast<SubCircuit *>(comp)->setLogicSymbol(true);
+
+    // Center of the visible area; step aside while another part sits there,
+    // so clicking a card several times doesn't stack them.
+    QPointF pos = togrid(visibleCenter());
+    for (int i = 0; i < 20; i++) {
+        bool taken = false;
+        for (Component *c : *m_circuit->compList())
+            if (c != comp && togrid(c->pos()) == pos) {
+                taken = true;
+                break;
+            }
+        if (!taken)
+            break;
+        pos += QPointF(0, 40); // Next free row below
+    }
+    comp->setPos(pos);
+    m_circuit->addItem(comp);
+    m_circuit->clearSelection();
+    comp->setSelected(true);
+    setFocus(); // Del, rotate etc. act on it right away
+}
+
 void CircuitView::dragMoveEvent(QDragMoveEvent *event)
 {
     event->accept();
