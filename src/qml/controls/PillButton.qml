@@ -10,7 +10,8 @@ AbstractButton {
     implicitHeight: 40
     implicitWidth: row.implicitWidth + 48
     hoverEnabled: true
-    focusPolicy: Qt.NoFocus
+    focusPolicy: Qt.TabFocus // Tab reaches it; a click keeps the canvas focus
+    Accessible.name: btn.text
 
     readonly property color fg: tonal ? Theme.onSecondaryContainer : Theme.onPrimary
 
@@ -46,4 +47,5 @@ AbstractButton {
             }
         }
     }
+    FocusRing { targetRadius: bg.radius }
 }

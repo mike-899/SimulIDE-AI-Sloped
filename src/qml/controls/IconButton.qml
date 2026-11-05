@@ -15,7 +15,8 @@ AbstractButton {
     implicitWidth: size
     implicitHeight: size
     hoverEnabled: true
-    focusPolicy: Qt.NoFocus
+    focusPolicy: Qt.TabFocus // Tab reaches it; a click keeps the canvas focus
+    Accessible.name: btn.tip.length ? btn.tip : btn.iconName
 
     readonly property color containerColor: {
         if (!enabled) return variant === "standard" || variant === "vibrant"
@@ -58,4 +59,5 @@ AbstractButton {
         }
     }
     Tip { anchor: btn; text: btn.tip; hovered: btn.hovered }
+    FocusRing { targetRadius: bg.radius }
 }

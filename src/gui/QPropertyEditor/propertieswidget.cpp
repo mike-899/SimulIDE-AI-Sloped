@@ -61,6 +61,7 @@ void PropertiesWidget::createWidgets()
     m_help = new QPlainTextEdit(this);
     m_help->setObjectName("propertiesHelp");
     m_help->setReadOnly( true );
+    m_help->setTabChangesFocus(true);
     m_help->setMaximumHeight(110);
     m_help->setVisible(false);
     widgetLayout->addWidget(m_help, 2, 0);

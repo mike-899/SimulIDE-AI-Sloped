@@ -12,6 +12,7 @@
         <file>controls/Elevation.qml</file>
         <file>controls/Icon.qml</file>
         <file>controls/IconButton.qml</file>
+        <file>controls/FocusRing.qml</file>
         <file>controls/LoadingShape.qml</file>
         <file>controls/M3Switch.qml</file>
         <file>controls/M3TextField.qml</file>

@@ -22,6 +22,7 @@
 #include "circuit.h"
 #include "filebrowser.h"
 #include "mainwindow.h"
+#include "simuapi_apppath.h"
 #include "thememanager.h"
 
 CircuitWidget*  CircuitWidget::m_pSelf = 0l;
@@ -363,6 +364,21 @@ bool CircuitWidget::loadCirc(QString path, QString *error)
 
 void CircuitWidget::recoverCirc(QString backupPath, QString origPath)
 {
+    // Older versions kept the backup next to the file and no backupOrig:
+    // derive the original from the backup name. A backup in our own data
+    // folder has no known original: recover it as an untitled circuit.
+    if (origPath.isEmpty() || origPath.endsWith("_backup.simu")) {
+        QString dataDir =
+            SIMUAPI_AppPath::self()->RWDataFolder().absolutePath();
+        QFileInfo fi(origPath.isEmpty() ? backupPath : origPath);
+        if (fi.absolutePath().startsWith(dataDir))
+            origPath = "";
+        else
+            origPath =
+                fi.absolutePath() + "/" +
+                fi.completeBaseName().remove(QRegularExpression("_backup$")) +
+                ".simu";
+    }
     if (!loadCirc(backupPath))
         return;
 

@@ -73,7 +73,19 @@ CircuitView::CircuitView( QWidget *parent )
     m_info->setAttribute( Qt::WA_NoSystemBackground );
     m_info->setAttribute( Qt::WA_TranslucentBackground );
     m_info->setAttribute( Qt::WA_TransparentForMouseEvents );
-    m_info->setStyleSheet( "color: #884433;background-color: rgba(0,0,0,0)" );
+    // A label, not an editor: Tab used to land here and type tab characters
+    // into "Time: ..." instead of moving on to the next control.
+    m_info->setReadOnly(true);
+    m_info->setFocusPolicy(Qt::NoFocus);
+    m_info->setTextInteractionFlags(Qt::NoTextInteraction);
+    auto infoColor = [this]() { // Theme text color (was a fixed dim brown)
+        m_info->setStyleSheet(
+            "color: " + ThemeManager::self()->textColor().name() +
+            ";background-color: rgba(0,0,0,0)");
+    };
+    infoColor();
+    connect(ThemeManager::self(), &ThemeManager::themeChanged, m_info,
+            infoColor);
     m_info->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff  );
     
     double fontScale = MainWindow::self()->fontScale();

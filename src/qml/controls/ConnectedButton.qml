@@ -13,7 +13,8 @@ AbstractButton {
 
     checkable: false // checked is bound by the group owner
     hoverEnabled: true
-    focusPolicy: Qt.NoFocus
+    focusPolicy: Qt.TabFocus // Tab reaches it; a click keeps the canvas focus
+    Accessible.name: btn.text.length ? btn.text : btn.tip
     implicitHeight: compact ? 40 : 48
     implicitWidth: row.implicitWidth + (compact ? 24 : 32)
 
@@ -72,4 +73,5 @@ AbstractButton {
         }
     }
     Tip { anchor: btn; text: btn.tip; hovered: btn.hovered }
+    FocusRing { targetRadius: Math.min(btn.height / 2, 12) }
 }

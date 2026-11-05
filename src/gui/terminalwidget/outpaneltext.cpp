@@ -27,7 +27,8 @@ OutPanelText::OutPanelText( QWidget* parent )
             : QPlainTextEdit( parent )
 {
     m_text = "";
-    
+    setTabChangesFocus(true); // Output pane: Tab moves on, it isn't typed
+
     //setStyleSheet("background-color: #150925");
     m_highlighter = new OutHighlighter( document() );
 

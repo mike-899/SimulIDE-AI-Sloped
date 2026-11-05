@@ -7,7 +7,8 @@ AbstractButton {
     id: sw
     checkable: true
     hoverEnabled: true
-    focusPolicy: Qt.NoFocus
+    focusPolicy: Qt.TabFocus // Tab reaches it; a click keeps the canvas focus
+    Accessible.name: sw.text
     implicitWidth: 52
     implicitHeight: 32
 
@@ -47,4 +48,5 @@ AbstractButton {
             }
         }
     }
+    FocusRing { targetRadius: height / 2 }
 }

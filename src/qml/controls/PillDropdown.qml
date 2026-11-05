@@ -14,7 +14,8 @@ AbstractButton {
     readonly property string currentLabel: model.length > currentIndex && currentIndex >= 0
                                            ? model[currentIndex].label : ""
     hoverEnabled: true
-    focusPolicy: Qt.NoFocus
+    focusPolicy: Qt.TabFocus // Tab reaches it; a click keeps the canvas focus
+    Accessible.name: dd.text
     implicitHeight: 48
     text: currentLabel
     onClicked: menu.opened ? menu.close() : menu.open()
@@ -143,4 +144,5 @@ AbstractButton {
             }
         }
     }
+    FocusRing { targetRadius: bg.radius }
 }

@@ -12,7 +12,8 @@ AbstractButton {
 
     enabled: Sim.canToggle
     hoverEnabled: true
-    focusPolicy: Qt.NoFocus
+    focusPolicy: Qt.TabFocus // Tab reaches it; a click keeps the canvas focus
+    Accessible.name: fab.text
     implicitHeight: 56
     implicitWidth: content.implicitWidth + 40
     text: state_ === "On" ? (shortLabel ? qsTr("Stop") : qsTr("Stop Simulation"))
@@ -76,4 +77,5 @@ AbstractButton {
         }
     }
     Tip { anchor: fab; text: qsTr("Power the circuit on / off"); hovered: fab.hovered }
+    FocusRing { targetRadius: bg.radius }
 }

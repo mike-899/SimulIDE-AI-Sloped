@@ -101,7 +101,8 @@ QQuickWidget *QmlUi::createWidget(const QString &file, QWidget *parent,
 {
     QQuickWidget *w = new QQuickWidget(m_engine, parent);
     w->setObjectName("qml_" + QString(file).remove(".qml"));
-    w->setFocusPolicy(Qt::ClickFocus);
+    // Tab must reach the QML controls (keyboard navigation), not only clicks
+    w->setFocusPolicy(Qt::StrongFocus);
     if (overlay) {
         w->setAttribute(Qt::WA_AlwaysStackOnTop);
         w->setAttribute(Qt::WA_TranslucentBackground);
