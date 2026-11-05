@@ -20,6 +20,7 @@
 #include <QSvgGenerator>
 
 #include "circuitwidget.h"
+#include "thememanager.h"
 #include "circuitview.h"
 #include "circuit.h"
 #include "mainwindow.h"
@@ -297,39 +298,39 @@ void CircuitView::contextMenuEvent(QContextMenuEvent* event)
 
         QMenu menu;
 
-        QAction* pasteAction = menu.addAction(QIcon(":/paste.png"),tr("Paste")+"\tCtrl+V");
+        QAction* pasteAction = menu.addAction(ThemeManager::icon("content_paste"),tr("Paste")+"\tCtrl+V");
         connect( pasteAction, SIGNAL( triggered()), this, SLOT(slotPaste()) );
 
-        QAction* undoAction = menu.addAction(QIcon(":/undo.png"),tr("Undo")+"\tCtrl+Z");
+        QAction* undoAction = menu.addAction(ThemeManager::icon("undo"),tr("Undo")+"\tCtrl+Z");
         connect( undoAction, SIGNAL( triggered()), Circuit::self(), SLOT(undo()) );
 
-        QAction* redoAction = menu.addAction(QIcon(":/redo.png"),tr("Redo")+"\tCtrl+Y");
+        QAction* redoAction = menu.addAction(ThemeManager::icon("redo"),tr("Redo")+"\tCtrl+Y");
         connect( redoAction, SIGNAL( triggered()), Circuit::self(), SLOT(redo()) );
         menu.addSeparator();
 
-        /*QAction* openCircAct = menu.addAction(QIcon(":/opencirc.png"), tr("Open Circuit")+"\tCtrl+O" );
+        /*QAction* openCircAct = menu.addAction(ThemeManager::icon("folder_open"), tr("Open Circuit")+"\tCtrl+O" );
         connect(openCircAct, SIGNAL(triggered()), CircuitWidget::self(), SLOT(openCirc()));
 
-        QAction* newCircAct = menu.addAction( QIcon(":/newcirc.png"), tr("New Circuit")+"\tCtrl+N" );
+        QAction* newCircAct = menu.addAction( ThemeManager::icon("note_add"), tr("New Circuit")+"\tCtrl+N" );
         connect( newCircAct, SIGNAL(triggered()), CircuitWidget::self(), SLOT(newCircuit()));
 
-        QAction* saveCircAct = menu.addAction(QIcon(":/savecirc.png"), tr("Save Circuit")+"\tCtrl+S" );
+        QAction* saveCircAct = menu.addAction(ThemeManager::icon("save"), tr("Save Circuit")+"\tCtrl+S" );
         connect(saveCircAct, SIGNAL(triggered()), CircuitWidget::self(), SLOT(saveCirc()));
 
-        QAction* saveCircAsAct = menu.addAction(QIcon(":/savecircas.png"),tr("Save Circuit As...")+"\tCtrl+Shift+S" );
+        QAction* saveCircAsAct = menu.addAction(ThemeManager::icon("save_as"),tr("Save Circuit As...")+"\tCtrl+Shift+S" );
         connect(saveCircAsAct, SIGNAL(triggered()), CircuitWidget::self(), SLOT(saveCircAs()));
         menu.addSeparator();*/
 
-        QAction* importCircAct = menu.addAction(QIcon(":/opencirc.png"), tr("Import Circuit") );
+        QAction* importCircAct = menu.addAction(ThemeManager::icon("folder_open"), tr("Import Circuit") );
         connect(importCircAct, SIGNAL(triggered()), this, SLOT(importCirc()));
 
-        QAction* saveImgAct = menu.addAction( QIcon(":/saveimage.png"), tr("Save Circuit as Image") );
+        QAction* saveImgAct = menu.addAction( ThemeManager::icon("image"), tr("Save Circuit as Image") );
         connect( saveImgAct, SIGNAL(triggered()), this, SLOT(saveImage()));
 
-        QAction* createSubCircAct = menu.addAction(QIcon(":/load.png"), tr("Create SubCircuit") );
+        QAction* createSubCircAct = menu.addAction(ThemeManager::icon("folder_open"), tr("Create SubCircuit") );
         connect(createSubCircAct, SIGNAL(triggered()), Circuit::self(), SLOT( createSubcircuit() ));
         
-        QAction* createBomAct = menu.addAction(QIcon(":/savecirc.png"), tr("Bill of Materials") );
+        QAction* createBomAct = menu.addAction(ThemeManager::icon("save"), tr("Bill of Materials") );
         connect(createBomAct, SIGNAL(triggered()), Circuit::self(), SLOT( bom() ));
 
         menu.exec( mapFromScene( eventPos ) );

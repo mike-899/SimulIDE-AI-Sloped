@@ -29,7 +29,7 @@ LibraryItem* SR04::libraryItem()
     return new LibraryItem(
             tr( "HC-SR04" ),
             tr( "Sensors" ),
-            "sr04.png",
+            "sr04.svg",
             "SR04",
             SR04::construct);
 }
@@ -40,7 +40,7 @@ SR04::SR04( QObject* parent, QString type, QString id )
 {
     m_area = QRect( -10*8, -4*8, 21*8, 9*8 );
     setLabelPos(-16,-48, 0);
-    m_BackGround = ":/sr04.png";
+    m_BackGround = ":/sr04.svg";
     
     m_pin.resize(5);
     

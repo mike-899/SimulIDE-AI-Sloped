@@ -30,7 +30,7 @@ LibraryItem* Voltimeter::libraryItem()
     return new LibraryItem(
             tr( "Voltimeter" ),
             tr( "Meters" ),
-            "voltimeter.png",
+            "voltimeter.svg",
             "Voltimeter",
             Voltimeter::construct);
 }

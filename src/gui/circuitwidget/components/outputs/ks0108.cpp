@@ -37,7 +37,7 @@ LibraryItem* Ks0108::libraryItem()
     return new LibraryItem(
         tr( "Ks0108" ),
         tr( "Outputs" ),
-        "ks0108.png",
+        "ks0108.svg",
         "Ks0108",
         Ks0108::construct );
 }

@@ -32,7 +32,7 @@ LibraryItem* ResistorDip::libraryItem()
     return new LibraryItem(
             tr( "ResistorDip" ),
             tr( "Passive" ),
-            "resistordip.png",
+            "resistordip.svg",
             "ResistorDip",
             ResistorDip::construct);
 }

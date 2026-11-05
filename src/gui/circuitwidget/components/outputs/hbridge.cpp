@@ -209,7 +209,7 @@ Component *L298N::construct(QObject *parent, QString type, QString id)
 
 LibraryItem *L298N::libraryItem()
 {
-    return new LibraryItem(tr("L298N Module"), tr("Motors"), "subc.png",
+    return new LibraryItem(tr("L298N Module"), tr("Motors"), "subc.svg",
                            "L298N", L298N::construct);
 }
 
@@ -259,7 +259,7 @@ Component *TB6612::construct(QObject *parent, QString type, QString id)
 
 LibraryItem *TB6612::libraryItem()
 {
-    return new LibraryItem(tr("TB6612FNG Module"), tr("Motors"), "subc.png",
+    return new LibraryItem(tr("TB6612FNG Module"), tr("Motors"), "subc.svg",
                            "TB6612", TB6612::construct);
 }
 
@@ -332,7 +332,7 @@ Component *L293D::construct(QObject *parent, QString type, QString id)
 
 LibraryItem *L293D::libraryItem()
 {
-    return new LibraryItem(tr("L293D"), tr("Motors"), "subc.png", "L293D",
+    return new LibraryItem(tr("L293D"), tr("Motors"), "subc.svg", "L293D",
                            L293D::construct);
 }
 

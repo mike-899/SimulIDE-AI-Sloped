@@ -18,6 +18,7 @@
  ***************************************************************************/
 
 #include "ramtable.h"
+#include "thememanager.h"
 
 #include "basedebugger.h"
 #include "baseprocessor.h"
@@ -98,26 +99,26 @@ void RamTable::slotContextMenu(const QPoint &point)
     QMenu menu;
     if (m_debugger) {
         QAction *loadVars =
-            menu.addAction(QIcon(":/open.png"), tr("Load Variables"));
+            menu.addAction(ThemeManager::icon("folder_open"), tr("Load Variables"));
         connect(loadVars, SIGNAL(triggered()), this, SLOT(loadVariables()));
     }
 
     QAction *clearSelected =
-        menu.addAction(QIcon(":/remove.png"), tr("Clear Selected"));
+        menu.addAction(ThemeManager::icon("delete"), tr("Clear Selected"));
     connect(clearSelected, SIGNAL(triggered()), this, SLOT(clearSelected()));
 
     QAction *clearTable =
-        menu.addAction(QIcon(":/remove.png"), tr("Clear Table"));
+        menu.addAction(ThemeManager::icon("delete"), tr("Clear Table"));
     connect(clearTable, SIGNAL(triggered()), this, SLOT(clearTable()));
 
     menu.addSeparator();
 
     QAction *loadVarSet =
-        menu.addAction(QIcon(":/open.png"), tr("Load VarSet"));
+        menu.addAction(ThemeManager::icon("folder_open"), tr("Load VarSet"));
     connect(loadVarSet, SIGNAL(triggered()), this, SLOT(loadVarSet()));
 
     QAction *saveVarSet =
-        menu.addAction(QIcon(":/save.png"), tr("Save VarSet"));
+        menu.addAction(ThemeManager::icon("save"), tr("Save VarSet"));
     connect(saveVarSet, SIGNAL(triggered()), this, SLOT(saveVarSet()));
 
     menu.exec(mapToGlobal(point));

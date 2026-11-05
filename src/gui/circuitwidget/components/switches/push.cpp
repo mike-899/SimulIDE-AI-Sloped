@@ -31,7 +31,7 @@ LibraryItem* Push::libraryItem()
     return new LibraryItem(
             tr( "Push" ),
             tr( "Switches" ),
-            "push.png",
+            "push.svg",
             "Push",
             Push::construct);
 }

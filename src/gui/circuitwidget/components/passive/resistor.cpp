@@ -34,7 +34,7 @@ LibraryItem* Resistor::libraryItem()
     return new LibraryItem(
             tr( "Resistor" ),
             tr( "Passive" ),
-            "resistor.png",
+            "resistor.svg",
             "Resistor",
             Resistor::construct);
 }

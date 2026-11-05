@@ -38,7 +38,7 @@ LibraryItem* Oscope::libraryItem()
     return new LibraryItem(
         tr( "Oscope" ),
         tr( "Meters" ),
-        "oscope.png",
+        "oscope.svg",
         "Oscope",
         Oscope::construct );
 }

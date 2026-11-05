@@ -18,6 +18,7 @@
  ***************************************************************************/
 
 #include "probe.h"
+#include "thememanager.h"
 #include "connector.h"
 #include "connectorline.h"
 #include "e-source.h"
@@ -42,7 +43,7 @@ LibraryItem* Probe::libraryItem()
     return new LibraryItem(
         tr( "Probe" ),
         tr( "Meters" ),
-        "probe.png",
+        "probe.svg",
         "Probe",
         Probe::construct );
 }
@@ -229,21 +230,21 @@ void Probe::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
     event->accept();
     QMenu* menu  = new QMenu();
-    QMenu *pmenu = menu->addMenu(QIcon(":/fileopen.png"),tr("Plotter Channel"));
+    QMenu *pmenu = menu->addMenu(ThemeManager::icon("folder_open"),tr("Plotter Channel"));
 
-    QAction* plotter1Action = pmenu->addAction(QIcon(":/fileopen.png"),tr("Channel 1"));
+    QAction* plotter1Action = pmenu->addAction(ThemeManager::icon("folder_open"),tr("Channel 1"));
     connect(plotter1Action, SIGNAL(triggered()), this, SLOT(slotPlotter1()));
     
-    QAction* plotter2Action = pmenu->addAction(QIcon(":/fileopen.png"),tr("Channel 2"));
+    QAction* plotter2Action = pmenu->addAction(ThemeManager::icon("folder_open"),tr("Channel 2"));
     connect(plotter2Action, SIGNAL(triggered()), this, SLOT(slotPlotter2()));
     
-    QAction* plotter3Action = pmenu->addAction(QIcon(":/fileopen.png"),tr("Channel 3"));
+    QAction* plotter3Action = pmenu->addAction(ThemeManager::icon("folder_open"),tr("Channel 3"));
     connect(plotter3Action, SIGNAL(triggered()), this, SLOT(slotPlotter3()));
     
-    QAction* plotter4Action = pmenu->addAction(QIcon(":/fileopen.png"),tr("Channel 4"));
+    QAction* plotter4Action = pmenu->addAction(ThemeManager::icon("folder_open"),tr("Channel 4"));
     connect(plotter4Action, SIGNAL(triggered()), this, SLOT(slotPlotter4()));
 
-    QAction* plotterRemAction = pmenu->addAction(QIcon(":/fileopen.png"),tr("Remove from Plotter"));
+    QAction* plotterRemAction = pmenu->addAction(ThemeManager::icon("folder_open"),tr("Remove from Plotter"));
     connect(plotterRemAction, SIGNAL(triggered()), this, SLOT(slotPlotterRem()));
     
     menu->addSeparator();

@@ -27,7 +27,7 @@ LibraryItem* AVRComponent::libraryItem()
     return new LibraryItem(
         tr("AVR"),
         tr("Micro"),
-        "ic2.png",
+        "ic2.svg",
         "AVR",
         AVRComponent::construct );
 }

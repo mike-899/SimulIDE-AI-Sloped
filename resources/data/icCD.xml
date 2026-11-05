@@ -23,7 +23,7 @@
     <tag>QT_TRANSLATE_NOOP("xmlfile","Logic")</tag>
     
     <itemset category="Logic" type="">
-        <item name="IC CD"  package=""  subcircuit=""  icon="ic2.png" ></item>
+        <item name="IC CD"  package=""  subcircuit=""  icon="ic2.svg" ></item>
     </itemset>
     
     <itemset category="Logic/IC CD" type="Subcircuit">

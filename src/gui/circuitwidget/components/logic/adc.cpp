@@ -35,7 +35,7 @@ LibraryItem* ADC::libraryItem()
     return new LibraryItem(
         tr( "ADC" ),
         tr( "Logic/Other Logic" ),
-        "1to3.png",
+        "1to3.svg",
         "ADC",
         ADC::construct );
 }

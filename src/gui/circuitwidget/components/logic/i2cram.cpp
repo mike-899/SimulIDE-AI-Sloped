@@ -18,6 +18,7 @@
  ***************************************************************************/
 
 #include "i2cram.h"
+#include "thememanager.h"
 #include "pin.h"
 
 static const char* I2CRam_properties[] = {
@@ -35,7 +36,7 @@ LibraryItem* I2CRam::libraryItem()
     return new LibraryItem(
         tr( "I2C Ram" ),
         tr( "Logic/Memory" ),
-        "2to3.png",
+        "2to3.svg",
         "I2CRam",
         I2CRam::construct );
 }
@@ -228,10 +229,10 @@ void I2CRam::contextMenuEvent( QGraphicsSceneContextMenuEvent* event )
 
 void I2CRam::contextMenu( QGraphicsSceneContextMenuEvent* event, QMenu* menu )
 {
-    QAction* loadAction = menu->addAction( QIcon(":/load.png"),tr("Load data") );
+    QAction* loadAction = menu->addAction( ThemeManager::icon("folder_open"),tr("Load data") );
     connect( loadAction, SIGNAL(triggered()), this, SLOT(loadData()) );
 
-    QAction* saveAction = menu->addAction(QIcon(":/save.png"), tr("Save data") );
+    QAction* saveAction = menu->addAction(ThemeManager::icon("save"), tr("Save data") );
     connect( saveAction, SIGNAL(triggered()), this, SLOT(saveData()) );
 
     menu->addSeparator();

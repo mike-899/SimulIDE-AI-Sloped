@@ -58,7 +58,7 @@ LibraryItem* Mosfet::libraryItem()
     return new LibraryItem(
             tr( "Mosfet" ),
             tr( "Active" ),
-            "mosfet.png",
+            "mosfet.svg",
             "Mosfet",
             Mosfet::construct);
 }

@@ -38,7 +38,7 @@ LibraryItem* Hd44780::libraryItem()
     return new LibraryItem(
         tr( "Hd44780" ),
         tr( "Outputs" ),
-        "hd44780.png",
+        "hd44780.svg",
         "Hd44780",
         Hd44780::construct );
 }

@@ -37,7 +37,7 @@ LibraryItem* CurrSource::libraryItem()
     return new LibraryItem(
         tr( "Current Source" ),
         tr( "Sources" ),
-        "voltsource.png",
+        "voltsource.svg",
         "Current Source",
         CurrSource::construct );
 }

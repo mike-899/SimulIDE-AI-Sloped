@@ -31,7 +31,7 @@ LibraryItem* LedBar::libraryItem()
     return new LibraryItem(
             tr( "LedBar" ),
             tr( "Outputs" ),
-            "ledbar.png",
+            "ledbar.svg",
             "LedBar",
             LedBar::construct);
 }

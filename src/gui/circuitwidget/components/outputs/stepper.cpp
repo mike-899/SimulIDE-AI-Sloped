@@ -37,7 +37,7 @@ LibraryItem* Stepper::libraryItem()
     return new LibraryItem(
         tr("Stepper"),
         tr("Outputs"),
-        "steeper.png",
+        "steeper.svg",
         "Stepper",
         Stepper::construct );
 }

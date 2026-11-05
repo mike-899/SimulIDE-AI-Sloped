@@ -59,7 +59,7 @@ LibraryItem* BJT::libraryItem()
     return new LibraryItem(
         tr( "BJT" ),
         tr( "Active" ),
-        "bjt.png",
+        "bjt.svg",
         "BJT",
         BJT::construct );
 }

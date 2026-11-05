@@ -37,7 +37,7 @@ LibraryItem* Inductor::libraryItem()
     return new LibraryItem(
             tr( "Inductor" ),
             tr( "Passive" ),
-            "inductor.png",
+            "inductor.svg",
             "Inductor",
             Inductor::construct);
 }

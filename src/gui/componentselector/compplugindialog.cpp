@@ -22,6 +22,7 @@
 #include <QCloseEvent>
 
 #include "compplugindialog.h"
+#include "thememanager.h"
 #include "componentselector.h"
 #include "mainwindow.h"
 #include "ui_compplugin.h"
@@ -71,7 +72,7 @@ void CompPluginDialog::addItem( QTreeWidgetItem* item )
     }
     else
     {
-        listItem->setIcon( QIcon(":/blanc.png") );
+        listItem->setIcon( ThemeManager::icon("blank") );
     }
 }
 

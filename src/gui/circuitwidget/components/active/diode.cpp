@@ -39,7 +39,7 @@ LibraryItem* Diode::libraryItem()
     return new LibraryItem(
             tr( "Diode" ),
             tr( "Active" ),
-            "diode.png",
+            "diode.svg",
             "Diode",
             Diode::construct);
 }

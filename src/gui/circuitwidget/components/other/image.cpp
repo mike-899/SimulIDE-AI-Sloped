@@ -18,6 +18,7 @@
  ***************************************************************************/
 
 #include "image.h"
+#include "thememanager.h"
 #include "circuit.h"
 
 static const char* Image_properties[] = {
@@ -32,7 +33,7 @@ LibraryItem* Image::libraryItem()
     return new LibraryItem(
             tr( "Image" ),
             tr( "Graphical" ),
-            "image.png",
+            "image.svg",
             "Image",
             Image::construct);
 }
@@ -43,7 +44,7 @@ Image::Image( QObject* parent, QString type, QString id )
     Q_UNUSED( Image_properties );
 
     m_BackGround = "";
-    m_image = QPixmap( ":/saveimage.png" );
+    m_image = QPixmap( ":/image_placeholder.svg" );
     m_hSize = 80;
     m_vSize = 80;
     m_area = QRectF( -40, -40, 80, 80 );
@@ -67,7 +68,7 @@ void Image::contextMenuEvent( QGraphicsSceneContextMenuEvent* event )
 
 void Image::contextMenu( QGraphicsSceneContextMenuEvent* event, QMenu* menu )
 {
-    QAction* loadAction = menu->addAction( QIcon(":/load.png"),tr("Load Image") );
+    QAction* loadAction = menu->addAction( ThemeManager::icon("folder_open"),tr("Load Image") );
     connect( loadAction, SIGNAL(triggered()), this, SLOT(slotLoad()) );
 
     menu->addSeparator();
@@ -125,7 +126,7 @@ void Image::setBackground( QString bck )
     }
     else if( m_BackGround.isEmpty() )
     {
-        m_image = QPixmap( ":/saveimage.png" );
+        m_image = QPixmap( ":/image_placeholder.svg" );
     }
     else
     {

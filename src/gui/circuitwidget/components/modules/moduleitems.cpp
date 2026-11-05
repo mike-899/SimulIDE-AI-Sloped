@@ -135,10 +135,10 @@ void addModuleItems(ItemLibrary *lib)
     lib->addItem(CoinCell::libraryItem());
     lib->addItem(Fuse::libraryItem());
     lib->addItem(new LibraryItem(QObject::tr("7805 Regulator"),
-                                 QObject::tr("Power"), "voltreg.png", "Reg7805",
+                                 QObject::tr("Power"), "voltreg.svg", "Reg7805",
                                  make<Reg7805>));
     lib->addItem(new LibraryItem(QObject::tr("LM317 Regulator"),
-                                 QObject::tr("Power"), "voltreg.png", "Lm317",
+                                 QObject::tr("Power"), "voltreg.svg", "Lm317",
                                  make<Lm317>));
     // Switches
     lib->addItem(TactileButton::libraryItem());
@@ -149,46 +149,46 @@ void addModuleItems(ItemLibrary *lib)
     lib->addItem(TB6612::libraryItem());
     lib->addItem(Uln2003::libraryItem());
     lib->addItem(new LibraryItem(QObject::tr("Stepper 28BYJ-48"),
-                                 QObject::tr("Motors"), "steeper.png",
+                                 QObject::tr("Motors"), "steeper.svg",
                                  "Stepper28BYJ", make<Stepper28BYJ>));
     // Modules
     lib->addItem(RelayModule::libraryItem());
     lib->addItem(MosfetModule::libraryItem());
     // Semiconductors
     lib->addItem(new LibraryItem(
-        QObject::tr("2N2222 NPN"), QObject::tr("Semiconductors"), "bjt.png",
+        QObject::tr("2N2222 NPN"), QObject::tr("Semiconductors"), "bjt.svg",
         "Q2N2222", [](QObject *p, QString t, QString i) {
             return makeBjt(p, t, i, BJT::Q2N2222);
         }));
     lib->addItem(new LibraryItem(QObject::tr("BC547 NPN"),
-                                 QObject::tr("Semiconductors"), "bjt.png",
+                                 QObject::tr("Semiconductors"), "bjt.svg",
                                  "BC547", [](QObject *p, QString t, QString i) {
                                      return makeBjt(p, t, i, BJT::BC547);
                                  }));
     lib->addItem(new LibraryItem(
         QObject::tr("TIP120 Darlington"), QObject::tr("Semiconductors"),
-        "bjt.png", "TIP120", [](QObject *p, QString t, QString i) {
+        "bjt.svg", "TIP120", [](QObject *p, QString t, QString i) {
             return makeBjt(p, t, i, BJT::TIP120);
         }));
     lib->addItem(new LibraryItem(
-        QObject::tr("1N4007 Diode"), QObject::tr("Semiconductors"), "diode.png",
+        QObject::tr("1N4007 Diode"), QObject::tr("Semiconductors"), "diode.svg",
         "D1N4007", [](QObject *p, QString t, QString i) {
             return makeDiode(p, t, i, Diode::D1N4007);
         }));
     lib->addItem(new LibraryItem(
-        QObject::tr("1N4148 Diode"), QObject::tr("Semiconductors"), "diode.png",
+        QObject::tr("1N4148 Diode"), QObject::tr("Semiconductors"), "diode.svg",
         "D1N4148", [](QObject *p, QString t, QString i) {
             return makeDiode(p, t, i, Diode::D1N4148);
         }));
     lib->addItem(new LibraryItem(
         QObject::tr("Zener 5.1V 1N4733A"), QObject::tr("Semiconductors"),
-        "diode.png", "D1N4733A", [](QObject *p, QString t, QString i) {
+        "diode.svg", "D1N4733A", [](QObject *p, QString t, QString i) {
             return makeDiode(p, t, i, Diode::D1N4733A);
         }));
     lib->addItem(Optocoupler::libraryItem());
     // Buzzers
     lib->addItem(new LibraryItem(
-        QObject::tr("Active Buzzer"), QObject::tr("Outputs"), "audio_out.png",
+        QObject::tr("Active Buzzer"), QObject::tr("Outputs"), "audio_out.svg",
         "ActiveBuzzer", [](QObject *p, QString t, QString i) -> Component * {
             AudioOut *a = new AudioOut(p, t, i);
             a->setBuzzer(true); // Built-in oscillator: sounds when powered
@@ -196,7 +196,7 @@ void addModuleItems(ItemLibrary *lib)
             return a;
         }));
     lib->addItem(new LibraryItem(
-        QObject::tr("Passive Buzzer"), QObject::tr("Outputs"), "audio_out.png",
+        QObject::tr("Passive Buzzer"), QObject::tr("Outputs"), "audio_out.svg",
         "PassiveBuzzer", [](QObject *p, QString t, QString i) -> Component * {
             AudioOut *a = new AudioOut(p, t, i); // Plays the driving signal
             a->setBuzzer(false);

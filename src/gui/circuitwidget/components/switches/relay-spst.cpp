@@ -28,7 +28,7 @@ LibraryItem* RelaySPST::libraryItem()
     return new LibraryItem(
             tr( "Relay (all)" ),
             tr( "Switches" ),
-            "relay-spst.png",
+            "relay-spst.svg",
             "RelaySPST",
             RelaySPST::construct);
 }

@@ -55,7 +55,7 @@ MainWindow::MainWindow() :
                                   "/simulide.ini",
                               QSettings::IniFormat, this)
 {
-    setWindowIcon(QIcon(":/simulide.png"));
+    setWindowIcon(QIcon(":/simulide.svg"));
     m_pSelf   = this;
     m_circuit = 0l;
     m_simButton        = 0l;
@@ -361,7 +361,7 @@ void MainWindow::createTopBar()
 
     QLabel *logo = new QLabel(m_topBar);
     logo->setObjectName("appLogo");
-    logo->setPixmap(QIcon(":/simulide.png").pixmap(24, 24));
+    logo->setPixmap(QIcon(":/simulide.svg").pixmap(24, 24));
     layout->addWidget(logo);
 
     QLabel *appName = new QLabel("SimulIDE", m_topBar);

@@ -41,7 +41,7 @@ LibraryItem* SerialTerm::libraryItem()
     return new LibraryItem(
         "SerialTerm",
         "",
-        "SerialTerm.png",
+        "SerialTerm.svg",
         "SerialTerm",
         SerialTerm::construct );
 }

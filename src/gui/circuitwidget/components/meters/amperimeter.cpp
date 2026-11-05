@@ -29,7 +29,7 @@ LibraryItem* Amperimeter::libraryItem()
     return new LibraryItem(
             tr( "Amperimeter" ),
             tr( "Meters" ),
-            "amperimeter.png",
+            "amperimeter.svg",
             "Amperimeter",
             Amperimeter::construct);
 }

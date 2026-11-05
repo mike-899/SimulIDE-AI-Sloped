@@ -33,7 +33,7 @@ LibraryItem* Switch::libraryItem()
     return new LibraryItem(
             tr( "Switch (all)" ),
             tr( "Switches" ),
-            "switch.png",
+            "switch.svg",
             "Switch",
             Switch::construct);
 }

@@ -28,7 +28,7 @@ LibraryItem* elCapacitor::libraryItem()
     return new LibraryItem(
             tr( "Electrolytic Capacitor" ),
             tr( "Passive" ),
-            "elcapacitor.png",
+            "elcapacitor.svg",
             "elCapacitor",
             elCapacitor::construct);
 }

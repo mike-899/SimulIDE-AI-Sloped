@@ -38,7 +38,7 @@ LibraryItem* VoltReg::libraryItem()
     return new LibraryItem(
         tr( "Volt. Regulator" ),
         tr( "Active" ),
-        "voltreg.png",
+        "voltreg.svg",
         "VoltReg",
         VoltReg::construct );
 }

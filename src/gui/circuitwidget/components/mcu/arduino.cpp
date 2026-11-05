@@ -35,7 +35,7 @@ LibraryItem* Arduino::libraryItem()
     return new LibraryItem(
         tr("Arduino"),
         tr("Micro"),   
-        "arduinoUnoIcon.png",
+        "arduinoUnoIcon.svg",
         "Arduino",
         Arduino::construct );
 }
@@ -206,19 +206,22 @@ void Arduino::initBoard()
 static QString boardArt(const QString &background)
 {
     static const QHash<QString, QString> boards = {
-        { ":/arduinoUno.png", "board:arduino_uno" },
-        { ":/duemilanove.png", "board:arduino_duemilanove" },
-        { ":/leonardo.png", "board:arduino_leonardo" },
-        { ":/mega.png", "board:arduino_mega" },
-        { ":/arduinoNano.png", "board:arduino_nano" }
+        { ":/arduinoUno.svg", "board:arduino_uno" },
+        { ":/duemilanove.svg", "board:arduino_duemilanove" },
+        { ":/leonardo.svg", "board:arduino_leonardo" },
+        { ":/mega.svg", "board:arduino_mega" },
+        { ":/arduinoNano.svg", "board:arduino_nano" }
     };
-    return boards.value(background);
+    QString key = background;
+    key.replace(".png", ".svg"); // Board ids of older data files
+    return boards.value(key);
 }
 
-// The realistic board art already has the header names printed on it
+// The board is always drawn with its (SVG) board art, which already has the
+// header names printed on it
 void Arduino::artToggled()
 {
-    bool show = !(PartArt::enabled() && !boardArt(m_BackGround).isEmpty());
+    bool show = boardArt(m_BackGround).isEmpty();
     for (McuComponentPin *mcuPin : m_pinList)
         mcuPin->pin()->setLabelVisible(show);
 }
@@ -227,8 +230,7 @@ QRectF Arduino::boundingRect() const
 {
     // The board art may reach a little outside the package area
     QRectF br = Component::boundingRect();
-    const PartArtInfo *inf =
-        PartArt::enabled() ? PartArt::info(boardArt(m_BackGround)) : 0l;
+    const PartArtInfo *inf = PartArt::info(boardArt(m_BackGround));
     if (inf)
         br = br.united(inf->rect.adjusted(-2, -2, 2, 2));
     return br;
@@ -240,18 +242,14 @@ void Arduino::paint( QPainter* p, const QStyleOptionGraphicsItem* option, QWidge
 
     // Realistic board art: header holes match the package pin positions
     QString board = boardArt(m_BackGround);
-    if (PartArt::enabled() && !board.isEmpty()) {
+    if (!board.isEmpty()) {
         p->save();
         p->setRenderHint(QPainter::Antialiasing);
         p->setRenderHint(QPainter::TextAntialiasing);
         p->setRenderHint(QPainter::SmoothPixmapTransform);
-        PartArt::paint(p, board);
+        paintPinPads(p, PartArt::paint(p, board));
         p->restore();
-        return;
     }
-    int ox = m_area.x();
-    int oy = m_area.y();
-    p->drawPixmap( ox, oy, QPixmap( m_BackGround ));
 }
 
 #include "moc_arduino.cpp"

@@ -37,7 +37,7 @@ LibraryItem* Ssd1306::libraryItem()
     return new LibraryItem(
         tr( "Ssd1306" ),
         tr( "Outputs" ),
-        "ssd1306.png",
+        "ssd1306.svg",
         "Ssd1306",
         Ssd1306::construct );
 }

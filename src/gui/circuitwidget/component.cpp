@@ -25,6 +25,7 @@
 #include "itemlibrary.h"
 #include "mainwindow.h"
 #include "partart.h"
+#include "pin.h"
 #include "propertieswidget.h"
 #include "simuapi_apppath.h"
 #include "thememanager.h"
@@ -236,29 +237,29 @@ void Component::contextMenu( QGraphicsSceneContextMenuEvent* event, QMenu* menu 
 {
     m_eventpoint = mapToScene( togrid(event->pos()) );
 
-    QAction* copyAction = menu->addAction(QIcon(":/copy.png"),tr("Copy")+"\tCtrl+C");
+    QAction* copyAction = menu->addAction(ThemeManager::icon("content_copy"),tr("Copy")+"\tCtrl+C");
     connect( copyAction, SIGNAL( triggered()), this, SLOT(slotCopy()) );
 
-    QAction* removeAction = menu->addAction( QIcon( ":/remove.png"),tr("Remove")+"\tDel" );
+    QAction* removeAction = menu->addAction( ThemeManager::icon("delete"),tr("Remove")+"\tDel" );
     connect( removeAction, SIGNAL( triggered()), this, SLOT(slotRemove()) );
     
-    QAction* propertiesAction = menu->addAction( QIcon( ":/properties.png"),tr("Properties") );
+    QAction* propertiesAction = menu->addAction( ThemeManager::icon("tune"),tr("Properties") );
     connect( propertiesAction, SIGNAL( triggered()), this, SLOT(slotProperties()) );
     menu->addSeparator();
 
-    QAction* rotateCWAction = menu->addAction( QIcon( ":/rotateCW.png"),tr("Rotate CW") );
+    QAction* rotateCWAction = menu->addAction( ThemeManager::icon("rotate_right"),tr("Rotate CW") );
     connect( rotateCWAction, SIGNAL( triggered()), this, SLOT(rotateCW()));
 
-    QAction* rotateCCWAction = menu->addAction(QIcon( ":/rotateCCW.png"),tr("Rotate CCW") );
+    QAction* rotateCCWAction = menu->addAction(ThemeManager::icon("rotate_left"),tr("Rotate CCW") );
     connect( rotateCCWAction, SIGNAL( triggered()), this, SLOT(rotateCCW()) );
 
-    QAction* rotateHalfAction = menu->addAction(QIcon(":/rotate180.png"),tr("Rotate 180") );
+    QAction* rotateHalfAction = menu->addAction(ThemeManager::icon("rotate_180"),tr("Rotate 180") );
     connect( rotateHalfAction, SIGNAL( triggered()), this, SLOT(rotateHalf()) );
     
-    QAction* H_flipAction = menu->addAction(QIcon(":/hflip.png"),tr("Horizontal Flip") );
+    QAction* H_flipAction = menu->addAction(ThemeManager::icon("flip"),tr("Horizontal Flip") );
     connect( H_flipAction, SIGNAL( triggered()), this, SLOT(H_flip()) );
     
-    QAction* V_flipAction = menu->addAction(QIcon(":/vflip.png"),tr("Vertical Flip") );
+    QAction* V_flipAction = menu->addAction(ThemeManager::icon("flip_vertical"),tr("Vertical Flip") );
     connect( V_flipAction, SIGNAL( triggered()), this, SLOT(V_flip()) );
 
     menu->exec(event->screenPos());
@@ -591,6 +592,8 @@ bool Component::paintArt(QPainter *p)
     else
         r = PartArt::paint(p, m_type, res);
 
+    paintPinPads(p, r);
+
     if (isSelected()) {
         p->setPen(QPen(QColor(60, 130, 230), 1, Qt::DashLine));
         p->setBrush(QColor(60, 130, 230, 50));
@@ -598,6 +601,26 @@ bool Component::paintArt(QPainter *p)
     }
     p->restore();
     return true;
+}
+
+void Component::paintPinPads(QPainter *p, const QRectF &art)
+{
+    if (art.isEmpty())
+        return;
+    const QRectF hit = art.adjusted(-1, -1, 1, 1);
+    p->save();
+    p->setRenderHint(QPainter::Antialiasing);
+    for (QGraphicsItem *ch : childItems()) {
+        Pin *pin = dynamic_cast<Pin *>(ch);
+        if (!pin || !pin->isVisible() || !hit.contains(pin->pos()))
+            continue;
+        // Gold pad with a dark rim: readable on light and dark art
+        p->setPen(QPen(QColor(30, 30, 30), 0.8));
+        p->setBrush(pin->unused() ? QColor(75, 120, 170)
+                                  : QColor(235, 190, 70));
+        p->drawEllipse(pin->pos(), 2.0, 2.0);
+    }
+    p->restore();
 }
 
 void Component::paint( QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget )
@@ -699,13 +722,13 @@ void Label::contextMenuEvent( QGraphicsSceneContextMenuEvent* event )
         event->accept();
         QMenu menu;
 
-        QAction* rotateCWAction = menu.addAction(QIcon(":/rotateCW.png"),"Rotate CW");
+        QAction* rotateCWAction = menu.addAction(ThemeManager::icon("rotate_right"),"Rotate CW");
         connect(rotateCWAction, SIGNAL(triggered()), this, SLOT(rotateCW()));
 
-        QAction* rotateCCWAction = menu.addAction(QIcon(":/rotateCCW.png"),"Rotate CCW");
+        QAction* rotateCCWAction = menu.addAction(ThemeManager::icon("rotate_left"),"Rotate CCW");
         connect(rotateCCWAction, SIGNAL(triggered()), this, SLOT(rotateCCW()));
 
-        QAction* rotate180Action = menu.addAction(QIcon(":/rotate180.png"),"Rotate 180º");
+        QAction* rotate180Action = menu.addAction(ThemeManager::icon("rotate_180"),"Rotate 180º");
         connect(rotate180Action, SIGNAL(triggered()), this, SLOT(rotate180()));
 
         /*QAction* selectedAction = */menu.exec(event->screenPos());

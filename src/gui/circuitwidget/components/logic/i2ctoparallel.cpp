@@ -30,7 +30,7 @@ LibraryItem* I2CToParallel::libraryItem()
     return new LibraryItem(
         tr( "I2C to Parallel" ),
         tr( "Logic/Converters" ),
-        "2to3g.png",
+        "2to3g.svg",
         "I2CToParallel",
         I2CToParallel::construct );
 }

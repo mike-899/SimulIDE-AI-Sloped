@@ -18,6 +18,7 @@
  ***************************************************************************/
 
 #include "subpackage.h"
+#include "thememanager.h"
 
 #include "circuit.h"
 #include "itemlibrary.h"
@@ -44,7 +45,7 @@ LibraryItem* SubPackage::libraryItem()
     return new LibraryItem(
         tr( "Package" ),
         tr( "Other" ),
-        "subc2.png",
+        "subc2.svg",
         "Package",
         SubPackage::construct );
 }
@@ -285,23 +286,23 @@ void SubPackage::contextMenu( QGraphicsSceneContextMenuEvent* event, QMenu* menu
 {
     if( m_eventPin )
     {
-        QAction* moveAction = menu->addAction( QIcon(":/hflip.png"),tr("Move Pin ")+m_eventPin->getLabelText() );
+        QAction* moveAction = menu->addAction( ThemeManager::icon("flip"),tr("Move Pin ")+m_eventPin->getLabelText() );
         connect( moveAction, SIGNAL(triggered()), this, SLOT( movePin() ) );
 
-        QAction* editAction = menu->addAction( QIcon(":/rename.png"),tr("Edit Pin ")+m_eventPin->getLabelText() );
+        QAction* editAction = menu->addAction( ThemeManager::icon("edit"),tr("Edit Pin ")+m_eventPin->getLabelText() );
         connect( editAction, SIGNAL(triggered()), this, SLOT( editPin() ) );
 
-        QAction* deleteAction = menu->addAction( QIcon(":/remove.png"),tr("Delete Pin ")+m_eventPin->getLabelText() );
+        QAction* deleteAction = menu->addAction( ThemeManager::icon("delete"),tr("Delete Pin ")+m_eventPin->getLabelText() );
         connect( deleteAction, SIGNAL(triggered()), this, SLOT( deletePin() ) );
 
         menu->exec( event->screenPos() );
     }
     else
     {
-        QAction* loadAction = menu->addAction( QIcon(":/open.png"),tr("Load Package") );
+        QAction* loadAction = menu->addAction( ThemeManager::icon("folder_open"),tr("Load Package") );
         connect( loadAction, SIGNAL(triggered()), this, SLOT( loadPackage() ) );
 
-        QAction* saveAction = menu->addAction( QIcon(":/save.png"),tr("Save Package") );
+        QAction* saveAction = menu->addAction( ThemeManager::icon("save"),tr("Save Package") );
         connect( saveAction, SIGNAL(triggered()), this, SLOT( slotSave() ) );
 
         menu->addSeparator();

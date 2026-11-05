@@ -39,7 +39,7 @@ LibraryItem* OpAmp::libraryItem()
     return new LibraryItem(
         tr( "OpAmp" ),
         tr( "Active" ),
-        "opamp.png",
+        "opamp.svg",
         "opAmp",
         OpAmp::construct );
 }

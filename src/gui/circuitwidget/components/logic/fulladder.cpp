@@ -29,7 +29,7 @@ LibraryItem* FullAdder::libraryItem()
     return new LibraryItem(
         tr( "Full Adder" ),
         tr ("Logic/Arithmetic"),
-        "2to2.png",
+        "2to2.svg",
         "FullAdder",
         FullAdder::construct );
 }

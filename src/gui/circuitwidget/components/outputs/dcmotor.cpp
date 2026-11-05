@@ -33,7 +33,7 @@ Component *DcMotor::construct(QObject *parent, QString type, QString id)
 
 LibraryItem *DcMotor::libraryItem()
 {
-    return new LibraryItem(tr("DC Motor"), tr("Motors"), "steeper.png",
+    return new LibraryItem(tr("DC Motor"), tr("Motors"), "steeper.svg",
                            "DcMotor", DcMotor::construct);
 }
 

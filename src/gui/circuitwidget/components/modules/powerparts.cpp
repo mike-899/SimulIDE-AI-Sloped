@@ -18,7 +18,7 @@
 #define LIB_ITEM(Cls, name, cat, type)                              \
     LibraryItem *Cls::libraryItem()                                 \
     {                                                               \
-        return new LibraryItem(tr(name), tr(cat), "subc.png", type, \
+        return new LibraryItem(tr(name), tr(cat), "subc.svg", type, \
                                Cls::construct);                     \
     }
 

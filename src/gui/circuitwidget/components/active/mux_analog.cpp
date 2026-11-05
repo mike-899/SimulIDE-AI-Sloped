@@ -39,7 +39,7 @@ LibraryItem* MuxAnalog::libraryItem()
     return new LibraryItem(
         tr( "Analog Mux" ),
         tr( "Active" ),
-        "1to3-c.png",
+        "1to3-c.svg",
         "MuxAnalog",
         MuxAnalog::construct );
 }

@@ -35,7 +35,7 @@ LibraryItem* SwitchDip::libraryItem()
     return new LibraryItem(
             tr( "Switch Dip" ),
             tr( "Switches" ),
-            "switchdip.png",
+            "switchdip.svg",
             "SwitchDip",
             SwitchDip::construct);
 }
@@ -110,12 +110,12 @@ void SwitchDip::onbuttonclicked()
     {
         if( button->isChecked()  ) 
         {
-            button->setIcon(QIcon(":/switchbut.png"));
+            button->setIcon(QIcon(":/switch_on.svg"));
             m_state |= 1<<i;
         }
         else
         {
-            button->setIcon(QIcon(":/stop.png"));
+            button->setIcon(QIcon(":/switch_off.svg"));
             m_state &= ~(1<<i);
         }
         i++;
@@ -141,8 +141,8 @@ void SwitchDip::setState( int state )
         
         button->setChecked( switchState );
         
-        if( switchState  ) button->setIcon(QIcon(":/switchbut.png"));
-        else               button->setIcon(QIcon(":/stop.png"));
+        if( switchState  ) button->setIcon(QIcon(":/switch_on.svg"));
+        else               button->setIcon(QIcon(":/switch_off.svg"));
         
         i++;
     }
@@ -166,10 +166,10 @@ void SwitchDip::createSwitches( int c )
         font.setPixelSize(5);
         button->setFont(font);
         //button->setText( "O");
-        button->setIcon(QIcon(":/stop.png"));
+        button->setIcon(QIcon(":/switch_off.svg"));
         button->setCheckable( true );
         button->setChecked( true );
-        button->setIcon(QIcon(":/switchbut.png"));
+        button->setIcon(QIcon(":/switch_on.svg"));
         m_buttons.append( button );
         
         QGraphicsProxyWidget* proxy = Circuit::self()->addWidget( button );

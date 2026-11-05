@@ -45,19 +45,19 @@ Component *NetLabel::construct(QObject *parent, QString type, QString id)
 
 LibraryItem *NetLabel::libraryItem()
 {
-    return new LibraryItem(tr("Net Label"), tr("Connectors"), "netlabel.png",
+    return new LibraryItem(tr("Net Label"), tr("Connectors"), "netlabel.svg",
                            "NetLabel", NetLabel::construct);
 }
 
 LibraryItem *NetLabel::powerLibraryItem()
 {
-    return new LibraryItem(tr("VCC Label"), tr("Connectors"), "powerlabel.png",
+    return new LibraryItem(tr("VCC Label"), tr("Connectors"), "powerlabel.svg",
                            "PowerLabel", NetLabel::construct);
 }
 
 LibraryItem *NetLabel::groundLibraryItem()
 {
-    return new LibraryItem(tr("GND Label"), tr("Connectors"), "ground.png",
+    return new LibraryItem(tr("GND Label"), tr("Connectors"), "ground.svg",
                            "GroundLabel", NetLabel::construct);
 }
 

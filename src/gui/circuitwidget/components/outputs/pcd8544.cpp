@@ -43,7 +43,7 @@ LibraryItem* Pcd8544::libraryItem()
     return new LibraryItem(
         tr( "Pcd8544" ),
         tr( "Outputs" ),
-        "pcd8544.png",
+        "pcd8544.svg",
         "Pcd8544",
         Pcd8544::construct );
 }

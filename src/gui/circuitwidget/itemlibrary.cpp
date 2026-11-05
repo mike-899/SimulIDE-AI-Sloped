@@ -177,32 +177,32 @@ void ItemLibrary::loadItems()
     addItem( Stepper::libraryItem() );
     addItem( Servo::libraryItem() );
     addItem(
-        new LibraryItem(tr("Motors"), tr("Outputs"), "steeper.png", "", 0l));
+        new LibraryItem(tr("Motors"), tr("Outputs"), "steeper.svg", "", 0l));
     addItem(DcMotor::libraryItem());
     addItem(L298N::libraryItem());
     addItem(L293D::libraryItem());
     addItem( AudioOut::libraryItem() );
     // Sensors, power parts, modules and named presets
     addItem(
-        new LibraryItem(tr("Power"), tr("Sources"), "voltsource.png", "", 0l));
+        new LibraryItem(tr("Power"), tr("Sources"), "voltsource.svg", "", 0l));
     addItem(
-        new LibraryItem(tr("Semiconductors"), tr("Active"), "bjt.png", "", 0l));
-    addItem(new LibraryItem(tr("Modules"), tr("Micro"), "subc.png", "", 0l));
+        new LibraryItem(tr("Semiconductors"), tr("Active"), "bjt.svg", "", 0l));
+    addItem(new LibraryItem(tr("Modules"), tr("Micro"), "subc.svg", "", 0l));
     addModuleItems(this);
     // Micro
     addItem( PICComponent::libraryItem() );
     addItem( AVRComponent::libraryItem() );
     addItem( Arduino::libraryItem() );
-    addItem( new LibraryItem( tr("Sensors"),tr("Micro"), "1to2.png","", 0l ) );
+    addItem( new LibraryItem( tr("Sensors"),tr("Micro"), "1to2.svg","", 0l ) );
     addItem( SR04::libraryItem() );
     addItem( SerialPort::libraryItem() );
     addItem( SerialTerm::libraryItem() );
     // Logic
-    addItem( new LibraryItem( tr("Gates"),tr("Logic"), "gates.png","", 0l ) );
-    addItem( new LibraryItem( tr("Arithmetic"),tr("Logic"), "2to2.png","", 0l ) );
-    addItem( new LibraryItem( tr("Memory"),tr("Logic"), "subc.png","", 0l ) );
-    addItem( new LibraryItem( tr("Converters"),tr("Logic"), "1to2.png","", 0l ) );
-    addItem( new LibraryItem( tr("Other Logic"),tr("Logic"), "2to3.png","", 0l ) );
+    addItem( new LibraryItem( tr("Gates"),tr("Logic"), "gates.svg","", 0l ) );
+    addItem( new LibraryItem( tr("Arithmetic"),tr("Logic"), "2to2.svg","", 0l ) );
+    addItem( new LibraryItem( tr("Memory"),tr("Logic"), "subc.svg","", 0l ) );
+    addItem( new LibraryItem( tr("Converters"),tr("Logic"), "1to2.svg","", 0l ) );
+    addItem( new LibraryItem( tr("Other Logic"),tr("Logic"), "2to3.svg","", 0l ) );
     addItem( Buffer::libraryItem() );
     addItem( AndGate::libraryItem() );
     addItem( OrGate::libraryItem() );
