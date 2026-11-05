@@ -912,7 +912,10 @@ QJsonObject McpTools::getSimulationState(const QJsonObject &)
     r["running"]         = sim->isRunning();
     r["paused"]          = sim->isPaused();
     r["step"]            = (double)sim->step();
-    r["circuit_time_ps"] = (double)sim->circTime();
+    // circTime() is in nanoseconds: circuit_time_ps used to carry the ns
+    // value (1000x too small). Give both units explicitly.
+    r["circuit_time_ns"] = (double)sim->circTime();
+    r["circuit_time_ps"] = (double)sim->circTime() * 1000.0;
     r["circuit_rate"]    = sim->circuitRate();
     r["simu_rate"]       = sim->simuRate();
     // Measured speed (simulated time / wall time), updated every second
