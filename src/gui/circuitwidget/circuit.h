@@ -104,7 +104,9 @@ class MAINMODULE_EXPORT Circuit : public QGraphicsScene
 
         Pin* findPin( int x, int y, QString id );
 
-        void loadCircuit( QString &fileName );
+        // Returns false and fills *error (or shows a message when error is
+        // null) if the file can't be read or isn't a SimulIDE circuit.
+        bool loadCircuit(QString &fileName, QString *error = nullptr);
         bool saveCircuit( QString &fileName );
 
         Component* createItem( QString name, QString id );
@@ -142,6 +144,10 @@ class MAINMODULE_EXPORT Circuit : public QGraphicsScene
         void removePin( QString pinId );
 
         const QString getFileName() const { return m_filePath; }
+        void setFilePath(const QString &path)
+        {
+            m_filePath = path;
+        }
 
         QString getCompId( QString name );
 

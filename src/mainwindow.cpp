@@ -108,8 +108,9 @@ MainWindow::MainWindow() :
     QString backPath = m_settings.value("backupPath").toString();
     if (!backPath.isEmpty()) {
         // qDebug() << "MainWindow::readSettings" << backPath;
-        if (QFile::exists(backPath))
-            CircuitWidget::self()->loadCirc(backPath);
+        if (QFile::exists(backPath)) // Last session didn't close cleanly
+            CircuitWidget::self()->recoverCirc(
+                backPath, m_settings.value("backupOrig").toString());
     }
 }
 MainWindow::~MainWindow() {}

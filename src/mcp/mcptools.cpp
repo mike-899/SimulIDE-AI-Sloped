@@ -862,7 +862,9 @@ QJsonObject McpTools::loadCircuit(const QJsonObject &a)
     if (!path.endsWith(".simu"))
         return fail("Circuit files must have the .simu extension");
     MainWindow::self()->setTitle("New Circuit");
-    CircuitWidget::self()->loadCirc(fi.absoluteFilePath());
+    QString err;
+    if (!CircuitWidget::self()->loadCirc(fi.absoluteFilePath(), &err))
+        return fail(err);
     QJsonObject r;
     r["file"]       = Circuit::self()->getFileName();
     r["components"] = Circuit::self()->compList()->size();

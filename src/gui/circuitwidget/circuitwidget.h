@@ -91,7 +91,9 @@ class MAINMODULE_EXPORT CircuitWidget : public QWidget
       public slots:
         bool newCircuit();
         void openCirc();
-        void loadCirc( QString path );
+        bool loadCirc(QString path, QString *error = nullptr);
+        // Crash recovery: load the backup but keep editing origPath
+        void recoverCirc(QString backupPath, QString origPath);
         void saveCirc();
         bool saveCircAs();
         void powerCirc();

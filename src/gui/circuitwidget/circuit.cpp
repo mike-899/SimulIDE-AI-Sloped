@@ -172,29 +172,43 @@ Pin* Circuit::findPin( int x, int y, QString id )
     return 0l;
 }
 
-void Circuit::loadCircuit( QString &fileName )
+bool Circuit::loadCircuit(QString &fileName, QString *error)
 {
-    if( m_con_started ) return;
+    if (m_con_started)
+        return false;
 
-    m_filePath = fileName;
+    QString name = QFileInfo(fileName).fileName();
+    QString err;
     QFile file( fileName );
 
     if( !file.open(QFile::ReadOnly | QFile::Text) )
-    {
-        QMessageBox::warning(0l, "Circuit::loadCircuit",
-        tr("Cannot read file %1:\n%2.").arg(fileName).arg(file.errorString()));
-        return;
-    }
-    //qDebug() << "Circuit::loadCircuit"<<m_filePath;
-
-    if( !m_domDoc.setContent(&file) )
-    {
-        QMessageBox::warning( 0l, "Circuit::loadCircuit",
-        tr("Cannot set file %1\nto DomDocument").arg(fileName));
+        err = tr("Can't read \"%1\": %2.").arg(name, file.errorString());
+    else {
+        QString msg;
+        int line = 0;
+        if (!m_domDoc.setContent(&file, &msg, &line))
+            err = tr("\"%1\" isn't a valid SimulIDE circuit (line %2: %3).")
+                      .arg(name)
+                      .arg(line)
+                      .arg(msg);
+        else if (m_domDoc.documentElement().tagName() != "circuit")
+            err = tr("\"%1\" isn't a SimulIDE circuit.").arg(name);
         file.close();
-        return;
     }
-    file.close();
+    if (!err.isEmpty()) {
+        m_domDoc.clear();
+        if (error)
+            *error = err;
+        else { // Not modal for the app: the MCP server and the view keep going
+            QMessageBox *box =
+                new QMessageBox(QMessageBox::Warning, tr("Can't open circuit"),
+                                err, QMessageBox::Ok, MainWindow::self());
+            box->setAttribute(Qt::WA_DeleteOnClose);
+            box->open();
+        }
+        return false;
+    }
+    m_filePath = fileName;
 
     m_error = 0;
     loadDomDoc( &m_domDoc );
@@ -212,6 +226,7 @@ void Circuit::loadCircuit( QString &fileName )
         saveState();
         saveChanges();
     }
+    return true;
 }
 
 void Circuit::loadDomDoc( QDomDocument* doc )
@@ -830,20 +845,23 @@ void Circuit::saveChanges()
 
     circuitToDom();
 
-    m_backupPath = m_filePath;
+    // Backups live in the app data folder, never next to the user's file
+    // (that littered project folders and git checkouts with *_backup.simu).
+    QDir bckDir(SIMUAPI_AppPath::self()->RWDataFolder().absolutePath() +
+                "/backup");
+    bckDir.mkpath(".");
+    QString base = m_filePath.isEmpty()
+                       ? QString("untitled")
+                       : QFileInfo(m_filePath).completeBaseName();
+    if (base.endsWith("_backup"))
+        base.chop(7);
+    m_backupPath = bckDir.absoluteFilePath(base + "_backup.simu");
 
-    QFileInfo bckDir( m_backupPath );
-
-    if( !bckDir.isWritable() )
-        m_backupPath = SIMUAPI_AppPath::self()->RWDataFolder().absolutePath()+"/_backup.simu";
-
-    if( !m_backupPath.endsWith( "_backup.simu" ))
-        m_backupPath.replace( ".simu", "_backup.simu" );
-
-    //qDebug() << "saving Backup"<<m_backupPath;
-
-    if( saveDom( m_backupPath, &m_domDoc ) )
-        MainWindow::self()->settings()->setValue( "backupPath", m_backupPath );
+    if (saveDom(m_backupPath, &m_domDoc)) {
+        QSettings *settings = MainWindow::self()->settings();
+        settings->setValue("backupPath", m_backupPath);
+        settings->setValue("backupOrig", m_filePath); // To recover it as
+    }
 }
 
 void Circuit::setChanged()

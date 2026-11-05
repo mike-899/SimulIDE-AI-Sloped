@@ -331,20 +331,46 @@ void CircuitWidget::openCirc()
     loadCirc( fileName );
 }
 
-void CircuitWidget::loadCirc( QString path )
+bool CircuitWidget::loadCirc(QString path, QString *error)
 {
     if( !path.isEmpty() && path.endsWith(".simu") )
     {
-        newCircuit();
-        Circuit::self()->loadCircuit( path );
-   
+        if (!newCircuit()) // "Save changes?" cancelled: keep the current one
+        {
+            if (error)
+                *error =
+                    tr("Cancelled: the current circuit has unsaved changes");
+            return false;
+        }
+        if (!Circuit::self()->loadCircuit(path, error)) {
+            clear(); // Nothing half loaded stays behind
+            m_curCirc = "";
+            MainWindow::self()->setTitle(tr("New Circuit"));
+            return false;
+        }
         m_curCirc = path;
         m_lastCircDir = path;
         MainWindow::self()->setTitle(path.split("/").last());
         MainWindow::self()->settings()->setValue( "lastCircDir", m_lastCircDir );
         //FileBrowser::self()->setPath(m_lastCircDir);
         m_circView.setCircTime( 0 );
+        return true;
     }
+    if (error)
+        *error = tr("Circuit files must have the .simu extension");
+    return false;
+}
+
+void CircuitWidget::recoverCirc(QString backupPath, QString origPath)
+{
+    if (!loadCirc(backupPath))
+        return;
+
+    m_curCirc = origPath; // Saving goes to the real file, not to the backup
+    Circuit::self()->setFilePath(origPath);
+    QString name =
+        origPath.isEmpty() ? tr("New Circuit") : origPath.split("/").last();
+    MainWindow::self()->setTitle(name + " " + tr("(recovered)") + "*");
 }
 
 void CircuitWidget::saveCirc()
