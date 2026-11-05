@@ -63,8 +63,8 @@ int AvrAsmDebugger::compile()
     m_outPane->writeText( "-------------------------------------------------------\n" );
     
     QString listFile = m_fileDir+m_fileName+".lst";
-    QString command  = m_compilerPath+"avra";
-    
+    QString command  = addQuotes(m_compilerPath + "avra");
+
     QProcess checkComp( this );
     checkComp.startCommand(command);
     checkComp.waitForFinished(-1);
@@ -77,13 +77,11 @@ int AvrAsmDebugger::compile()
         return -1;
     }
 
-    #ifndef Q_OS_UNIX
-    command  = addQuotes( command );
+    // QProcess::startCommand() splits on spaces on every platform
     listFile = addQuotes( listFile );
     file     = addQuotes( file );
-    avraIncPath = addQuotes( avraIncPath );
-    #endif
-    
+    avraIncPath = addQuotes(avraIncPath);
+
     command.append(" -W NoRegDef");             // supress some warnings
     command.append(" -l "+ listFile );               // output list file
     if( m_avraIncPath != "" )

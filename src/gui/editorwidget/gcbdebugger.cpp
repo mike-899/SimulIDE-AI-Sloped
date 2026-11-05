@@ -56,11 +56,10 @@ int GcbDebugger::compile()
     QString file = m_fileDir+m_fileName+m_fileExt;
     QString args = " -NP -K:L -A:GCASM -R:text  ";
     QString command = m_compilerPath + "gcbasic";
-    
-    #ifndef Q_OS_UNIX
+
+    // QProcess::startCommand() splits on spaces on every platform
     command  = addQuotes( command );
-    file     = addQuotes( file );
-    #endif
+    file     = addQuotes(file);
 
     command.append( args + file );
     

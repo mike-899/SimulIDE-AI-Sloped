@@ -128,10 +128,10 @@ int InoDebugger::compile()
         if( !wordList.isEmpty())      // Fix crash on empty list.first()
         {
             QString type = wordList.takeFirst();
-            if( type == "unsigned" ) type = "u"+wordList.takeFirst();
+            if (type == "unsigned" && !wordList.isEmpty())
+                type = "u" + wordList.takeFirst();
 
-            if( m_typesList.contains( type ) )
-            {
+            if (m_typesList.contains(type) && !wordList.isEmpty()) {
                 QString varName = wordList.at(0);
                 if( !m_varList.contains( varName ) )
                     m_varList[ varName ] = m_typesList[ type ];
@@ -154,11 +154,12 @@ int InoDebugger::compile()
     
     #ifndef Q_OS_UNIX
     command    += "_debug";
+#endif
+    // QProcess::startCommand() splits on spaces on every platform
     command     = addQuotes( command );
     cBuildPath  = addQuotes( cBuildPath );
-    ProcInoFile = addQuotes( ProcInoFile );
-    #endif
-    
+    ProcInoFile = addQuotes(ProcInoFile);
+
     QString boardName;
     
     if( m_board < Custom ) boardName = boardList.at(m_board);
@@ -166,7 +167,7 @@ int InoDebugger::compile()
                 
     command += " -v --board arduino:avr:"+boardName+" --pref build.path=" + cBuildPath;
     if( !preferencesPath.isEmpty() )
-        command += " --preferences-file " + preferencesPath;
+        command += " --preferences-file " + addQuotes(preferencesPath);
     command += " --preserve-temp-files --verify " + ProcInoFile;
     m_firmware = "";
     
@@ -216,12 +217,11 @@ void InoDebugger::getVariables()
     
     QString objdump = m_compilerPath+"hardware/tools/avr/bin/avr-objdump";
     QString elfPath = buildPath+"/"+m_fileName+".ino.elf";
-    
-    #ifndef Q_OS_UNIX
+
+    // QProcess::startCommand() splits on spaces on every platform
     objdump = addQuotes( objdump );
-    elfPath = addQuotes( elfPath );
-    #endif
-    
+    elfPath = addQuotes(elfPath);
+
     QString command  = objdump+" -S -j .text "+elfPath;
     QProcess compIno( 0l );
     compIno.setStandardOutputFile( buildPath+"/"+m_fileName+".ino.lst" );

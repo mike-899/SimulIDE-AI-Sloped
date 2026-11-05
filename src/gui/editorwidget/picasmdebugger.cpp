@@ -44,8 +44,8 @@ int PicAsmDebugger::compile()
     QString file = m_fileDir+m_fileName+m_fileExt;
     
     m_outPane->writeText( "-------------------------------------------------------\n" );
-    QString command = m_compilerPath+"gpasm";
-    
+    QString command = addQuotes(m_compilerPath + "gpasm");
+
     QProcess checkComp( this );
     checkComp.startCommand(command);
     checkComp.waitForFinished(-1);
@@ -57,13 +57,12 @@ int PicAsmDebugger::compile()
         toolChainNotFound();
         return -1;
     }
-    
-    #ifndef Q_OS_UNIX
-    command  = addQuotes( command );
-    file     = addQuotes( file );
-    #endif
 
-    command.append(" -L -w1  -i  -ainhx32 -I "+m_fileDir+" "+ file);
+    // QProcess::startCommand() splits on spaces on every platform
+    file = addQuotes(file);
+
+    command.append(" -L -w1  -i  -ainhx32 -I " + addQuotes(m_fileDir) + " " +
+                   file);
 
     m_outPane->appendText( "Exec: ");
     m_outPane->appendText( command );
