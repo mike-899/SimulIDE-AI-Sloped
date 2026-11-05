@@ -61,9 +61,12 @@ void PartArt::init()
     // Two terminal parts, pins at x=+-16 (inner end at +-8)
     add("Resistor", "mit/resistor.svg", QRectF(-16, -4, 32, 8));
     add("Diode", "fritzing/diode.svg", QRectF(-16, -5, 32, 10));
-    // Dome only: the legs are drawn as straight leads from the pins
-    add("Led", "mit/led_red.svg", QRectF(-6.6, -26.4, 13.2, 20.76), 0,
-        { QLineF(-8, 0, -2.8, -8), QLineF(8, 0, 2.8, -8) });
+    // Dome only, legs drawn as leads like a real LED: the anode (lPin, left,
+    // "+") is longer and bent, "|" then "/" down to its pin; the cathode
+    // (rPin, right, "-") is a straight "|".
+    add("Led", "mit/led_red.svg", QRectF(-6.6, -29.4, 13.2, 20.76), 0,
+        { QLineF(-3, -8.8, -3, -3.6), QLineF(-3, -3.6, -7, 0), // + | /
+          QLineF(6, -8.8, 6, 0), QLineF(6, 0, 8, 0) });        // - |
 
     // Capacitors / inductor, pins at x=+-24 (inner end at +-16)
     add("Capacitor", "fritzing/capacitor.svg", QRectF(-5.3, -26, 10.6, 26), 0,
@@ -394,7 +397,7 @@ QRectF PartArt::paint(QPainter *p, const QString &type, const QString &res)
     if (!inf->leads.isEmpty()) {
         p->save();
         p->setPen(QPen(QColor(150, 150, 150), inf->leadW, Qt::SolidLine,
-                       Qt::FlatCap));
+                       Qt::RoundCap, Qt::RoundJoin));
         for (const QLineF &l : inf->leads)
             p->drawLine(l);
         p->restore();
