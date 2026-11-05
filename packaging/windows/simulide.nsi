@@ -42,8 +42,11 @@ Section "SimulIDE" SecMain
   ; Upgrades: drop the previous bin\ and share\ first, otherwise stale Qt
   ; DLLs, plugins and QML modules from an older (Qt 5 / pre-M3E) install stay
   ; next to the new ones and can be loaded instead of them.
-  RMDir /r "$INSTDIR\bin"
-  RMDir /r "$INSTDIR\share"
+  ; Only when it really is a SimulIDE install: a user may pick a folder
+  ; such as C:\ whose bin\ or share\ belong to something else.
+  IfFileExists "$INSTDIR\bin\simulide.exe" 0 +3
+    RMDir /r "$INSTDIR\bin"
+    RMDir /r "$INSTDIR\share"
   SetOutPath "$INSTDIR"
   File "${SRCDIR}\LICENSE"
   SetOutPath "$INSTDIR\bin"
@@ -76,8 +79,11 @@ Section "Uninstall"
   Delete "$SMPROGRAMS\${APPNAME}\SimulIDE.lnk"
   Delete "$SMPROGRAMS\${APPNAME}\Uninstall.lnk"
   RMDir "$SMPROGRAMS\${APPNAME}"
-  RMDir /r "$INSTDIR\bin"
-  RMDir /r "$INSTDIR\share"
+  ; Only when it really is a SimulIDE install: a user may pick a folder
+  ; such as C:\ whose bin\ or share\ belong to something else.
+  IfFileExists "$INSTDIR\bin\simulide.exe" 0 +3
+    RMDir /r "$INSTDIR\bin"
+    RMDir /r "$INSTDIR\share"
   Delete "$INSTDIR\LICENSE"
   Delete "$INSTDIR\Uninstall.exe"
   RMDir "$INSTDIR"
