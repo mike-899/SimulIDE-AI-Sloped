@@ -18,6 +18,7 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <QStyleFactory>
+#include <QStyleHints>
 #include <QSvgRenderer>
 
 // ---- M3 Expressive tonal palettes (vibrant indigo seed #4355E8,
@@ -185,7 +186,9 @@ static QString tintedSvgUrl(const QString &name, const QColor &color)
         if (out.open(QFile::WriteOnly))
             out.write(svg.toUtf8());
     }
-    return QString("url(%1)").arg(file);
+    // Quoted: on Windows the cache path often has spaces (C:/Users/Jane Doe)
+    // and an unquoted url() with spaces breaks the whole stylesheet.
+    return QString("url(\"%1\")").arg(file);
 }
 
 void ThemeManager::apply()
@@ -224,6 +227,14 @@ void ThemeManager::apply()
     tk["primaryPressedLayer"] = rgba(primary, 0.12);
     tk["disabledText"]        = rgba(onSurface, 0.38);
     tk["disabledContainer"]   = rgba(onSurface, 0.12);
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    // Follow the app theme in native window chrome (the Windows title bar
+    // otherwise follows the system light/dark setting, not SimulIDE's).
+    // Set before the palette so the explicit M3 palette below wins.
+    QGuiApplication::styleHints()->setColorScheme(
+        dark ? Qt::ColorScheme::Dark : Qt::ColorScheme::Light);
+#endif
 
     QPalette p;
     p.setColor(QPalette::Window, token("surface"));

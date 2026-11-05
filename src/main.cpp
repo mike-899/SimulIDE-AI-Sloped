@@ -45,6 +45,10 @@ QString langFile( QString locale )
 // SIMULIDE_SOFTWARE_RENDER=1, when the user already picked a backend with
 // QT_QUICK_BACKEND, or when no OpenGL context can be created (VMs, remote
 // desktops, missing drivers) so the UI never fails to show.
+// On Windows Qt Quick renders with Direct3D 11, not OpenGL, and falls back to
+// the WARP software adapter itself, so the OpenGL probe is skipped there: a
+// failed probe (no GL driver, RDP, no opengl32sw.dll) would otherwise force
+// the degraded software renderer although Direct3D works.
 static void chooseRenderBackend()
 {
     if (qEnvironmentVariableIsSet("QT_QUICK_BACKEND") ||
@@ -52,6 +56,7 @@ static void chooseRenderBackend()
         return; // User choice
 
     bool software = qEnvironmentVariable("SIMULIDE_SOFTWARE_RENDER") == "1";
+#ifndef _WIN32
     if (!software) {
         QOpenGLContext ctx;
         QOffscreenSurface surface;
@@ -62,6 +67,7 @@ static void chooseRenderBackend()
         } else
             ctx.doneCurrent();
     }
+#endif
     if (software)
         QQuickWindow::setGraphicsApi(QSGRendererInterface::Software);
 }
